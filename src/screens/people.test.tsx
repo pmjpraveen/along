@@ -5,7 +5,7 @@ const mockList = jest.fn();
 const mockAdd = jest.fn();
 jest.mock("../api/members", () => ({ listMembers: (...a: unknown[]) => mockList(...a), addGuest: (...a: unknown[]) => mockAdd(...a) }));
 jest.mock("../api/invites", () => ({ createInviteLink: jest.fn() }));
-jest.mock("expo-router", () => ({ useLocalSearchParams: () => ({ id: "t1" }) }));
+jest.mock("expo-router", () => ({ useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: jest.fn() }) }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 
 const owner = { id: "m1", display_name: "Asha", membership_type: "registered", role: "owner" };

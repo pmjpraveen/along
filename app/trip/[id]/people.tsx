@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, Share, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -28,6 +28,7 @@ function Row({ m, onClaim }: { m: Member; onClaim: (m: Member) => void }) {
 export default function People() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
+  const router = useRouter();
   const [members, setMembers] = useState<Member[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -65,6 +66,7 @@ export default function People() {
   return (
     <ScrollView keyboardShouldPersistTaps="handled" style={s.screen} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>People</Text>
+      <TextButton label="Itinerary" onPress={() => router.push({ pathname: "/trip/[id]/itinerary", params: { id } })} />
       {loadError ? (
         <View style={s.gap}>
           <Text accessibilityRole="alert" style={s.error}>⚠ {loadError}</Text>
