@@ -1,14 +1,14 @@
 import { Redirect, useFocusEffect, useRouter } from "expo-router";
-import { BlurView } from "expo-blur";
 import { Bell, History, Users } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { unreadCount } from "../src/api/notifications";
 import { loadMyName } from "../src/api/profile";
 import { listTrips, TripCard, TripListResult } from "../src/api/trips";
 import { Alert } from "../src/components/Alert";
+import { ProgressiveBlur } from "../src/components/ProgressiveBlur";
 import { Avatar } from "../src/components/Avatar";
 import { Badge, BadgeVariant } from "../src/components/Badge";
 import { Card } from "../src/components/Card";
@@ -21,7 +21,8 @@ import { useSession } from "../src/stores/session";
 import { color, radius, space, type } from "../src/theme/tokens";
 
 const PHASE: Record<TripCard["phase"], string> = { draft: "Draft", upcoming: "Upcoming", active: "Ongoing", completed: "Completed", archived: "Archived" };
-const PHASE_BADGE: Record<TripCard["phase"], BadgeVariant> = { draft: "info", upcoming: "info", active: "success", completed: "neutral", archived: "info" };
+const PHASE_BADGE: Record<TripCard["phase"], BadgeVariant> = { draft: "info", upcoming: "info", active: "neutral", completed: "info", archived: "info" };
+const NO_TRIPS = require("../assets/illustrations/no-trips.png");
 const GAP = space.s24;
 const TILT = 2;   // degrees; a tilted square is wider than its side by cos+sin, so tiles are shrunk to stay inside the 20 margins
 
@@ -45,6 +46,7 @@ export default function Home() {
   const pull = usePullToRefresh(() => Promise.all([listTrips().then(setTrips), unreadCount().then(setUnread)]));
   if (pending) return <Redirect href={{ pathname: "/join/[token]", params: { token: pending } }} />;
 
+  const empty = trips?.ok === true && trips.trips.length === 0;
   const planning = trips?.ok ? trips.trips.filter((t) => t.phase !== "completed" && t.phase !== "archived") : [];
   const tile = (width - space.s20 * 2 - GAP) / 2;   // one column
   const rad = (TILT * Math.PI) / 180;
@@ -76,12 +78,13 @@ export default function Home() {
           </Pressable>
         </View>
 
-        <View style={s.sectionRow}>
+        {!empty && (        <View style={s.sectionRow}>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Planning</Text>
           <Pressable accessibilityRole="button" accessibilityLabel="Trip history" onPress={() => router.push("/history")} style={s.roundSmall} hitSlop={space.s8}>
             <History size={18} color={color.forestInk} strokeWidth={1.75} />
           </Pressable>
         </View>
+        )}
 
         {trips === null ? (
           <ActivityIndicator accessibilityLabel="Loading your trips" color={color.forestInk} />
@@ -90,8 +93,13 @@ export default function Home() {
             <Alert variant="negative">{trips.message}</Alert>
             <TextButton label="Retry" onPress={refresh} />
           </View>
-        ) : planning.length === 0 ? (
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>No trips yet. Start one, or open a link a friend sent you.</Text>
+        ) : empty ? (
+          <View style={s.empty}>
+            <Image accessible accessibilityRole="image" accessibilityLabel="A traveller sitting on a bag, reading a map" accessibilityIgnoresInvertColors source={NO_TRIPS} style={s.emptyImage} resizeMode="contain" />
+            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.emptyTitle}>No trips planned</Text>
+            <Text maxFontSizeMultiplier={1.4} style={s.emptyBody}>Plan new trip now with your friends</Text>
+            <View style={s.emptyAction}><PrimaryButton label="Start new trip" onPress={() => router.push("/create-trip")} /></View>
+          </View>
         ) : (
           <View style={s.grid}>
             {planning.map((t, i) => (
@@ -122,26 +130,16 @@ export default function Home() {
           </>
         )}
       </ScrollView>
+      {!empty && trips?.ok && (
+      <>
       {/* The one primary action stays in reach however many trips there are. */}
-      {/* The bar floats over the list. Blur builds up in steps toward the bottom and a fade to the page colour hides the top edge, so it
-          melts into the page instead of starting at a line. */}
+      {/* The bar floats over the list; a blur that thins out toward the top lets it melt into the page. */}
       <View pointerEvents="box-none" style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
-        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-          {[10, 20, 30, 45].map((intensity, i) => (
-            <BlurView key={intensity} intensity={intensity} tint="extraLight" style={[s.blurStep, { top: `${i * 18}%` }]} />
-          ))}
-          <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
-            <Defs>
-              <LinearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
-                <Stop offset="0" stopColor={color.paper} stopOpacity={0} />
-                <Stop offset="1" stopColor={color.paper} stopOpacity={0.55} />
-              </LinearGradient>
-            </Defs>
-            <Rect width="100%" height="100%" fill="url(#fade)" />
-          </Svg>
-        </View>
+        <ProgressiveBlur edge="bottom" />
         <PrimaryButton label="Start new trip" onPress={() => router.push("/create-trip")} />
       </View>
+      </>
+      )}
     </View>
   );
 }
@@ -169,5 +167,10 @@ const s = StyleSheet.create({
   footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: space.s20, paddingTop: space.s48 },
   blurStep: { position: "absolute", left: 0, right: 0, bottom: 0 },
   gap: { gap: space.s8 },
+  empty: { alignItems: "center", gap: space.s8, marginTop: space.s48 },
+  emptyImage: { width: 240, height: 240, marginBottom: space.s16 },
+  emptyTitle: { ...type.sheetTitle, fontSize: 24, lineHeight: 30, letterSpacing: -0.4, textAlign: "center", color: color.obsidian },
+  emptyBody: { ...type.fieldValue, textAlign: "center", color: color.charcoal },
+  emptyAction: { alignSelf: "stretch", marginTop: space.s16 },
   body: { ...type.fieldValue, color: color.charcoal },
 });

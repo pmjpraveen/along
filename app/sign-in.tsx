@@ -1,11 +1,13 @@
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { Image, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { signInWithGoogle } from "../src/api/auth";
 import { Alert } from "../src/components/Alert";
 import { DEV_PEOPLE, devLoginEnabled, signInAsDev } from "../src/api/devAuth";
 import { OutlinedButton, PrimaryButton } from "../src/components/Buttons";
 import { color, radius, space, type } from "../src/theme/tokens";
+
+const FRIENDS = require("../assets/illustrations/friends.jpg");
 
 // Success needs no navigation here: the session store flips and the route guard moves to Home.
 // Any error keeps the user on this screen with a specific inline message and a retry.
@@ -35,6 +37,7 @@ export default function SignIn() {
   return (
     <View style={[s.screen, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <View style={s.hero}>
+        <Image accessible accessibilityRole="image" accessibilityLabel="A group of friends with their luggage, ready to travel" accessibilityIgnoresInvertColors source={FRIENDS} style={s.friends} />
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Sign in</Text>
         <Text maxFontSizeMultiplier={1.4} style={s.body}>Continue with your Google account to start.</Text>
         {error && <Alert variant="negative">{error}</Alert>}
@@ -52,6 +55,7 @@ export default function SignIn() {
 
 const s = StyleSheet.create({
   screen: { flex: 1, paddingHorizontal: space.s20, backgroundColor: color.paper },
+  friends: { width: "100%", aspectRatio: 3 / 2, borderRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.neutralWash },
   hero: { flex: 1, gap: space.s16 },
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   body: { ...type.body, color: color.charcoal },

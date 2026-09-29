@@ -42,10 +42,14 @@ test("notifications, profile and history are one tap from the top of Home", asyn
   expect(mockPush).toHaveBeenLastCalledWith("/history");
 });
 
-test("Home with no trips invites the first one and still offers Start new trip", async () => {
+test("Home with no trips shows the empty state with one Start new trip button, and no Planning or invite sections", async () => {
   mockList.mockResolvedValue({ ok: true, trips: [] });
   await render(<Home />);
-  expect(await screen.findByText(/No trips yet/)).toBeTruthy();
+  expect(await screen.findByText("No trips planned")).toBeTruthy();
+  expect(screen.getByText("Plan new trip now with your friends")).toBeTruthy();
+  expect(screen.queryByText("Planning")).toBeNull();
+  expect(screen.queryByText("Invite friends")).toBeNull();
+  expect(screen.getAllByRole("button", { name: "Start new trip" })).toHaveLength(1);
   await fireEvent.press(screen.getByRole("button", { name: "Start new trip" }));
   expect(mockPush).toHaveBeenCalledWith("/create-trip");
 });
@@ -59,9 +63,9 @@ test("Home shows a retry when trips cannot be loaded", async () => {
   expect(await screen.findByText("Goa with the gang")).toBeTruthy();
 });
 
-test("each trip card shows its cover photo, or its destination when it has none", async () => {
+test("each trip card shows its cover photo, or the default illustration when it has none", async () => {
   mockList.mockResolvedValue({ ok: true, trips: [trip({ coverUrl: "https://example.com/goa.jpg" }), trip({ id: "t2", name: "Ooty weekend", destination_name: "Ooty, India", coverUrl: null })] });
   await render(<Home />);
   expect(await screen.findByRole("image", { name: "Cover photo of Goa, India" })).toBeTruthy();
-  expect(screen.getByText("OOTY, INDIA")).toBeTruthy();
+  expect(screen.getByRole("image", { name: "Ooty, India, default cover" })).toBeTruthy();
 });

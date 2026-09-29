@@ -4,6 +4,7 @@ import { View } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { OfflineBanner } from "../src/components/OfflineBanner";
+import { StatusBarScrim } from "../src/components/StatusBarScrim";
 import { startConnectivity } from "../src/offline/connectivity";
 import { startSync } from "../src/offline/sync";
 import { initSession, useSession } from "../src/stores/session";
@@ -56,6 +57,7 @@ export default function Layout() {
         </Stack.Protected>
         <Stack.Screen name="join/[token]" />
       </Stack>
+      <StatusBarScrim />
       <OfflineBanner />
     </View>
   );
