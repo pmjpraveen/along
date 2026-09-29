@@ -34,7 +34,9 @@ export default function Layout() {
         <Stack.Protected guard={status === "in"}>
           <Stack.Screen name="index" />
           <Stack.Screen name="create-trip" />
+          <Stack.Screen name="notifications" />
           <Stack.Screen name="trip/[id]/people" />
+          <Stack.Screen name="trip/[id]/activity" />
           <Stack.Screen name="trip/[id]/itinerary" />
           <Stack.Screen name="trip/[id]/add-item" />
           <Stack.Screen name="trip/[id]/expenses" />
