@@ -1,0 +1,37 @@
+import { useFonts } from "expo-font";
+import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
+import { useEffect } from "react";
+import { initSession, useSession } from "../src/stores/session";
+
+SplashScreen.preventAutoHideAsync();
+initSession();
+
+export default function Layout() {
+  const status = useSession((s) => s.status);
+  const [fontsLoaded, fontError] = useFonts({
+    "GeistSans-Light": require("../assets/fonts/GeistSans-Light.ttf"),
+    "GeistSans-Regular": require("../assets/fonts/GeistSans-Regular.ttf"),
+    "GeistSans-Medium": require("../assets/fonts/GeistSans-Medium.ttf"),
+  });
+  const ready = status !== "loading" && (fontsLoaded || !!fontError);
+  useEffect(() => {
+    if (ready) SplashScreen.hideAsync();
+  }, [ready]);
+  if (!ready) return null;
+
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="join/[token]" />
+      <Stack.Protected guard={status === "in"}>
+        <Stack.Screen name="index" />
+        <Stack.Screen name="create-trip" />
+        <Stack.Screen name="trip/[id]/people" />
+      </Stack.Protected>
+      <Stack.Protected guard={status === "out"}>
+        <Stack.Screen name="welcome" />
+        <Stack.Screen name="sign-in" />
+      </Stack.Protected>
+    </Stack>
+  );
+}
