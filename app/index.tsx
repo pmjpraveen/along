@@ -54,7 +54,7 @@ export default function Home() {
 
   return (
     <View style={s.screen}>
-      <Svg style={s.glow} width="100%" height={280} pointerEvents="none">
+      <Svg style={s.glow} width="100%" height={260} pointerEvents="none">
         <Defs>
           <LinearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
             <Stop offset="0" stopColor={color.brightGreen} stopOpacity={0.35} />
