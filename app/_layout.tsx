@@ -29,6 +29,9 @@ export default function Layout() {
         <Stack.Screen name="trip/[id]/people" />
         <Stack.Screen name="trip/[id]/itinerary" />
         <Stack.Screen name="trip/[id]/add-item" />
+        <Stack.Screen name="trip/[id]/expenses" />
+        <Stack.Screen name="trip/[id]/add-expense" />
+        <Stack.Screen name="trip/[id]/balances" />
       </Stack.Protected>
       <Stack.Protected guard={status === "out"}>
         <Stack.Screen name="welcome" />

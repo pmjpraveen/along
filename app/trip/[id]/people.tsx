@@ -67,6 +67,7 @@ export default function People() {
     <ScrollView keyboardShouldPersistTaps="handled" style={s.screen} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>People</Text>
       <TextButton label="Itinerary" onPress={() => router.push({ pathname: "/trip/[id]/itinerary", params: { id } })} />
+      <TextButton label="Expenses" onPress={() => router.push({ pathname: "/trip/[id]/expenses", params: { id } })} />
       {loadError ? (
         <View style={s.gap}>
           <Text accessibilityRole="alert" style={s.error}>⚠ {loadError}</Text>

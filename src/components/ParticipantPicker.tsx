@@ -2,12 +2,12 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { Member } from "../api/members";
 import { color, radius, space, type } from "../theme/tokens";
 
-type Props = { members: Member[]; selected: string[]; onChange: (ids: string[]) => void };
+type Props = { members: Pick<Member, "id" | "display_name" | "membership_type">[]; selected: string[]; onChange: (ids: string[]) => void; amounts?: Record<string, string> };
 
 const initials = (n: string) => n.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase()).join("");
 
 // Toggle who is joining. Guests are shown with a dashed ring and a Guest tag, at the same size as everyone.
-export function ParticipantPicker({ members, selected, onChange }: Props) {
+export function ParticipantPicker({ members, selected, onChange, amounts }: Props) {
   const toggle = (id: string) => onChange(selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id]);
   return (
     <View>
@@ -20,6 +20,7 @@ export function ParticipantPicker({ members, selected, onChange }: Props) {
             <View style={[s.avatar, guest && s.guestRing]}><Text style={s.initials}>{initials(m.display_name)}</Text></View>
             <Text maxFontSizeMultiplier={1.4} style={s.name}>{m.display_name}</Text>
             {guest && <Text style={s.tag}>Guest</Text>}
+            {on && amounts?.[m.id] && <Text maxFontSizeMultiplier={1.3} style={s.amount}>{amounts[m.id]}</Text>}
             <View style={[s.box, on && s.boxOn]}>{on && <Text style={s.tick}>✓</Text>}</View>
           </Pressable>
         );
@@ -34,6 +35,7 @@ const s = StyleSheet.create({
   guestRing: { borderStyle: "dashed", borderColor: color.slate },
   initials: { ...type.label, color: color.forestInk },
   name: { ...type.body, flex: 1, color: color.obsidian },
+  amount: { ...type.label, color: color.charcoal, fontVariant: ["tabular-nums"] },
   tag: { ...type.label, color: color.charcoal },
   box: { width: 24, height: 24, borderRadius: 6, borderWidth: 1.5, borderColor: color.forestInk, alignItems: "center", justifyContent: "center" },
   boxOn: { backgroundColor: color.daylight },
