@@ -22,7 +22,8 @@ import { color, radius, space, type } from "../src/theme/tokens";
 
 const PHASE: Record<TripCard["phase"], string> = { draft: "Draft", upcoming: "Upcoming", active: "Ongoing", completed: "Completed", archived: "Archived" };
 const PHASE_BADGE: Record<TripCard["phase"], BadgeVariant> = { draft: "info", upcoming: "info", active: "success", completed: "neutral", archived: "info" };
-const GAP = space.s16;
+const GAP = space.s24;
+const TILT = 3;   // degrees; a tilted square is wider than its side by cos+sin, so tiles are shrunk to stay inside the 20 margins
 
 // Home: a greeting with notifications and profile on top, the trips I'm planning (history sits beside the title), a nudge to invite
 // friends, and the one primary action pinned at the bottom. Sign-in leaves invite links waiting; this sends me back to them.
@@ -45,7 +46,9 @@ export default function Home() {
   if (pending) return <Redirect href={{ pathname: "/join/[token]", params: { token: pending } }} />;
 
   const planning = trips?.ok ? trips.trips.filter((t) => t.phase !== "completed" && t.phase !== "archived") : [];
-  const tile = (width - space.s20 * 2 - GAP) / 2;
+  const tile = (width - space.s20 * 2 - GAP) / 2;   // one column
+  const rad = (TILT * Math.PI) / 180;
+  const cover = Math.floor(tile / (Math.cos(rad) + Math.sin(rad)));
 
   return (
     <View style={s.screen}>
@@ -95,7 +98,7 @@ export default function Home() {
               <Pressable key={t.id} accessibilityRole="button" accessibilityLabel={`${t.name}, ${PHASE[t.phase]}`} style={{ width: tile, gap: space.s8 }}
                 onPress={() => router.push({ pathname: "/trip/[id]/people", params: { id: t.id } })}>
                 {/* A playful tilt, alternating left and right; the words underneath stay level. */}
-                <View style={{ transform: [{ rotate: i % 2 === 0 ? "-3deg" : "3deg" }] }}>
+                <View style={{ width: cover, alignSelf: "center", transform: [{ rotate: `${i % 2 === 0 ? -TILT : TILT}deg` }] }}>
                   <TripCover uri={t.coverUrl} destination={t.destination_name} ratio={1} />
                   <View style={s.badge}><Badge variant={PHASE_BADGE[t.phase]} label={PHASE[t.phase]} /></View>
                 </View>
