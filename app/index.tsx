@@ -19,6 +19,7 @@ export default function Home() {
     <View style={{ flex: 1, alignItems: "center", justifyContent: "center", gap: 16 }}>
       <Text>Home</Text>
       <PrimaryButton label="Create trip" onPress={() => router.push("/create-trip")} />
+      <TextButton label="Travel Passport" onPress={() => router.push("/passport")} />
       <TextButton label={unread > 0 ? `Notifications (${unread} new)` : "Notifications"} onPress={() => router.push("/notifications")} />
     </View>
   );

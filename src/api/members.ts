@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 
-export type Member = { id: string; display_name: string; membership_type: "registered" | "guest"; role: "owner" | "member" | "guest" };
+export type Member = { id: string; display_name: string; membership_type: "registered" | "guest"; role: "owner" | "member" | "guest"; isMe?: boolean };
 export type MembersResult = { ok: true; members: Member[] } | { ok: false; message: string };
 export type AddGuestResult = { ok: true } | { ok: false; message: string };
 
@@ -9,10 +9,13 @@ const isOffline = (m: string) => /network|fetch/i.test(m);
 
 export async function listMembers(tripId: string): Promise<MembersResult> {
   try {
-    const { data, error } = await supabase.from("trip_members")
-      .select("id, display_name, membership_type, role").eq("trip_id", tripId).neq("status", "removed").order("created_at");
-    if (error) return { ok: false, message: isOffline(error.message) ? OFFLINE : "Couldn't load people. Try again." };
-    return { ok: true, members: data as Member[] };
+    const [res, session] = await Promise.all([
+      supabase.from("trip_members").select("id, user_id, display_name, membership_type, role").eq("trip_id", tripId).neq("status", "removed").order("created_at"),
+      supabase.auth.getSession(),
+    ]);
+    if (res.error) return { ok: false, message: isOffline(res.error.message) ? OFFLINE : "Couldn't load people. Try again." };
+    const me = session.data.session?.user.id;
+    return { ok: true, members: (res.data ?? []).map(({ user_id, ...m }) => ({ ...m, isMe: !!me && user_id === me })) as Member[] };
   } catch {
     return { ok: false, message: OFFLINE };
   }

@@ -1,4 +1,4 @@
-import { createTrip } from "./trips";
+import { completeTrip, createTrip } from "./trips";
 
 const mockRpc = jest.fn();
 jest.mock("./supabase", () => ({ supabase: { rpc: (...a: unknown[]) => mockRpc(...a) } }));
@@ -19,4 +19,14 @@ test("US-01 a failed create returns a specific message", async () => {
 test("US-01 a network failure says offline", async () => {
   mockRpc.mockRejectedValue(new Error("Network request failed"));
   expect((await createTrip(d, "INR", "k")).ok).toBe(false);
+});
+
+test("7.1 completing a trip calls the server and reports owner-only rejections clearly", async () => {
+  mockRpc.mockResolvedValue({ error: null });
+  expect(await completeTrip("t1")).toEqual({ ok: true });
+  expect(mockRpc).toHaveBeenCalledWith("complete_trip", { p_trip: "t1" });
+  mockRpc.mockResolvedValue({ error: { code: "42501", message: "x" } });
+  expect(await completeTrip("t1")).toEqual({ ok: false, message: "Only the trip owner can complete this trip." });
+  mockRpc.mockRejectedValue(new Error("Network request failed"));
+  expect(await completeTrip("t1")).toEqual({ ok: false, message: "No connection. Check your internet and try again." });
 });

@@ -35,8 +35,12 @@ export default function Layout() {
           <Stack.Screen name="index" />
           <Stack.Screen name="create-trip" />
           <Stack.Screen name="notifications" />
+          <Stack.Screen name="passport" />
           <Stack.Screen name="trip/[id]/people" />
           <Stack.Screen name="trip/[id]/activity" />
+          <Stack.Screen name="trip/[id]/complete" />
+          <Stack.Screen name="trip/[id]/memories" />
+          <Stack.Screen name="trip/[id]/summary" />
           <Stack.Screen name="trip/[id]/itinerary" />
           <Stack.Screen name="trip/[id]/add-item" />
           <Stack.Screen name="trip/[id]/expenses" />

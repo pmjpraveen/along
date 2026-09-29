@@ -1,9 +1,10 @@
-import { useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useEffect, useState } from "react";
+import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, Share, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createInviteLink } from "../../../src/api/invites";
 import { addGuest, listMembers, Member } from "../../../src/api/members";
+import { loadTripStatus } from "../../../src/api/trips";
 import { OutlinedButton, PrimaryButton, TextButton } from "../../../src/components/Buttons";
 import { color, radius, space, type } from "../../../src/theme/tokens";
 
@@ -35,13 +36,16 @@ export default function People() {
   const [addError, setAddError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
+  const [completed, setCompleted] = useState(false);
   const load = useCallback(async () => {
+    loadTripStatus(id).then((t) => t.ok && setCompleted(t.status === "completed" || t.status === "archived"));
     setLoadError(null);
     const r = await listMembers(id);
     if (r.ok) setMembers(r.members);
     else setLoadError(r.message);
   }, [id]);
-  useEffect(() => { load(); }, [load]);
+  useFocusEffect(useCallback(() => { load(); }, [load]));
+  const isOwner = members?.some((m) => m.isMe && m.role === "owner") ?? false;
 
   const add = async () => {
     if (busy) return;
@@ -66,8 +70,14 @@ export default function People() {
   return (
     <ScrollView keyboardShouldPersistTaps="handled" style={s.screen} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>People</Text>
+      {completed && (
+        <View accessible style={s.completed}>
+          <Text maxFontSizeMultiplier={1.4} style={s.completedText}>✓ This trip is completed. Everything is still here to read, and balances can still be settled.</Text>
+        </View>
+      )}
       <TextButton label="Itinerary" onPress={() => router.push({ pathname: "/trip/[id]/itinerary", params: { id } })} />
       <TextButton label="Activity" onPress={() => router.push({ pathname: "/trip/[id]/activity", params: { id } })} />
+      <TextButton label="Memories" onPress={() => router.push({ pathname: "/trip/[id]/memories", params: { id } })} />
       <TextButton label="Expenses" onPress={() => router.push({ pathname: "/trip/[id]/expenses", params: { id } })} />
       {loadError ? (
         <View style={s.gap}>
@@ -79,6 +89,7 @@ export default function People() {
       ) : (
         members.map((m) => <Row key={m.id} m={m} onClaim={invite} />)
       )}
+      {isOwner && !completed && <OutlinedButton label="Complete trip" onPress={() => router.push({ pathname: "/trip/[id]/complete", params: { id } })} />}
       <View style={s.gap}>
         {inviteError && <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {inviteError}</Text>}
         <PrimaryButton label="Invite with a link" onPress={() => invite()} />
@@ -106,6 +117,8 @@ const s = StyleSheet.create({
   name: { ...type.body, flex: 1, color: color.obsidian },
   tag: { ...type.label, color: color.charcoal },
   gap: { gap: space.s8 },
+  completed: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.fog },
+  completedText: { ...type.label, color: color.forestInk },
   label: { ...type.label, color: color.charcoal },
   hint: { ...type.body, color: color.slate },
   input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderWidth: 1.5, borderColor: color.fog, ...type.body, color: color.obsidian },
