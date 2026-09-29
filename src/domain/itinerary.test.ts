@@ -1,4 +1,11 @@
-import { groupByDay, Item, validateItem } from "./itinerary";
+import { groupByDay, Item, tripDays, validateItem } from "./itinerary";
+
+test("tripDays lists every trip day including empty ones, plus days with items outside the range, ascending and without duplicates", () => {
+  expect(tripDays("2026-12-01", "2026-12-03")).toEqual(["2026-12-01", "2026-12-02", "2026-12-03"]);
+  expect(tripDays("2026-12-01", "2026-12-02", ["2026-12-02", "2026-11-30"])).toEqual(["2026-11-30", "2026-12-01", "2026-12-02"]);
+  expect(tripDays("2026-02-27", "2026-03-02")).toHaveLength(4);
+  expect(tripDays("", "", ["2026-12-05"])).toEqual(["2026-12-05"]);
+});
 
 const item = (o: Partial<Item>): Item => ({
   id: "i", version: 1, title: "x", type: "activity", day_date: "2026-12-02", start_time: null, end_time: null, sort_order: 0, is_outside_trip_range: false, participants: [], location_text: null, location_url: null, latitude: null, longitude: null, formatted_address: null, ...o,

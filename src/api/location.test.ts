@@ -2,7 +2,16 @@ import { resolveLocation } from "./location";
 
 const mockInvoke = jest.fn();
 jest.mock("./supabase", () => ({ supabase: { functions: { invoke: (...a: unknown[]) => mockInvoke(...a) } } }));
-beforeEach(() => mockInvoke.mockReset());
+const mockFetch = jest.fn();
+beforeEach(() => { mockInvoke.mockReset(); mockFetch.mockReset().mockRejectedValue(new Error("offline")); globalThis.fetch = mockFetch as never; });
+
+test("3.3 with no Edge Function, the phone follows the short link itself and reads the final address", async () => {
+  mockInvoke.mockRejectedValue(new Error("no function"));
+  mockFetch.mockResolvedValue({ url: "https://www.google.com/maps/place/Baga+Beach/@15.5566,73.7517,15z" });
+  const r = await resolveLocation("https://maps.app.goo.gl/abc");
+  expect(r.place).toEqual({ lat: 15.5566, lng: 73.7517, name: "Baga Beach" });
+  expect(r.url).toBe("https://maps.app.goo.gl/abc");
+});
 
 test("3.3 a full Maps link resolves without any network call", async () => {
   const r = await resolveLocation("https://www.google.com/maps/place/Goa/@15.29,74.12,9z");

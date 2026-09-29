@@ -1,5 +1,5 @@
 import { act, render, screen, waitFor } from "@testing-library/react-native";
-import Activity from "../../app/trip/[id]/activity";
+import Activity from "../../app/trip/[id]/(tabs)/activity";
 
 const mockLoad = jest.fn();
 const mockSeen = jest.fn();
@@ -10,7 +10,7 @@ jest.mock("../api/feed", () => ({
 }));
 jest.mock("../hooks/useTripRealtime", () => ({ useTripRealtime: (_i: string, _t: string[], reload: () => void) => { mockReload = reload; } }));
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ id: "t1" }),
+  useGlobalSearchParams: () => ({ id: "t1" }), useLocalSearchParams: () => ({ id: "t1" }),
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
 }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));

@@ -1,9 +1,10 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
-import Itinerary from "../../app/trip/[id]/itinerary";
+import Itinerary from "../../app/trip/[id]/(tabs)/itinerary";
 
 const mockLoad = jest.fn();
 const mockMove = jest.fn();
 jest.mock("../api/itinerary", () => ({ loadItinerary: (...a: unknown[]) => mockLoad(...a), moveItem: (...a: unknown[]) => mockMove(...a) }));
+jest.mock("../api/trips", () => ({ loadTripStatus: async () => ({ ok: true, status: "published", completedAt: null, name: "Goa", destination: "Goa", coverUrl: null }) }));
 jest.mock("../components/DateField", () => ({
   DateField: ({ label, onChange }: { label: string; onChange: (d: string) => void }) => {
     const { Pressable, Text } = require("react-native");
@@ -14,7 +15,7 @@ jest.mock("../components/MapPreview", () => ({
   MapPreview: () => { const { Text } = require("react-native"); return <Text>MAP PREVIEW</Text>; },
 }));
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: jest.fn() }),
+  useGlobalSearchParams: () => ({ id: "t1" }), useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: jest.fn() }),
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
 }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
@@ -29,7 +30,7 @@ const load = (item: object) => mockLoad.mockResolvedValue({ ok: true, trip: { na
 test("3.4 plain text location displays exactly as typed with no map preview", async () => {
   load({ location_text: "Fish Curry Place, Goa" });
   await render(<Itinerary />);
-  expect(await screen.findByText("📍 Fish Curry Place, Goa")).toBeTruthy();
+  expect(await screen.findByText("Fish Curry Place, Goa")).toBeTruthy();
   expect(screen.queryByText("MAP PREVIEW")).toBeNull();
 });
 
@@ -42,7 +43,7 @@ test("3.3 an item with resolved coordinates shows the map preview", async () => 
 test("3.3 a link that never resolved still shows the raw text", async () => {
   load({ location_text: "https://maps.app.goo.gl/zzz" });
   await render(<Itinerary />);
-  expect(await screen.findByText("📍 https://maps.app.goo.gl/zzz")).toBeTruthy();
+  expect(await screen.findByText("https://maps.app.goo.gl/zzz")).toBeTruthy();
   expect(screen.queryByText("MAP PREVIEW")).toBeNull();
 });
 
@@ -77,4 +78,20 @@ test("an item inside the trip dates has no such badge", async () => {
   await render(<Itinerary />);
   await screen.findByText("Lunch");
   expect(screen.queryByLabelText("Outside trip dates")).toBeNull();
+});
+
+test("the trip header shows the name and counts, and a chip per trip day switches which day's items are shown", async () => {
+  mockLoad.mockResolvedValue({ ok: true, trip: { name: "Goa", start_date: "2026-12-01", end_date: "2026-12-03" }, items: [
+    { ...base, id: "a", title: "Lunch", day_date: "2026-12-02", start_time: "12:30:00" }, { ...base, id: "b", title: "Sunset", day_date: "2026-12-03" },
+  ] });
+  await render(<Itinerary />);
+  expect(await screen.findByText("Lunch")).toBeTruthy();
+  expect(screen.getByText("2 activities · 3 days")).toBeTruthy();
+  expect(screen.getByText("12:30")).toBeTruthy();
+  expect(screen.queryByText("Sunset")).toBeNull();
+  await fireEvent.press(screen.getByRole("tab", { name: /Day 3/ }));
+  expect(screen.getByText("Sunset")).toBeTruthy();
+  expect(screen.queryByText("Lunch")).toBeNull();
+  await fireEvent.press(screen.getByRole("tab", { name: /Day 1/ }));
+  expect(screen.getByText("Nothing planned for this day.")).toBeTruthy();
 });

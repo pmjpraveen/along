@@ -34,3 +34,10 @@ test("3.3 plain text and other sites are not Maps links", () => {
 test("3.3 out-of-range coordinates are not accepted", () => {
   expect(parseMapsUrl("https://www.google.com/maps/@95.0,10.0,15z")).toBeNull();
 });
+
+test("an Apple Maps link is a maps link, and its coordinate and name are read", () => {
+  const url = "https://maps.apple.com/place?address=Puri,%20Odisha,%20India&auid=17674427537618280153&coordinate=19.813312,85.831257&lsp=6489&name=Puri&map=explore";
+  expect(isMapsUrl(url)).toBe(true);
+  expect(parseMapsUrl(url)).toEqual({ lat: 19.813312, lng: 85.831257, name: "Puri" });
+  expect(parseMapsUrl("https://maps.apple.com/?q=Somewhere")).toBeNull();
+});

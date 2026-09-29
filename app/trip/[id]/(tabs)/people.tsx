@@ -1,19 +1,20 @@
-import { Alert } from "../../../src/components/Alert";
-import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
+import { Alert } from "../../../../src/components/Alert";
+import { useTripRealtime } from "../../../../src/hooks/useTripRealtime";
+import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
 import * as ImagePicker from "expo-image-picker";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, Share, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { createInviteLink } from "../../../src/api/invites";
-import { addGuest, listMembers, Member } from "../../../src/api/members";
-import { loadTripStatus, uploadCover } from "../../../src/api/trips";
-import { OutlinedButton, PrimaryButton, TextButton } from "../../../src/components/Buttons";
-import { Avatar, AvatarGroup } from "../../../src/components/Avatar";
-import { Badge } from "../../../src/components/Badge";
-import { TextField } from "../../../src/components/TextField";
-import { TripCover } from "../../../src/components/TripCover";
-import { color, radius, space, type } from "../../../src/theme/tokens";
+import { createInviteLink } from "../../../../src/api/invites";
+import { addGuest, listMembers, Member } from "../../../../src/api/members";
+import { loadTripStatus, uploadCover } from "../../../../src/api/trips";
+import { OutlinedButton, PrimaryButton, TextButton } from "../../../../src/components/Buttons";
+import { Avatar, AvatarGroup } from "../../../../src/components/Avatar";
+import { Badge } from "../../../../src/components/Badge";
+import { TextField } from "../../../../src/components/TextField";
+import { TripCover } from "../../../../src/components/TripCover";
+import { color, radius, space, type } from "../../../../src/theme/tokens";
 
 
 // Guests get a dashed Slate ring and a Guest tag, at the same size as everyone else.
@@ -33,14 +34,11 @@ function Row({ m, onClaim }: { m: Member; onClaim: (m: Member) => void }) {
 }
 
 export default function People() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useGlobalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
   const router = useRouter();
   const [members, setMembers] = useState<Member[] | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
-  const [name, setName] = useState("");
-  const [addError, setAddError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
 
   const [completed, setCompleted] = useState(false);
   const [trip, setTrip] = useState<{ destination: string; coverUrl: string | null } | null>(null);
@@ -58,6 +56,7 @@ export default function People() {
     else setLoadError(r.message);
   }, [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
+  useTripRealtime(id, ["trip_members"], load);   // a guest added from the + button appears here without a pull
   const pull = usePullToRefresh(load);
   const changeCover = async () => {
     if (coverBusy) return;
@@ -72,18 +71,6 @@ export default function People() {
   };
   const isOwner = members?.some((m) => m.isMe && m.role === "owner") ?? false;
 
-  const add = async () => {
-    if (busy) return;
-    if (!name.trim()) return setAddError("Enter a name.");
-    setBusy(true);
-    setAddError(null);
-    const r = await addGuest(id, name);
-    setBusy(false);
-    if (!r.ok) return setAddError(r.message);
-    setName("");
-    load();
-  };
-
   const [inviteError, setInviteError] = useState<string | null>(null);
   const invite = async (guest?: Member) => {
     setInviteError(null);
@@ -93,7 +80,7 @@ export default function People() {
   };
 
   return (
-    <ScrollView keyboardShouldPersistTaps="handled" style={s.screen} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
+    <ScrollView keyboardShouldPersistTaps="handled" style={s.screen} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s64 + space.s32 }]}>
       {trip && <TripCover uri={trip.coverUrl} destination={trip.destination} />}
       {isOwner && (
         <View style={s.gap}>
@@ -108,10 +95,7 @@ export default function People() {
           <Text maxFontSizeMultiplier={1.4} style={s.completedText}>✓ This trip is completed. Everything is still here to read, and balances can still be settled.</Text>
         </View>
       )}
-      <TextButton label="Itinerary" onPress={() => router.push({ pathname: "/trip/[id]/itinerary", params: { id } })} />
-      <TextButton label="Activity" onPress={() => router.push({ pathname: "/trip/[id]/activity", params: { id } })} />
       <TextButton label="Memories" onPress={() => router.push({ pathname: "/trip/[id]/memories", params: { id } })} />
-      <TextButton label="Expenses" onPress={() => router.push({ pathname: "/trip/[id]/expenses", params: { id } })} />
       {loadError ? (
         <View style={s.gap}>
           <Alert variant="negative">{loadError}</Alert>
@@ -126,12 +110,6 @@ export default function People() {
       <View style={s.gap}>
         {inviteError && <Alert variant="negative">{inviteError}</Alert>}
         <PrimaryButton label="Invite with a link" onPress={() => invite()} />
-      </View>
-      <View style={s.gap}>
-        <TextField label="Add a guest" accessibilityLabel="Guest name" placeholder="Rahul" value={name} onChangeText={setName}
-          autoCapitalize="words" maxLength={60} status={addError ? "error" : undefined}
-          message={addError ?? "For friends without the app. They can claim their spot later."} />
-        <OutlinedButton label={busy ? "Adding…" : "Add guest"} onPress={add} />
       </View>
     </ScrollView>
   );

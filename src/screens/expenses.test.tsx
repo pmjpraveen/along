@@ -1,5 +1,5 @@
 import { act, fireEvent, render, screen } from "@testing-library/react-native";
-import Expenses from "../../app/trip/[id]/expenses";
+import Expenses from "../../app/trip/[id]/(tabs)/expenses";
 import Balances from "../../app/trip/[id]/balances";
 
 const mockList = jest.fn();
@@ -18,7 +18,7 @@ jest.mock("../offline/sync", () => ({
 jest.mock("../api/expenses", () => ({ listExpenses: (...a: unknown[]) => mockList(...a) }));
 jest.mock("../api/balances", () => ({ loadBalances: (...a: unknown[]) => mockBal(...a) }));
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush }),
+  useGlobalSearchParams: () => ({ id: "t1" }), useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush }),
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
 }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));

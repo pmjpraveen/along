@@ -23,7 +23,18 @@ export function groupByDay(items: Item[]): Day[] {
   }));
 }
 
-export type ItemDraft = { title: string; day: string };
+// Every day of the trip (start to end, ISO dates) plus any day that has an item outside those dates, ascending, so the day chips
+// cover empty days too. ponytail: a range over 90 days is cut to 90; a longer trip would need horizontal paging.
+export function tripDays(start: string, end: string, extra: string[] = []): string[] {
+  const days = new Set(extra);
+  const [s, e] = [Date.parse(`${start}T00:00:00Z`), Date.parse(`${end}T00:00:00Z`)];
+  if (!Number.isNaN(s) && !Number.isNaN(e)) {
+    for (let t = s, n = 0; t <= e && n < 90; t += 86_400_000, n++) days.add(new Date(t).toISOString().slice(0, 10));
+  }
+  return [...days].sort();
+}
+
+export type ItemDraft ={ title: string; day: string };
 export const validateItem = (d: ItemDraft): Partial<Record<keyof ItemDraft, string>> => ({
   ...(d.title.trim() ? {} : { title: "Give this a title." }),
   ...(d.day ? {} : { day: "Pick a date." }),

@@ -1,22 +1,22 @@
-import { Alert } from "../../../src/components/Alert";
-import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
-import { Card } from "../../../src/components/Card";
-import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { Alert } from "../../../../src/components/Alert";
+import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
+import { Card } from "../../../../src/components/Card";
+import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ExpensesResult, listExpenses } from "../../../src/api/expenses";
-import { BalancesResult, loadBalances } from "../../../src/api/balances";
-import { describeBalance } from "../../../src/domain/balance";
-import { discardQueued, useQueue } from "../../../src/offline/sync";
-import { PrimaryButton, TextButton } from "../../../src/components/Buttons";
-import { formatMinor } from "../../../src/domain/money";
-import { formatDate } from "../../../src/domain/trip";
-import { useTripRealtime } from "../../../src/hooks/useTripRealtime";
-import { color, radius, space, type } from "../../../src/theme/tokens";
+import { ExpensesResult, listExpenses } from "../../../../src/api/expenses";
+import { BalancesResult, loadBalances } from "../../../../src/api/balances";
+import { describeBalance } from "../../../../src/domain/balance";
+import { discardQueued, useQueue } from "../../../../src/offline/sync";
+import { PrimaryButton, TextButton } from "../../../../src/components/Buttons";
+import { formatMinor } from "../../../../src/domain/money";
+import { formatDate } from "../../../../src/domain/trip";
+import { useTripRealtime } from "../../../../src/hooks/useTripRealtime";
+import { color, radius, space, type } from "../../../../src/theme/tokens";
 
 export default function Expenses() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id } = useGlobalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
   const router = useRouter();
   const [state, setState] = useState<ExpensesResult | null>(null);
@@ -53,7 +53,7 @@ export default function Expenses() {
   ));
 
   return (
-    <ScrollView style={s.screen} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
+    <ScrollView style={s.screen} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s64 + space.s32 }]}>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Expenses</Text>
       {state === null ? (
         <ActivityIndicator accessibilityLabel="Loading expenses" color={color.forestInk} />
