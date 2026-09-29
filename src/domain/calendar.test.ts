@@ -1,4 +1,4 @@
-import { addMonths, dayLabel, daysInMonth, isoOf, monthGrid, monthTitle, parseIso, weekdayOf } from "./calendar";
+import { addMonths, dayLabel, daysInMonth, isoOf, monthGrid, monthsFrom, monthTitle, nextRange, parseIso, rangeRole, weekdayOf } from "./calendar";
 
 test("the Figma example month: November 2022 starts on a Tuesday and has 30 days over five rows", () => {
   const grid = monthGrid({ year: 2022, month: 10 });
@@ -49,4 +49,27 @@ test("ISO dates round-trip and impossible dates are refused", () => {
 test("day labels read in full for screen readers", () => {
   expect(dayLabel(2022, 10, 18)).toBe("Friday 18 November 2022");
   expect(dayLabel(2026, 11, 25)).toBe("Friday 25 December 2026");
+});
+
+test("nextRange: first tap starts, a later tap ends, an earlier tap restarts, a tap after completion starts over", () => {
+  expect(nextRange({ start: "", end: "" }, "2026-10-01")).toEqual({ start: "2026-10-01", end: "" });
+  expect(nextRange({ start: "2026-10-01", end: "" }, "2026-10-05")).toEqual({ start: "2026-10-01", end: "2026-10-05" });
+  expect(nextRange({ start: "2026-10-05", end: "" }, "2026-10-01")).toEqual({ start: "2026-10-01", end: "" });
+  expect(nextRange({ start: "2026-10-01", end: "" }, "2026-10-01")).toEqual({ start: "2026-10-01", end: "2026-10-01" });
+  expect(nextRange({ start: "2026-10-01", end: "2026-10-05" }, "2026-10-08")).toEqual({ start: "2026-10-08", end: "" });
+});
+
+test("rangeRole marks start, middle, end, and single days, and nothing outside", () => {
+  const r = { start: "2026-09-29", end: "2026-10-03" };
+  expect(rangeRole("2026-09-28", r)).toBeNull();
+  expect(rangeRole("2026-09-29", r)).toBe("start");
+  expect(rangeRole("2026-10-01", r)).toBe("middle");
+  expect(rangeRole("2026-10-03", r)).toBe("end");
+  expect(rangeRole("2026-10-04", r)).toBeNull();
+  expect(rangeRole("2026-10-01", { start: "2026-10-01", end: "" })).toBe("single");
+  expect(rangeRole("2026-10-01", { start: "2026-10-01", end: "2026-10-01" })).toBe("single");
+});
+
+test("monthsFrom lists consecutive months across a year end", () => {
+  expect(monthsFrom({ year: 2026, month: 10 }, 3)).toEqual([{ year: 2026, month: 10 }, { year: 2026, month: 11 }, { year: 2027, month: 0 }]);
 });

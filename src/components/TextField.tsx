@@ -40,7 +40,7 @@ export function TextField({ label, message, status, disabled = false, multiline,
         style={[
           s.field, thick ? s.thick : s.thin,
           status === "error" ? s.errorBorder : focused ? s.focusBorder : null,
-          disabled && s.disabled, multiline && s.multiline, style,
+          disabled && s.disabled, multiline ? s.multiline : s.single, style,
         ]}
         {...rest}
       />
@@ -54,6 +54,8 @@ const s = StyleSheet.create({
   label: { ...type.fieldLabel, color: color.obsidian },
   labelOff: { color: color.slate },
   field: { minHeight: 48, borderRadius: radius.small, borderCurve: "continuous", backgroundColor: color.paper, ...type.fieldValue, color: color.obsidian },
+  // A single-line input centres its text on its own; a fixed line height would push the text to the bottom of the box.
+  single: { lineHeight: undefined },
   thin: { borderWidth: 1, borderColor: color.pebble, paddingHorizontal: space.s16, paddingVertical: 12 },
   thick: { borderWidth: 3, paddingHorizontal: 14, paddingVertical: 10 },
   focusBorder: { borderColor: color.control },

@@ -2,26 +2,19 @@ import { Alert } from "../src/components/Alert";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Image, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createTrip, uploadCover } from "../src/api/trips";
-import { PrimaryButton, TextButton } from "../src/components/Buttons";
+import { Image as ImageIcon, X } from "lucide-react-native";
+import { PrimaryButton } from "../src/components/Buttons";
 import { FieldLabel, FieldMessage, TextField } from "../src/components/TextField";
-import { TripCover } from "../src/components/TripCover";
-import { DateField } from "../src/components/DateField";
-import { TripDraft, TripErrors, validateTrip } from "../src/domain/trip";
+import { DateRangeField } from "../src/components/DateRangeField";
+import { toIso, TripDraft, TripErrors, validateTrip } from "../src/domain/trip";
 import { color, radius, space, type } from "../src/theme/tokens";
-
-const FIELDS: { key: keyof TripDraft; label: string; placeholder: string }[] = [
-  { key: "name", label: "Trip name", placeholder: "Goa with the gang" },
-  { key: "destination", label: "Destination", placeholder: "Goa, India" },
-  { key: "start", label: "Start date", placeholder: "" },
-  { key: "end", label: "End date", placeholder: "" },
-];
 
 // ponytail: INR only; add a currency picker when a story asks.
 export default function CreateTrip() {
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
   const router = useRouter();
   const key = useRef(`${Date.now()}-${Math.random().toString(36).slice(2)}`).current;
   const [draft, setDraft] = useState<TripDraft>({ name: "", destination: "", start: "", end: "" });
@@ -36,7 +29,7 @@ export default function CreateTrip() {
 
   const submit = async () => {
     if (busy) return;
-    const e = validateTrip(draft);
+    const e = validateTrip(draft, toIso(new Date()));
     setErrors(e);
     setFormError(null);
     if (Object.keys(e).length) return;
@@ -51,45 +44,54 @@ export default function CreateTrip() {
   };
 
   return (
-    <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>New trip</Text>
-        {FIELDS.map((f) => (
-          <View key={f.key} style={s.field}>
-            {f.key === "start" || f.key === "end" ? (
-              <>
-                <FieldLabel>{f.label}</FieldLabel>
-                <DateField label={f.label} value={draft[f.key]} invalid={!!errors[f.key]}
-                  min={f.key === "end" && draft.start ? draft.start : undefined}
-                  onChange={(iso) => setDraft({ ...draft, [f.key]: iso })} />
-                {errors[f.key] && <FieldMessage status="error">{errors[f.key]!}</FieldMessage>}
-              </>
-            ) : (
-              <TextField label={f.label} placeholder={f.placeholder} value={draft[f.key]} autoCapitalize="words"
-                onChangeText={(v) => setDraft({ ...draft, [f.key]: v })}
-                status={errors[f.key] ? "error" : undefined} message={errors[f.key]} />
-            )}
-          </View>
-        ))}
+    <View style={s.screen}>
+      <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={[s.content, { paddingTop: space.s20 }]}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
+          <X size={22} color={color.forestInk} strokeWidth={2} />
+        </Pressable>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Start new trip</Text>
+
+        {cover ? (
+          // Once a photo is chosen the wide card gives way to a square thumbnail; tapping it picks a different photo.
+          <Pressable accessibilityRole="button" accessibilityLabel="Change image" onPress={pickCover} style={s.thumb}>
+            <Image accessibilityIgnoresInvertColors source={{ uri: cover.uri }} style={s.thumbImage} />
+          </Pressable>
+        ) : (
+          <Pressable accessibilityRole="button" accessibilityLabel="Add image" onPress={pickCover} style={s.cover}>
+            <View style={s.coverIcon}><ImageIcon size={24} color={color.forestInk} strokeWidth={1.75} /></View>
+            <Text maxFontSizeMultiplier={1.3} style={s.coverText}>Add Image</Text>
+          </Pressable>
+        )}
+
+        <TextField label="Trip name" placeholder="Trip name" value={draft.name} autoCapitalize="words" onChangeText={(v) => setDraft({ ...draft, name: v })}
+          status={errors.name ? "error" : undefined} message={errors.name} />
+        <TextField label="Location" placeholder="Add trip location" value={draft.destination} autoCapitalize="words" onChangeText={(v) => setDraft({ ...draft, destination: v })}
+          status={errors.destination ? "error" : undefined} message={errors.destination} />
         <View style={s.field}>
-          <FieldLabel>Cover photo (optional)</FieldLabel>
-          {cover && <TripCover uri={cover.uri} destination={draft.destination || "Your trip"} />}
-          <TextButton label={cover ? "Choose a different photo" : "Add a cover photo"} onPress={pickCover} />
+          <FieldLabel>Duration</FieldLabel>
+          <DateRangeField label="Duration" start={draft.start} end={draft.end} invalid={!!(errors.start || errors.end)}
+            onChange={(r) => setDraft({ ...draft, start: r.start, end: r.end })} />
+          {(errors.start || errors.end) && <FieldMessage status="error">{(errors.start ?? errors.end)!}</FieldMessage>}
         </View>
         {formError && <Alert variant="negative">{formError}</Alert>}
-        <PrimaryButton label={busy ? "Creating…" : "Create trip"} onPress={submit} />
       </ScrollView>
-    </KeyboardAvoidingView>
+      <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
+        <PrimaryButton label={busy ? "Creating…" : "Create trip"} onPress={submit} />
+      </View>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
-  content: { paddingHorizontal: space.s20, gap: space.s16 },
-  heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
+  content: { paddingHorizontal: space.s20, paddingBottom: space.s24, gap: space.s20 },
+  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.neutralWash, alignItems: "center", justifyContent: "center" },
+  heading: { ...type.sheetTitle, color: color.obsidian, marginBottom: space.s4 },
+  cover: { minHeight: 154, borderRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.neutralWash, alignItems: "center", justifyContent: "center", gap: space.s12, overflow: "hidden" },
+  thumb: { width: 104, height: 104, borderRadius: radius.card, borderCurve: "continuous", overflow: "hidden", backgroundColor: color.neutralWash },
+  thumbImage: { width: "100%", height: "100%" },
+  coverIcon: { width: 56, height: 56, borderRadius: radius.input, borderCurve: "continuous", backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
+  coverText: { ...type.label, color: color.obsidian },
   field: { gap: space.s8 },
-  label: { ...type.label, color: color.charcoal },
-  input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.borderNeutral, ...type.body, color: color.obsidian },
-  inputError: { borderColor: color.alarmRed },
-  error: { ...type.label, color: color.alarmRed },
+  footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },
 });

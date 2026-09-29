@@ -13,11 +13,13 @@ export const formatRange = (start: string, end: string) => (start && end ? `${sh
 export const toIso = (d: Date) =>
   `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 
-export function validateTrip(d: TripDraft): TripErrors {
+// `today` (ISO) is passed by the screen so a new trip cannot start in the past; omit it to skip that check.
+export function validateTrip(d: TripDraft, today?: string): TripErrors {
   const e: TripErrors = {};
   if (!d.name.trim()) e.name = "Give your trip a name.";
   if (!d.destination.trim()) e.destination = "Where are you going?";
   if (!validDate(d.start)) e.start = "Pick a start date.";
+  else if (today && d.start < today) e.start = "Start date can't be in the past.";
   if (!validDate(d.end)) e.end = "Pick an end date.";
   else if (!e.start && d.end < d.start) e.end = "End date can't be before the start date.";
   return e;

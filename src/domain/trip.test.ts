@@ -23,3 +23,10 @@ test("formatRange shows day and month without leading zeros, and nothing when a 
   expect(formatRange("2026-09-05", "2026-10-02")).toBe("5 Sep - 2 Oct");
   expect(formatRange("", "2026-10-02")).toBe("");
 });
+
+test("validateTrip rejects a start date before today when today is given, and allows today itself", () => {
+  const d = { name: "Goa", destination: "Goa", start: "2026-09-28", end: "2026-10-02" };
+  expect(validateTrip(d, "2026-09-29").start).toBe("Start date can't be in the past.");
+  expect(validateTrip({ ...d, start: "2026-09-29" }, "2026-09-29").start).toBeUndefined();
+  expect(validateTrip(d).start).toBeUndefined();
+});

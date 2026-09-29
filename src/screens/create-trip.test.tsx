@@ -3,22 +3,21 @@ import CreateTrip from "../../app/create-trip";
 
 const mockCreate = jest.fn();
 const mockReplace = jest.fn();
-jest.mock("../components/DateField", () => {
+jest.mock("../components/DateRangeField", () => {
   const { TextInput } = require("react-native");
-  return { DateField: ({ label, value, onChange }: any) => <TextInput accessibilityLabel={label} value={value} onChangeText={onChange} /> };
+  return { DateRangeField: ({ label, start, end, onChange }: any) => <TextInput accessibilityLabel={label} value={`${start}|${end}`} onChangeText={(v: string) => { const [s, e] = v.split("|"); onChange({ start: s, end: e ?? "" }); }} /> };
 });
 const mockUploadCover = jest.fn();
 const mockPick = jest.fn();
 jest.mock("expo-image-picker", () => ({ launchImageLibraryAsync: (...a: unknown[]) => mockPick(...a) }));
 jest.mock("../api/trips", () => ({ createTrip: (...a: unknown[]) => mockCreate(...a), uploadCover: (...a: unknown[]) => mockUploadCover(...a) }));
-jest.mock("expo-router", () => ({ useRouter: () => ({ replace: mockReplace }) }));
+jest.mock("expo-router", () => ({ useRouter: () => ({ replace: mockReplace, back: jest.fn() }) }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 
-const fill = async (name: string, start = "2026-12-01", end = "2026-12-05") => {
+const fill = async (name: string, start = "2099-12-01", end = "2099-12-05") => {
   await fireEvent.changeText(screen.getByLabelText("Trip name"), name);
-  await fireEvent.changeText(screen.getByLabelText("Destination"), "Goa, India");
-  await fireEvent.changeText(screen.getByLabelText("Start date"), start);
-  await fireEvent.changeText(screen.getByLabelText("End date"), end);
+  await fireEvent.changeText(screen.getByLabelText("Location"), "Goa, India");
+  await fireEvent.changeText(screen.getByLabelText("Duration"), `${start}|${end}`);
 };
 const submit = async () => fireEvent.press(screen.getByRole("button", { name: "Create trip" }));
 beforeEach(() => jest.clearAllMocks());
@@ -49,8 +48,8 @@ test("cover: a photo picked while creating is uploaded to the new trip, and the 
   mockPick.mockResolvedValue({ canceled: false, assets: [{ uri: "file:///goa.jpg", mimeType: "image/png" }] });
   await render(<CreateTrip />);
   await fill("Goa");
-  await fireEvent.press(screen.getByRole("button", { name: "Add a cover photo" }));
-  expect(await screen.findByRole("button", { name: "Choose a different photo" })).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Add image" }));
+  expect(await screen.findByRole("button", { name: "Change image" })).toBeTruthy();
   await submit();
   await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]/people", params: { id: "t9" } }));
   expect(mockUploadCover).toHaveBeenCalledWith("t9", "file:///goa.jpg", "image/png");
@@ -67,7 +66,7 @@ test("cover: the cover is optional, and a failed cover upload never blocks the t
   mockCreate.mockResolvedValue({ ok: true, tripId: "t10" });
   mockUploadCover.mockResolvedValue({ ok: false, message: "Couldn't upload the photo. Try again." });
   mockPick.mockResolvedValue({ canceled: false, assets: [{ uri: "file:///goa.jpg", mimeType: "image/jpeg" }] });
-  await fireEvent.press(screen.getByRole("button", { name: "Add a cover photo" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Add image" }));
   await submit();
   await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]/people", params: { id: "t10" } }));
 });

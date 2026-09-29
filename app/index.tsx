@@ -1,4 +1,5 @@
 import { Redirect, useFocusEffect, useRouter } from "expo-router";
+import { BlurView } from "expo-blur";
 import { Bell, History, Users } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
@@ -119,7 +120,23 @@ export default function Home() {
         )}
       </ScrollView>
       {/* The one primary action stays in reach however many trips there are. */}
-      <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
+      {/* The bar floats over the list. Blur builds up in steps toward the bottom and a fade to the page colour hides the top edge, so it
+          melts into the page instead of starting at a line. */}
+      <View pointerEvents="box-none" style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
+        <View pointerEvents="none" style={StyleSheet.absoluteFill}>
+          {[10, 20, 30, 45].map((intensity, i) => (
+            <BlurView key={intensity} intensity={intensity} tint="extraLight" style={[s.blurStep, { top: `${i * 18}%` }]} />
+          ))}
+          <Svg style={StyleSheet.absoluteFill} width="100%" height="100%">
+            <Defs>
+              <LinearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+                <Stop offset="0" stopColor={color.paper} stopOpacity={0} />
+                <Stop offset="1" stopColor={color.paper} stopOpacity={0.55} />
+              </LinearGradient>
+            </Defs>
+            <Rect width="100%" height="100%" fill="url(#fade)" />
+          </Svg>
+        </View>
         <PrimaryButton label="Start new trip" onPress={() => router.push("/create-trip")} />
       </View>
     </View>
@@ -146,7 +163,8 @@ const s = StyleSheet.create({
   dates: { ...type.fieldMessage, color: color.charcoal },
   invite: { minHeight: 128, justifyContent: "center", gap: space.s8, padding: space.s20, borderRadius: radius.sheet , borderCurve: "continuous"},
   inviteTitle: { ...type.label, color: color.obsidian },
-  footer: { paddingHorizontal: space.s20, paddingTop: space.s12 },
+  footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: space.s20, paddingTop: space.s48 },
+  blurStep: { position: "absolute", left: 0, right: 0, bottom: 0 },
   gap: { gap: space.s8 },
   body: { ...type.fieldValue, color: color.charcoal },
 });

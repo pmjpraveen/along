@@ -8,7 +8,7 @@ import { rubberband, shouldDismiss } from "../domain/gesture";
 import { motion } from "../theme/motion";
 import { color, radius, space, type } from "../theme/tokens";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { PrimaryButton } from "./Buttons";
+import { Button, ButtonType } from "./Buttons";
 
 type Props = {
   visible: boolean;
@@ -16,13 +16,13 @@ type Props = {
   title: string;
   body?: string;                        // a line or two under the title
   children?: ReactNode;                 // the sheet's content; scrolls if it is taller than the screen allows
-  actionLabel?: string; onAction?: () => void; actionBusy?: boolean;   // one primary action in a fixed footer
+  actionLabel?: string; onAction?: () => void; actionBusy?: boolean; actionDisabled?: boolean; actionType?: ButtonType;   // one primary action in a fixed footer
 };
 
 // The design system's bottom sheet (Figma "bottom sheet"): a white container with rounded top corners, a close button at the
 // top left (44pt circle on the neutral wash), a header and optional body, content, and a footer with one primary button above
 // a hairline. It slides up over a Forest Ink scrim; tapping the scrim, the close button, or the system back gesture closes it.
-export function BottomSheet({ visible, onClose, title, body, children, actionLabel, onAction, actionBusy }: Props) {
+export function BottomSheet({ visible, onClose, title, body, children, actionLabel, onAction, actionBusy, actionDisabled, actionType = "primary" }: Props) {
   const { bottom } = useSafeAreaInsets();
   const reduceMotion = useReducedMotion();   // with Reduce Motion the sheet fades in and out instead of moving
   const { height: screenH } = useWindowDimensions();
@@ -85,7 +85,7 @@ export function BottomSheet({ visible, onClose, title, body, children, actionLab
           </ScrollView>
           {actionLabel && onAction && (
             <View style={[s.footer, { paddingBottom: bottom + space.s16 }]}>
-              <PrimaryButton label={actionLabel} onPress={onAction} busy={actionBusy} />
+              <Button label={actionLabel} onPress={onAction} busy={actionBusy} disabled={actionDisabled} type={actionType} size="large" />
             </View>
           )}
         </Animated.View>

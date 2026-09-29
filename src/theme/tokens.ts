@@ -49,7 +49,7 @@ export const tint = {
 
 export const space = { s4: 4, s8: 8, s12: 12, s16: 16, s20: 20, s24: 24, s32: 32, s40: 40, s48: 48, s64: 64 } as const;
 
-export const radius = { small: 10, pill: 9999, input: 12, card: 16, sheet: 28, xLarge: 32 } as const;
+export const radius = { small: 10, pill: 9999, input: 12, card: 16, tile: 24, sheet: 28, xLarge: 32 } as const;
 
 // Figma "item-shadow-light": drop shadow, offset (0, 6), blur 20, black at 8%. RN's shadowRadius is half the blur.
 export const shadow = {

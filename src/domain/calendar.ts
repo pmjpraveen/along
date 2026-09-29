@@ -33,3 +33,22 @@ export function monthGrid(ym: Ym): (number | null)[][] {
 
 export const monthTitle = ({ year, month }: Ym) => `${MONTHS[month]} ${year}`;
 export const dayLabel = (y: number, m: number, d: number) => `${LONG_DAYS[weekdayOf(y, m, d)]} ${d} ${MONTHS[m]} ${y}`;
+
+// Building a range by tapping days: the first tap starts it, a later day ends it, an earlier day restarts it, and once it is
+// complete the next tap starts a new one. A trip can be a single day (end = start).
+export type Range = { start: string; end: string };
+export function nextRange(r: Range, iso: string): Range {
+  if (!r.start || r.end) return { start: iso, end: "" };
+  return iso < r.start ? { start: iso, end: "" } : { start: r.start, end: iso };
+}
+
+// Where a day sits in the range, for drawing the band: rounded on its start and end, square in between.
+export function rangeRole(iso: string, r: Range): "single" | "start" | "end" | "middle" | null {
+  if (!r.start || iso < r.start) return null;
+  if (!r.end) return iso === r.start ? "single" : null;
+  if (iso > r.end) return null;
+  if (r.start === r.end) return "single";
+  return iso === r.start ? "start" : iso === r.end ? "end" : "middle";
+}
+
+export const monthsFrom = (from: Ym, count: number): Ym[] => Array.from({ length: count }, (_, i) => addMonths(from, i));
