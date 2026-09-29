@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
-import People from "../../app/trip/[id]/(tabs)/people";
+import People from "../../app/trip/[id]/settings";
 
 const mockList = jest.fn();
 const mockAdd = jest.fn();

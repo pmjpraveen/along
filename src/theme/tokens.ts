@@ -31,6 +31,8 @@ export const color = {
   ...secondary,
   // The "secondary" button fill is a hard-coded hex in Figma (not a variable): a pale green.
   secondaryFill: "#ddf7d2",
+  // Neutral wash (Forest Green at 8%) flattened onto white, for surfaces that overlap and so must not show through each other.
+  neutralSolid: "#ecefeb",
   // Not in the Figma palette; kept from DESIGN.md until the design system covers them.
   spruce: "#054d28", linenMist: "#e2f6d5", signalBlue: "#0b4c72", fog: "#e8ebe6",
 } as const;

@@ -39,7 +39,7 @@ export default function CreateTrip() {
     // and the owner can add a cover from the trip later.
     if (r.ok && cover) await uploadCover(r.tripId, cover.uri, cover.mime);
     setBusy(false);
-    if (r.ok) router.replace({ pathname: "/trip/[id]/people", params: { id: r.tripId } });
+    if (r.ok) router.replace({ pathname: "/trip/[id]", params: { id: r.tripId } });
     else setFormError(r.message);
   };
 

@@ -28,14 +28,17 @@ type Props = TextInputProps & { label: string; message?: string; status?: FieldS
 // and a message. States: empty (Pebble placeholder), filled, focus (3px Control border), error (3px red border and message),
 // positive and warning (message with icon), and disabled (faint border, tertiary label). The thicker border trades padding
 // for width, so focusing or erroring never moves the layout.
-export function TextField({ label, message, status, disabled = false, multiline, style, onFocus, onBlur, ...rest }: Props) {
+export function TextField({ label, message, status, disabled = false, multiline, style, onFocus, onBlur, placeholder, ...rest }: Props) {
   const [focused, setFocused] = useState(false);
   const thick = !disabled && (focused || status === "error");
+  // iOS draws a native placeholder lower than the cursor and typed text. Single-line fields draw their own, centred like the text.
+  const ownPlaceholder = !multiline && placeholder && rest.value === "";
   return (
     <View style={s.wrap}>
       <FieldLabel disabled={disabled}>{label}</FieldLabel>
+      <View>
       <TextInput
-        accessibilityLabel={label} editable={!disabled} multiline={multiline} placeholderTextColor={color.pebble} maxFontSizeMultiplier={1.4}
+        accessibilityLabel={label} editable={!disabled} multiline={multiline} placeholder={ownPlaceholder ? undefined : placeholder} placeholderTextColor={color.pebble} maxFontSizeMultiplier={1.4}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }} onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         style={[
           s.field, thick ? s.thick : s.thin,
@@ -44,24 +47,36 @@ export function TextField({ label, message, status, disabled = false, multiline,
         ]}
         {...rest}
       />
+      {ownPlaceholder && (
+        <View pointerEvents="none" style={s.placeholderBox} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
+          <Text numberOfLines={1} maxFontSizeMultiplier={1.4} style={s.placeholder}>{placeholder}</Text>
+        </View>
+      )}
+      </View>
       {message ? <FieldMessage status={status} disabled={disabled}>{message}</FieldMessage> : null}
     </View>
   );
 }
 
+// A TextInput with a fixed line height draws its cursor at the top and its placeholder at the bottom on iOS, so the text style used here
+// has no line height; a single-line field is instead given a fixed height and centres its text.
+const { lineHeight: _lh, ...valueType } = type.fieldValue;
+
 const s = StyleSheet.create({
   wrap: { gap: space.s8 },
   label: { ...type.fieldLabel, color: color.obsidian },
   labelOff: { color: color.slate },
-  field: { minHeight: 48, borderRadius: radius.small, borderCurve: "continuous", backgroundColor: color.paper, ...type.fieldValue, color: color.obsidian },
+  field: { borderRadius: radius.small, borderCurve: "continuous", backgroundColor: color.paper, ...valueType, color: color.obsidian },
   // A single-line input centres its text on its own; a fixed line height would push the text to the bottom of the box.
-  single: { lineHeight: undefined },
+  single: { height: 48, paddingVertical: 0, textAlignVertical: "center" },
+  placeholderBox: { position: "absolute", top: 0, bottom: 0, left: 17, right: 17, justifyContent: "center" },
+  placeholder: { ...valueType, color: color.pebble },
   thin: { borderWidth: 1, borderColor: color.pebble, paddingHorizontal: space.s16, paddingVertical: 12 },
   thick: { borderWidth: 3, paddingHorizontal: 14, paddingVertical: 10 },
   focusBorder: { borderColor: color.control },
   errorBorder: { borderColor: color.alarmRed },
   disabled: { borderColor: color.borderNeutral, color: color.pebble },
-  multiline: { minHeight: 96, textAlignVertical: "top" },
+  multiline: { minHeight: 96, paddingVertical: 12, lineHeight: 24, textAlignVertical: "top" },
   messageRow: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   message: { ...type.fieldMessage, color: color.charcoal, flexShrink: 1 },
   messageError: { color: color.alarmRed },

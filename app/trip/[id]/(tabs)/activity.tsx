@@ -33,7 +33,7 @@ export default function Activity() {
   const now = new Date();
   return (
     <ScrollView style={s.screen} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s64 + space.s32 }]}>
-      <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Activity</Text>
+      <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>History</Text>
       {state === null ? (
         <ActivityIndicator accessibilityLabel="Loading activity" color={color.forestInk} />
       ) : !state.ok ? (

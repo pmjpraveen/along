@@ -7,8 +7,10 @@ import { useAddMenu } from "../../../../src/components/TripAddMenu";
 export default function Add() {
   const navigation = useNavigation();
   useFocusEffect(useCallback(() => {
-    useAddMenu.getState().set(true);
     if (navigation.canGoBack()) navigation.goBack();
+    // iOS drops a modal presented while the tab switch is still in flight, so the sheet opens once the tab has settled back.
+    // Not cleared on blur: stepping back blurs this screen at once, which would cancel the very timer that opens the sheet.
+    setTimeout(() => useAddMenu.getState().set(true), 350);
   }, [navigation]));
   return null;
 }

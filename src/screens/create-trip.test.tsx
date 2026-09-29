@@ -38,7 +38,7 @@ test("US-01 a failed create keeps the form data and a retry reuses the same idem
   expect(await screen.findByText(/Couldn't create the trip/)).toBeTruthy();
   expect(screen.getByLabelText("Trip name").props.value).toBe("Goa");
   await submit();
-  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]/people", params: { id: "t1" } }));
+  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]", params: { id: "t1" } }));
   expect(mockCreate.mock.calls[0][2]).toBe(mockCreate.mock.calls[1][2]);
 });
 
@@ -51,7 +51,7 @@ test("cover: a photo picked while creating is uploaded to the new trip, and the 
   await fireEvent.press(screen.getByRole("button", { name: "Add image" }));
   expect(await screen.findByRole("button", { name: "Change image" })).toBeTruthy();
   await submit();
-  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]/people", params: { id: "t9" } }));
+  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]", params: { id: "t9" } }));
   expect(mockUploadCover).toHaveBeenCalledWith("t9", "file:///goa.jpg", "image/png");
 });
 
@@ -68,5 +68,5 @@ test("cover: the cover is optional, and a failed cover upload never blocks the t
   mockPick.mockResolvedValue({ canceled: false, assets: [{ uri: "file:///goa.jpg", mimeType: "image/jpeg" }] });
   await fireEvent.press(screen.getByRole("button", { name: "Add image" }));
   await submit();
-  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]/people", params: { id: "t10" } }));
+  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]", params: { id: "t10" } }));
 });

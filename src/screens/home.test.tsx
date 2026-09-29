@@ -27,7 +27,7 @@ test("Home greets me, lists trips I'm planning with their status and short dates
   expect(screen.getByText("25 Sep - 2 Oct")).toBeTruthy();
   expect(screen.queryByText("Ooty weekend")).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Goa with the gang, Ongoing" }));
-  expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/people", params: { id: "t1" } });
+  expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]", params: { id: "t1" } });
 });
 
 test("notifications, profile and history are one tap from the top of Home", async () => {

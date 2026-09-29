@@ -9,7 +9,7 @@ test("US-03 sends the item to the RPC", async () => {
   expect(await createItem({ tripId: "t1", title: "Beach", type: "activity", day: "2026-12-02", startTime: "09:00", participantIds: ["m1"] })).toEqual({ ok: true });
   expect(mockRpc).toHaveBeenCalledWith("create_itinerary_item",
     { p_trip: "t1", p_title: "Beach", p_type: "activity", p_day_date: "2026-12-02", p_start_time: "09:00", p_participant_member_ids: ["m1"],
-      p_location_text: null, p_location_url: null, p_latitude: null, p_longitude: null, p_formatted_address: null });
+      p_location_text: null, p_location_url: null, p_latitude: null, p_longitude: null, p_formatted_address: null, p_description: null });
 });
 
 test("US-03 a failed save returns a message", async () => {
@@ -49,4 +49,12 @@ test("3.5 a stale version and a non-creator get distinct messages", async () => 
   mockRpc.mockResolvedValue({ error: { code: "42501", message: "x" } });
   const denied = await moveItem("i1", "2026-12-03", 1);
   expect(denied.ok === false && denied.message).toMatch(/creator or the trip owner/);
+});
+
+test("a plan's message is sent trimmed, and none is sent when blank", async () => {
+  mockRpc.mockResolvedValue({ error: null });
+  await createItem({ tripId: "t1", title: "Beach", type: "activity", day: "2026-12-02", startTime: null, participantIds: [], description: "  Bring sunscreen " });
+  expect(mockRpc.mock.calls[0][1]).toMatchObject({ p_description: "Bring sunscreen" });
+  await createItem({ tripId: "t1", title: "Beach", type: "activity", day: "2026-12-02", startTime: null, participantIds: [], description: "   " });
+  expect(mockRpc.mock.calls[1][1]).toMatchObject({ p_description: null });
 });

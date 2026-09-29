@@ -72,7 +72,7 @@ export function AvatarGroup({ people, size = 40, max = 3 }: { people: Person[]; 
 }
 
 const s = StyleSheet.create({
-  circle: { borderRadius: radius.pill, borderCurve: "continuous", overflow: "hidden", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
+  circle: { borderRadius: radius.pill, borderCurve: "continuous", overflow: "hidden", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralSolid },
   iconCircle: { backgroundColor: color.paper, borderWidth: 1, borderColor: color.borderNeutral },
   guest: { borderWidth: 1.5, borderStyle: "dashed", borderColor: color.slate },
   selected: { borderWidth: 2, borderColor: color.forestInk },

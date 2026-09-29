@@ -104,7 +104,7 @@ export default function Home() {
           <View style={s.grid}>
             {planning.map((t, i) => (
               <Pressable key={t.id} accessibilityRole="button" accessibilityLabel={`${t.name}, ${PHASE[t.phase]}`} style={{ width: tile, gap: space.s8 }}
-                onPress={() => router.push({ pathname: "/trip/[id]/people", params: { id: t.id } })}>
+                onPress={() => router.push({ pathname: "/trip/[id]", params: { id: t.id } })}>
                 {/* A playful tilt, alternating left and right; the words underneath stay level. */}
                 <View style={{ width: cover, alignSelf: "center", transform: [{ rotate: `${i % 2 === 0 ? -TILT : TILT}deg` }] }}>
                   <TripCover uri={t.coverUrl} destination={t.destination_name} ratio={1} />
@@ -122,7 +122,7 @@ export default function Home() {
         {planning.length > 0 && (
           <>
             <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={[s.section, { marginTop: space.s24 }]}>Invite friends</Text>
-            <Card accessibilityLabel={`Invite friends to ${planning[0].name}`} onPress={() => router.push({ pathname: "/trip/[id]/people", params: { id: planning[0].id } })} style={s.invite}>
+            <Card accessibilityLabel={`Invite friends to ${planning[0].name}`} onPress={() => router.push({ pathname: "/trip/[id]", params: { id: planning[0].id } })} style={s.invite}>
               <Users size={28} color={color.forestInk} strokeWidth={1.75} />
               <Text maxFontSizeMultiplier={1.3} style={s.inviteTitle}>Bring people along</Text>
               <Text maxFontSizeMultiplier={1.4} style={s.body}>Share the invite link for {planning[0].name}.</Text>

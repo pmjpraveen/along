@@ -5,6 +5,7 @@ export default function TripLayout() {
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
+      <Stack.Screen name="settings" />
       <Stack.Screen name="memories" />
       <Stack.Screen name="balances" />
       <Stack.Screen name="complete" />

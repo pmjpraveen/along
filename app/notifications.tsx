@@ -28,7 +28,11 @@ export default function Notifications() {
       setState((s) => (s?.ok ? { ...s, items: s.items.map((x) => (x.id === n.id ? { ...x, read_at: new Date().toISOString() } : x)) } : s));
       markRead(n.id);
     }
-    if (n.trip_id) router.push({ pathname: `/trip/[id]/${routeFor(n.type)}` as "/trip/[id]/people", params: { id: n.trip_id } });
+    if (n.trip_id) {
+      const to = routeFor(n.type);
+      // People and the itinerary are both the trip's first page now.
+      router.push({ pathname: (to === "people" || to === "itinerary" ? "/trip/[id]" : `/trip/[id]/${to}`) as "/trip/[id]", params: { id: n.trip_id } });
+    }
   };
 
   const toggle = async (t: NotificationType, on: boolean) => {

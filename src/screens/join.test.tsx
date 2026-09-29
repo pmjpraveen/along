@@ -17,7 +17,7 @@ test("US-16 a signed-in recipient joins and lands on the trip", async () => {
   mockAccept.mockResolvedValue({ ok: true, tripId: "t1" });
   await render(<Join />);
   await fireEvent.press(await screen.findByRole("button", { name: "Join trip" }));
-  await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith({ pathname: "/trip/[id]/people", params: { id: "t1" } }));
+  await waitFor(() => expect(mockRouter.replace).toHaveBeenCalledWith({ pathname: "/trip/[id]", params: { id: "t1" } }));
   expect(mockAccept).toHaveBeenCalledWith("abc");
 });
 

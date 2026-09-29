@@ -1,20 +1,20 @@
-import { Alert } from "../../../../src/components/Alert";
-import { useTripRealtime } from "../../../../src/hooks/useTripRealtime";
-import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
+import { Alert } from "../../../src/components/Alert";
+import { useTripRealtime } from "../../../src/hooks/useTripRealtime";
+import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, Share, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { createInviteLink } from "../../../../src/api/invites";
-import { addGuest, listMembers, Member } from "../../../../src/api/members";
-import { loadTripStatus, uploadCover } from "../../../../src/api/trips";
-import { OutlinedButton, PrimaryButton, TextButton } from "../../../../src/components/Buttons";
-import { Avatar, AvatarGroup } from "../../../../src/components/Avatar";
-import { Badge } from "../../../../src/components/Badge";
-import { TextField } from "../../../../src/components/TextField";
-import { TripCover } from "../../../../src/components/TripCover";
-import { color, radius, space, type } from "../../../../src/theme/tokens";
+import { createInviteLink } from "../../../src/api/invites";
+import { addGuest, listMembers, Member } from "../../../src/api/members";
+import { loadTripStatus, uploadCover } from "../../../src/api/trips";
+import { OutlinedButton, PrimaryButton, TextButton } from "../../../src/components/Buttons";
+import { Avatar, AvatarGroup } from "../../../src/components/Avatar";
+import { Badge } from "../../../src/components/Badge";
+import { TextField } from "../../../src/components/TextField";
+import { TripCover } from "../../../src/components/TripCover";
+import { color, radius, space, type } from "../../../src/theme/tokens";
 
 
 // Guests get a dashed Slate ring and a Guest tag, at the same size as everyone else.
@@ -89,7 +89,7 @@ export default function People() {
         </View>
       )}
       {members && members.length > 0 && <AvatarGroup people={members.map((m) => ({ name: m.display_name, guest: m.membership_type === "guest" }))} size={40} />}
-      <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>People</Text>
+      <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Trip settings</Text>
       {completed && (
         <View accessible style={s.completed}>
           <Text maxFontSizeMultiplier={1.4} style={s.completedText}>✓ This trip is completed. Everything is still here to read, and balances can still be settled.</Text>

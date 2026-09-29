@@ -10,7 +10,7 @@ test("a text avatar shows initials in Forest Ink on the neutral wash, in a circl
   expect(screen.getByText("JW")).toBeTruthy();
   expect(flat(screen.getByText("JW")).color).toBe(color.forestInk);
   const circle = flat(screen.getByText("JW").parent!);
-  expect(circle).toMatchObject({ width: 56, height: 56, borderRadius: 9999, backgroundColor: color.neutralWash });
+  expect(circle).toMatchObject({ width: 56, height: 56, borderRadius: 9999, backgroundColor: color.neutralSolid });   // solid, so overlapping avatars do not show through each other
 });
 
 test("all seven sizes render at exactly that size, and the initials scale with the circle", async () => {

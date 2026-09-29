@@ -7,7 +7,7 @@ const isOffline = (m: string) => /network|fetch/i.test(m);
 
 export type TripDates = { name: string; start_date: string; end_date: string };
 export type ItineraryResult = { ok: true; trip: TripDates; items: Item[] } | { ok: false; message: string };
-export type CreateItemInput = { tripId: string; title: string; type: ItemType; day: string; startTime: string | null; participantIds: string[]; location?: ResolvedLocation };
+export type CreateItemInput = { tripId: string; title: string; type: ItemType; day: string; startTime: string | null; participantIds: string[]; location?: ResolvedLocation; description?: string };
 export type CreateItemResult = { ok: true } | { ok: false; message: string };
 
 export async function loadItinerary(tripId: string): Promise<ItineraryResult> {
@@ -39,7 +39,7 @@ export async function createItem(i: CreateItemInput): Promise<CreateItemResult> 
       p_trip: i.tripId, p_title: i.title, p_type: i.type, p_day_date: i.day, p_start_time: i.startTime, p_participant_member_ids: i.participantIds,
       p_location_text: i.location?.text || null, p_location_url: i.location?.url ?? null,
       p_latitude: i.location?.place?.lat ?? null, p_longitude: i.location?.place?.lng ?? null,
-      p_formatted_address: i.location?.place?.name ?? null,
+      p_formatted_address: i.location?.place?.name ?? null, p_description: i.description?.trim() || null,
     });
     if (!error) return { ok: true };
     return { ok: false, message: isOffline(error.message) ? OFFLINE : "Couldn't save the item. Try again." };

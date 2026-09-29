@@ -1,29 +1,30 @@
-import { Alert } from "../../../src/components/Alert";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { X } from "lucide-react-native";
+import { useEffect, useMemo, useState } from "react";
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { createItem } from "../../../src/api/itinerary";
+import { createItem, loadItinerary } from "../../../src/api/itinerary";
 import { resolveLocation, ResolvedLocation } from "../../../src/api/location";
-import { listMembers, Member } from "../../../src/api/members";
+import { Alert } from "../../../src/components/Alert";
+import { Button } from "../../../src/components/Buttons";
 import { MapPreview } from "../../../src/components/MapPreview";
 import { FieldLabel, FieldMessage, TextField } from "../../../src/components/TextField";
-import { ParticipantPicker } from "../../../src/components/ParticipantPicker";
-import { PrimaryButton } from "../../../src/components/Buttons";
-import { DateField } from "../../../src/components/DateField";
 import { TimeField } from "../../../src/components/TimeField";
-import { ITEM_TYPES, ItemType, TYPE_LABEL, validateItem } from "../../../src/domain/itinerary";
-import { color, radius, space, type } from "../../../src/theme/tokens";
+import { tripDays, validateItem } from "../../../src/domain/itinerary";
+import { short } from "../../../src/domain/trip";
+import { color, font, radius, space, type } from "../../../src/theme/tokens";
 
-// The date defaults to the day the user came from (or the trip start), so the common case is title + Save.
+// Plan details: pick the day, then name, location, time and an optional message. The day defaults to the one you came from (or the
+// trip's first), so the common case is a name and Save. The kind of plan defaults to "activity".
 export default function AddItem() {
   const { id, day } = useLocalSearchParams<{ id: string; day?: string }>();
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [date, setDate] = useState(day ?? "");
-  const [kind, setKind] = useState<ItemType>("activity");
+  const [days, setDays] = useState<string[]>([]);
   const [time, setTime] = useState<string | null>(null);
+  const [message, setMessage] = useState("");
   const [errors, setErrors] = useState<{ title?: string; day?: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -31,9 +32,17 @@ export default function AddItem() {
   const [resolved, setResolved] = useState<ResolvedLocation | null>(null);
   // Resolve when the field loses focus so the group sees the place before saving; save re-resolves if the text changed since.
   const resolve = async () => setResolved(location.trim() ? await resolveLocation(location) : null);
-  const [members, setMembers] = useState<Member[]>([]);
-  const [going, setGoing] = useState<string[]>([]);
-  useEffect(() => { listMembers(id).then((r) => r.ok && setMembers(r.members)); }, [id]);
+
+  // The trip's days become the chips (with any chosen day that lies outside them, so it is never lost).
+  useEffect(() => {
+    loadItinerary(id).then((r) => {
+      if (!r.ok) return;
+      const list = tripDays(r.trip.start_date, r.trip.end_date, [...r.items.map((i) => i.day_date), ...(day ? [day] : [])]);
+      setDays(list);
+      setDate((d) => d || list[0] || "");
+    });
+  }, [id, day]);
+  const numbered = useMemo(() => days.map((d, n) => ({ d, n: n + 1 })), [days]);
 
   const save = async () => {
     if (busy) return;
@@ -43,7 +52,7 @@ export default function AddItem() {
     if (Object.keys(e).length) return;
     setBusy(true);
     const loc = resolved?.text === location.trim() ? resolved : location.trim() ? await resolveLocation(location) : undefined;
-    const r = await createItem({ tripId: id, title, type: kind, day: date, startTime: time, participantIds: going, location: loc ?? undefined });
+    const r = await createItem({ tripId: id, title, type: "activity", day: date, startTime: time, participantIds: [], location: loc ?? undefined, description: message });
     setBusy(false);
     if (r.ok) router.back();
     else setFormError(r.message);
@@ -51,61 +60,61 @@ export default function AddItem() {
 
   return (
     <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Add to itinerary</Text>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
+          <X size={22} color={color.forestInk} strokeWidth={2} />
+        </Pressable>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Plan details</Text>
+
+        {numbered.length > 0 && (
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipScroll} contentContainerStyle={s.chips} accessibilityRole="tablist" accessibilityLabel="Day">
+            {numbered.map(({ d, n }) => {
+              const on = d === date;
+              return (
+                <Pressable key={d} accessibilityRole="tab" accessibilityLabel={`Day ${n}, ${short(d)}`} accessibilityState={{ selected: on }} onPress={() => setDate(d)} style={[s.chip, on && s.chipOn]}>
+                  <Text maxFontSizeMultiplier={1.3} style={[s.chipText, on && s.chipTextOn]}>
+                    {short(d)} - <Text style={[s.chipDay, on && s.chipTextOn]}>Day {n}</Text>
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        )}
+        {errors.day && <FieldMessage status="error">{errors.day}</FieldMessage>}
+
+        <TextField label="Plan name" placeholder="e.g. Sunset at Baga Beach" value={title} onChangeText={setTitle} autoCapitalize="sentences"
+          status={errors.title ? "error" : undefined} message={errors.title} />
         <View style={s.field}>
-          <TextField label="Title" placeholder="Beach day" value={title} onChangeText={setTitle} autoCapitalize="sentences"
-            status={errors.title ? "error" : undefined} message={errors.title} />
-        </View>
-        <View style={s.field}>
-          <FieldLabel>Date</FieldLabel>
-          <DateField label="Date" value={date} invalid={!!errors.day} onChange={setDate} />
-          {errors.day && <FieldMessage status="error">{errors.day}</FieldMessage>}
+          <TextField label="Location" placeholder="Paste a Google or Apple Maps link" value={location} onChangeText={setLocation} onEndEditing={resolve} autoCapitalize="none" />
+          {resolved?.place && <MapPreview place={resolved.place} />}
         </View>
         <View style={s.field}>
           <FieldLabel>Time</FieldLabel>
           <TimeField label="Time" value={time} onChange={setTime} />
         </View>
-        <View style={s.field}>
-          <FieldLabel>Type</FieldLabel>
-          <View style={s.chips}>
-            {ITEM_TYPES.map((t) => (
-              <Pressable key={t} accessibilityRole="radio" accessibilityLabel={TYPE_LABEL[t]} accessibilityState={{ selected: kind === t }}
-                onPress={() => setKind(t)} style={[s.chip, kind === t && s.chipOn]}>
-                <Text maxFontSizeMultiplier={1.3} style={s.chipText}>{TYPE_LABEL[t]}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-        <View style={s.field}>
-          <TextField label="Location" placeholder="Type a place or paste a Google Maps link"
-            value={location} onChangeText={setLocation} onEndEditing={resolve} autoCapitalize="none" />
-          {resolved?.place && <MapPreview place={resolved.place} />}
-        </View>
-        {members.length > 0 && (
-          <View style={s.field}>
-            <FieldLabel>Who's joining?</FieldLabel>
-            <ParticipantPicker members={members} selected={going} onChange={setGoing} />
-          </View>
-        )}
+        <TextField label="Message" placeholder="Notes for the group, e.g. Bring sunscreen" value={message} onChangeText={setMessage} multiline maxLength={500} autoCapitalize="sentences" style={{ minHeight: 140 }} />
         {formError && <Alert variant="negative">{formError}</Alert>}
-        <PrimaryButton label={busy ? "Saving…" : "Save"} onPress={save} />
       </ScrollView>
+      <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
+        {/* Neutral until there is a name, then the one green action; pressing it early still explains what is missing. */}
+        <Button label={busy ? "Saving…" : "Save Plan"} onPress={save} type={title.trim() ? "primary" : "secondaryNeutral"} size="large" />
+      </View>
     </KeyboardAvoidingView>
   );
 }
 
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
-  content: { paddingHorizontal: space.s20, gap: space.s16 },
-  heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
+  content: { paddingHorizontal: space.s20, paddingTop: space.s20, paddingBottom: space.s24, gap: space.s20 },
+  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.neutralWash, alignItems: "center", justifyContent: "center" },
+  heading: { ...type.sheetTitle, color: color.obsidian },
+  chipScroll: { flexGrow: 0 },
+  chips: { gap: space.s8 },
+  chip: { minHeight: 44, paddingHorizontal: space.s16, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
+  chipOn: { backgroundColor: color.darkMaroon },
+  chipText: { ...type.buttonLarge, fontFamily: font.regular, color: color.slate },
+  chipDay: { fontFamily: font.medium, color: color.forestInk },
+  chipTextOn: { color: color.brightOrange },
   field: { gap: space.s8 },
-  label: { ...type.label, color: color.charcoal },
-  input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.borderNeutral, ...type.body, color: color.obsidian },
-  inputError: { borderColor: color.alarmRed },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s8 },
-  chip: { minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.borderNeutral },
-  chipOn: { borderColor: color.forestInk, backgroundColor: color.brightGreen },
-  chipText: { ...type.label, color: color.forestInk },
-  error: { ...type.label, color: color.alarmRed },
+  footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },
 });

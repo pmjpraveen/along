@@ -14,21 +14,17 @@ export default function TripTabs() {
   return (
     <View style={{ flex: 1 }}>
       <NativeTabs tintColor={color.forestInk}>
-        <NativeTabs.Trigger name="people">
+        <NativeTabs.Trigger name="index">
           <NativeTabs.Trigger.Label>Trip</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf={{ default: "person.2", selected: "person.2.fill" }} md="group" />
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="itinerary">
-          <NativeTabs.Trigger.Label>Itinerary</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf={{ default: "calendar", selected: "calendar" }} md="event" />
-        </NativeTabs.Trigger>
-        <NativeTabs.Trigger name="activity">
-          <NativeTabs.Trigger.Label>Activity</NativeTabs.Trigger.Label>
-          <NativeTabs.Trigger.Icon sf={{ default: "clock", selected: "clock.fill" }} md="history" />
+          <NativeTabs.Trigger.Icon sf={{ default: "map", selected: "map.fill" }} md="map" />
         </NativeTabs.Trigger>
         <NativeTabs.Trigger name="expenses">
           <NativeTabs.Trigger.Label>Expenses</NativeTabs.Trigger.Label>
           <NativeTabs.Trigger.Icon sf={{ default: "creditcard", selected: "creditcard.fill" }} md="payments" />
+        </NativeTabs.Trigger>
+        <NativeTabs.Trigger name="activity">
+          <NativeTabs.Trigger.Label>History</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon sf={{ default: "clock", selected: "clock.fill" }} md="history" />
         </NativeTabs.Trigger>
         {/* iOS: the "search" role draws a separate round button beside the bar; the green "+" below sits exactly over it. */}
         {Platform.OS === "ios" && (

@@ -30,7 +30,7 @@ export function TimeField({ label, value, onChange }: Props) {
         </>
       ) : (
         <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => onChange(toHhmm(new Date()))} style={s.box}>
-          <Text maxFontSizeMultiplier={1.4} style={[s.text, s.placeholder]}>Add a time (optional)</Text>
+          <Text maxFontSizeMultiplier={1.4} style={[s.text, s.placeholder]}>Start time (optional)</Text>
         </Pressable>
       )}
       {open && Platform.OS !== "ios" && picker}
@@ -40,8 +40,8 @@ export function TimeField({ label, value, onChange }: Props) {
 
 const s = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: space.s12 },
-  box: { minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.small, borderCurve: "continuous", borderWidth: 1, borderColor: color.pebble, backgroundColor: color.paper },
+  box: { flex: 1, minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.small, borderCurve: "continuous", borderWidth: 1, borderColor: color.pebble, backgroundColor: color.paper },
   clear: { minHeight: 48, justifyContent: "center" },
-  text: { ...type.body, color: color.obsidian },
+  text: { ...type.fieldValue, color: color.obsidian },
   placeholder: { color: color.pebble },
 });

@@ -41,7 +41,7 @@ export default function Join() {
     setBusy(false);
     if (!r.ok) return setError(r.message);
     useSession.setState({ pendingInvite: null });
-    router.replace({ pathname: "/trip/[id]/people", params: { id: r.tripId } });
+    router.replace({ pathname: "/trip/[id]", params: { id: r.tripId } });
   };
 
   return (
