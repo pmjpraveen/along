@@ -22,7 +22,7 @@ test("US-04 guests are selectable and labelled as guests", async () => {
   expect(screen.getByText("Guest")).toBeTruthy();
 });
 
-test("US-08 selected people show their live amount; unselected show none", async () => {
+test("4.4 selected people show their live amount; unselected show none", async () => {
   await render(<ParticipantPicker members={members} selected={["m1"]} onChange={jest.fn()} amounts={{ m1: "₹5.00", m2: "₹5.00" }} />);
   expect(screen.getByText("₹5.00")).toBeTruthy();
   expect(screen.getAllByText("₹5.00")).toHaveLength(1);

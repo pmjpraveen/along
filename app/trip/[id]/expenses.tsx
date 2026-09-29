@@ -1,6 +1,6 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ExpensesResult, listExpenses } from "../../../src/api/expenses";
 import { BalancesResult, loadBalances } from "../../../src/api/balances";
@@ -50,7 +50,8 @@ export default function Expenses() {
             ) : null;
           })()}
           {state.expenses.map((e) => (
-            <View key={e.id} accessible style={s.card}>
+            <Pressable key={e.id} accessible accessibilityRole={e.canEdit ? "button" : undefined} accessibilityLabel={e.canEdit ? `Edit ${e.title}` : undefined}
+              disabled={!e.canEdit} onPress={() => router.push({ pathname: "/trip/[id]/add-expense", params: { id, expenseId: e.id } })} style={s.card}>
               <View style={s.row}>
                 <Text maxFontSizeMultiplier={1.4} style={s.title}>{e.title}</Text>
                 <Text maxFontSizeMultiplier={1.4} style={s.amount}>{formatMinor(e.amount_minor, state.currency.exponent, state.currency.code)}</Text>
@@ -58,7 +59,7 @@ export default function Expenses() {
               <Text maxFontSizeMultiplier={1.4} style={s.meta}>
                 Paid by {e.paidBy}{e.addedBy !== e.paidBy ? ` · added by ${e.addedBy}` : ""} · {formatDate(e.expense_date)}
               </Text>
-            </View>
+            </Pressable>
           ))}
           <PrimaryButton label="Add an expense" onPress={add} />
           <TextButton label="See everyone's balances" onPress={() => router.push({ pathname: "/trip/[id]/balances", params: { id } })} />
