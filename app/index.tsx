@@ -23,7 +23,7 @@ import { color, radius, space, type } from "../src/theme/tokens";
 const PHASE: Record<TripCard["phase"], string> = { draft: "Draft", upcoming: "Upcoming", active: "Ongoing", completed: "Completed", archived: "Archived" };
 const PHASE_BADGE: Record<TripCard["phase"], BadgeVariant> = { draft: "info", upcoming: "info", active: "success", completed: "neutral", archived: "info" };
 const GAP = space.s24;
-const TILT = 3;   // degrees; a tilted square is wider than its side by cos+sin, so tiles are shrunk to stay inside the 20 margins
+const TILT = 2;   // degrees; a tilted square is wider than its side by cos+sin, so tiles are shrunk to stay inside the 20 margins
 
 // Home: a greeting with notifications and profile on top, the trips I'm planning (history sits beside the title), a nudge to invite
 // friends, and the one primary action pinned at the bottom. Sign-in leaves invite links waiting; this sends me back to them.
@@ -102,7 +102,7 @@ export default function Home() {
                   <TripCover uri={t.coverUrl} destination={t.destination_name} ratio={1} />
                   <View style={s.badge}><Badge variant={PHASE_BADGE[t.phase]} label={PHASE[t.phase]} /></View>
                 </View>
-                <View style={{ paddingTop: space.s4 }}>
+                <View>
                   <Text maxFontSizeMultiplier={1.3} style={s.tripName}>{t.name}</Text>
                   <Text maxFontSizeMultiplier={1.4} style={s.dates}>{formatRange(t.start_date, t.end_date)}</Text>
                 </View>
