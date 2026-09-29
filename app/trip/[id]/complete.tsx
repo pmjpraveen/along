@@ -83,7 +83,7 @@ const s = StyleSheet.create({
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   gap: { gap: space.s8 },
   body: { ...type.body, color: color.charcoal },
-  card: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.neutralWash },
+  card: { padding: space.s16, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.neutralWash },
   cardText: { ...type.body, color: color.forestInk },
   error: { ...type.label, color: color.alarmRed },
 });

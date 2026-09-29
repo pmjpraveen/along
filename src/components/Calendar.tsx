@@ -63,12 +63,12 @@ export function Calendar({ value, onSelect, min, max }: Props) {
 }
 
 const s = StyleSheet.create({
-  card: { backgroundColor: color.paper, borderRadius: radius.small, paddingVertical: space.s16, ...shadow.itemLight },
+  card: { backgroundColor: color.paper, borderRadius: radius.small, borderCurve: "continuous", paddingVertical: space.s16, ...shadow.itemLight },
   header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: space.s16, minHeight: 56 },
   title: { ...type.buttonLarge, color: color.obsidian },
   arrow: { width: 48, height: 48, alignItems: "center", justifyContent: "center" },
   row: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: space.s24, paddingVertical: 3 },
-  cell: { width: 36, height: 36, alignItems: "center", justifyContent: "center", borderRadius: radius.xLarge },
+  cell: { width: 36, height: 36, alignItems: "center", justifyContent: "center", borderRadius: radius.xLarge , borderCurve: "continuous"},
   weekday: { ...type.buttonLarge, color: color.obsidian, fontVariant: ["tabular-nums"] },
   weekend: { ...type.body, fontSize: 16, lineHeight: 24, letterSpacing: -0.08, color: color.charcoal, fontVariant: ["tabular-nums"] },
   selected: { backgroundColor: color.forestInk },

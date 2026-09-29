@@ -40,7 +40,7 @@ export function TimeField({ label, value, onChange }: Props) {
 
 const s = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: space.s12 },
-  box: { minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.small, borderWidth: 1, borderColor: color.pebble, backgroundColor: color.paper },
+  box: { minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.small, borderCurve: "continuous", borderWidth: 1, borderColor: color.pebble, backgroundColor: color.paper },
   clear: { minHeight: 48, justifyContent: "center" },
   text: { ...type.body, color: color.obsidian },
   placeholder: { color: color.pebble },

@@ -77,7 +77,7 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   gap: { gap: space.s8 },
-  card: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.neutralWash },
+  card: { padding: space.s16, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.neutralWash },
   who: { ...type.display, fontSize: 24, lineHeight: 28, color: color.forestInk },
   label: { ...type.label, color: color.charcoal },
   body: { ...type.body, color: color.slate },

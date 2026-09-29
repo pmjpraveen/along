@@ -23,7 +23,7 @@ export function NotificationItem({ title, body, date, unread = false, onPress }:
 const s = StyleSheet.create({
   row: { flexDirection: "row", gap: space.s12, minHeight: 48, paddingVertical: space.s12 },
   pressed: { backgroundColor: color.neutralWash },
-  dot: { width: 10, height: 10, borderRadius: radius.pill, marginTop: space.s8 },
+  dot: { width: 10, height: 10, borderRadius: radius.pill, borderCurve: "continuous", marginTop: space.s8 },
   dotOn: { backgroundColor: color.warning },
   dotOff: { backgroundColor: color.borderNeutral },
   text: { flex: 1, gap: space.s4 },

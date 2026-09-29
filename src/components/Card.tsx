@@ -31,8 +31,8 @@ function Tick() {
 }
 
 const s = StyleSheet.create({
-  card: { padding: space.s16, gap: space.s4, borderRadius: radius.card, borderWidth: 2, borderColor: "transparent", backgroundColor: color.neutralWash },
+  card: { padding: space.s16, gap: space.s4, borderRadius: radius.card, borderCurve: "continuous", borderWidth: 2, borderColor: "transparent", backgroundColor: color.neutralWash },
   pressed: { backgroundColor: "rgba(22,51,0,0.2)" },
   ring: { borderColor: color.forestInk },
-  check: { position: "absolute", top: space.s8, right: space.s8, width: 20, height: 20, borderRadius: radius.pill, backgroundColor: color.brightGreen, alignItems: "center", justifyContent: "center" },
+  check: { position: "absolute", top: space.s8, right: space.s8, width: 20, height: 20, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.brightGreen, alignItems: "center", justifyContent: "center" },
 });

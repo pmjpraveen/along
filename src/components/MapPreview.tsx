@@ -18,8 +18,8 @@ export function MapPreview({ place, address }: { place: Place; address?: string 
 }
 
 const s = StyleSheet.create({
-  card: { minHeight: 48, gap: space.s4, padding: space.s12, borderRadius: radius.input, backgroundColor: color.neutralWash },
-  image: { width: "100%", aspectRatio: 2, borderRadius: radius.input, backgroundColor: color.neutralWash },
+  card: { minHeight: 48, gap: space.s4, padding: space.s12, borderRadius: radius.input, borderCurve: "continuous", backgroundColor: color.neutralWash },
+  image: { width: "100%", aspectRatio: 2, borderRadius: radius.input, borderCurve: "continuous", backgroundColor: color.neutralWash },
   name: { ...type.body, color: color.obsidian },
   hint: { ...type.label, color: color.charcoal },
 });

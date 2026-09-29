@@ -35,7 +35,7 @@ const s = StyleSheet.create({
   head: { flexDirection: "row", justifyContent: "space-between", gap: space.s12 },
   hint: { ...type.label, color: color.charcoal, fontVariant: ["tabular-nums"] },
   name: { ...type.label, color: color.charcoal },
-  status: { padding: space.s12, borderRadius: radius.input, borderWidth: 1.5, borderColor: color.alarmRed },
+  status: { padding: space.s12, borderRadius: radius.input, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.alarmRed },
   statusOk: { borderColor: color.forestInk },
   statusText: { ...type.label, color: color.obsidian, fontVariant: ["tabular-nums"] },
 });

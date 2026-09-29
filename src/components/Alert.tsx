@@ -62,8 +62,8 @@ export function Alert({ variant = "neutral", title, children, actionLabel, onAct
 
 const s = StyleSheet.create({
   box: { flexDirection: "row", gap: space.s16, padding: space.s16, backgroundColor: color.neutralWash },
-  pill: { alignItems: "center", borderRadius: radius.xLarge },
-  card: { alignItems: "flex-start", borderRadius: radius.small },
+  pill: { alignItems: "center", borderRadius: radius.xLarge , borderCurve: "continuous"},
+  card: { alignItems: "flex-start", borderRadius: radius.small , borderCurve: "continuous"},
   criticalBox: { backgroundColor: color.alarmRed },
   content: { flex: 1, gap: space.s8 },
   contentCard: { justifyContent: "center" },
@@ -72,5 +72,5 @@ const s = StyleSheet.create({
   cardText: { ...type.fieldMessage, color: color.charcoal },
   title: { ...type.buttonLarge, color: color.obsidian },
   onRed: { color: color.paper },
-  dismiss: { width: 24, height: 24, borderRadius: radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
+  dismiss: { width: 24, height: 24, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
 });

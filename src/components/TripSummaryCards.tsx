@@ -25,7 +25,7 @@ export function TripSummaryCards({ summary }: { summary: TripSummary }) {
 }
 
 const s = StyleSheet.create({
-  card: { gap: space.s4, padding: space.s16, borderRadius: radius.card, backgroundColor: color.neutralWash },
+  card: { gap: space.s4, padding: space.s16, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.neutralWash },
   big: { ...type.display, fontSize: 32, lineHeight: 36, letterSpacing: -0.8, color: color.forestInk, fontVariant: ["tabular-nums"] },
   label: { ...type.label, color: color.charcoal },
   body: { ...type.body, color: color.charcoal },

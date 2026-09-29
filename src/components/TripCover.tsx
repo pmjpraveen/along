@@ -17,7 +17,7 @@ export function TripCover({ uri, destination, ratio = 16 / 9 }: Props) {
 }
 
 const s = StyleSheet.create({
-  box: { width: "100%", borderRadius: radius.sheet, overflow: "hidden", backgroundColor: color.neutralWash },
+  box: { width: "100%", borderRadius: radius.sheet, borderCurve: "continuous", overflow: "hidden", backgroundColor: color.neutralWash },
   empty: { alignItems: "center", justifyContent: "center", padding: space.s16, backgroundColor: color.forestInk },
   text: { fontFamily: font.medium, fontSize: 22, lineHeight: 26, letterSpacing: 1.2, textAlign: "center", color: color.brightGreen },
 });

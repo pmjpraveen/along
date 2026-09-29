@@ -33,12 +33,12 @@ export function ParticipantPicker({ members, selected, onChange, amounts }: Prop
 
 const s = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: space.s12, minHeight: 56 },
-  avatar: { width: 40, height: 40, borderRadius: radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash, borderWidth: 1.5, borderColor: color.borderNeutral },
+  avatar: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash, borderWidth: 1.5, borderColor: color.borderNeutral },
   guestRing: { borderStyle: "dashed", borderColor: color.slate },
   initials: { ...type.label, color: color.forestInk },
   name: { ...type.body, flex: 1, color: color.obsidian },
   amount: { ...type.label, color: color.charcoal, fontVariant: ["tabular-nums"] },
   tag: { ...type.label, color: color.charcoal },
-  box: { width: 24, height: 24, borderRadius: 6, borderWidth: 1.5, borderColor: color.forestInk, alignItems: "center", justifyContent: "center" },
+  box: { width: 24, height: 24, borderRadius: 6, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.forestInk, alignItems: "center", justifyContent: "center" },
   boxOn: { backgroundColor: color.brightGreen },
 });

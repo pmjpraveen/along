@@ -53,7 +53,7 @@ const s = StyleSheet.create({
   wrap: { gap: space.s8 },
   label: { ...type.fieldLabel, color: color.obsidian },
   labelOff: { color: color.slate },
-  field: { minHeight: 48, borderRadius: radius.small, backgroundColor: color.paper, ...type.fieldValue, color: color.obsidian },
+  field: { minHeight: 48, borderRadius: radius.small, borderCurve: "continuous", backgroundColor: color.paper, ...type.fieldValue, color: color.obsidian },
   thin: { borderWidth: 1, borderColor: color.pebble, paddingHorizontal: space.s16, paddingVertical: 12 },
   thick: { borderWidth: 3, paddingHorizontal: 14, paddingVertical: 10 },
   focusBorder: { borderColor: color.control },

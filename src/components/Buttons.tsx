@@ -53,9 +53,9 @@ export const TextButton = (p: Simple) => <Button {...p} type="tertiary" size="me
 const type_ = { large: type.buttonLarge, small: type.buttonSmall };
 
 const s = StyleSheet.create({
-  base: { alignItems: "center", justifyContent: "center", borderRadius: radius.pill, borderWidth: 1, borderColor: "transparent" },
+  base: { alignItems: "center", justifyContent: "center", borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: "transparent" },
   // Figma "focus button": a 2px Forest Ink ring 2px outside the button.
-  ring: { position: "absolute", top: -4, left: -4, right: -4, bottom: -4, borderRadius: radius.pill, borderWidth: 2, borderColor: color.forestInk },
+  ring: { position: "absolute", top: -4, left: -4, right: -4, bottom: -4, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 2, borderColor: color.forestInk },
   pressed: { opacity: 0.8 },
   underline: { textDecorationLine: "underline" },
 });

@@ -220,11 +220,11 @@ const s = StyleSheet.create({
   field: { gap: space.s8 },
   label: { ...type.label, color: color.charcoal },
   hint: { ...type.body, color: color.slate },
-  input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderWidth: 1.5, borderColor: color.borderNeutral, ...type.body, color: color.obsidian },
+  input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.borderNeutral, ...type.body, color: color.obsidian },
   inputError: { borderColor: color.alarmRed },
   error: { ...type.label, color: color.alarmRed },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s8 },
-  chip: { minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.pill, borderWidth: 1.5, borderColor: color.borderNeutral },
+  chip: { minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.borderNeutral },
   chipOn: { borderColor: color.forestInk, backgroundColor: color.brightGreen },
   chipText: { ...type.label, color: color.forestInk },
 });

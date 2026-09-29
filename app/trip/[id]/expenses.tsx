@@ -103,7 +103,7 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   gap: { gap: space.s8 },
-  balance: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.neutralWash },
+  balance: { padding: space.s16, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.neutralWash },
   balanceText: { ...type.display, fontSize: 24, lineHeight: 28, color: color.forestInk, fontVariant: ["tabular-nums"] },
   queued: { borderStyle: "dashed", borderColor: color.slate },
   row: { flexDirection: "row", justifyContent: "space-between", gap: space.s12 },

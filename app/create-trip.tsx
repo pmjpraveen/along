@@ -89,7 +89,7 @@ const s = StyleSheet.create({
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   field: { gap: space.s8 },
   label: { ...type.label, color: color.charcoal },
-  input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderWidth: 1.5, borderColor: color.borderNeutral, ...type.body, color: color.obsidian },
+  input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.borderNeutral, ...type.body, color: color.obsidian },
   inputError: { borderColor: color.alarmRed },
   error: { ...type.label, color: color.alarmRed },
 });

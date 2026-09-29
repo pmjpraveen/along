@@ -21,8 +21,8 @@ export function UploadCard({ title, hint, buttonLabel = "Select file", onSelect,
 }
 
 const s = StyleSheet.create({
-  card: { alignItems: "center", gap: space.s12, padding: space.s32, borderRadius: radius.xLarge, backgroundColor: color.neutralWash },
-  icon: { width: 56, height: 56, borderRadius: radius.pill, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
+  card: { alignItems: "center", gap: space.s12, padding: space.s32, borderRadius: radius.xLarge, borderCurve: "continuous", backgroundColor: color.neutralWash },
+  icon: { width: 56, height: 56, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
   title: { ...type.label, fontSize: 18, lineHeight: 26, textAlign: "center", color: color.obsidian },
   hint: { ...type.fieldValue, textAlign: "center", color: color.charcoal },
 });

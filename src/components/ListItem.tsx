@@ -46,7 +46,7 @@ export function ListItem({ title, subtitle, overline, leading, trailing = "none"
 
 const s = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 48, padding: space.s16, backgroundColor: color.paper },
-  inactive: { backgroundColor: color.neutralWash, borderRadius: radius.card, borderWidth: 1, borderStyle: "dashed", borderColor: color.borderNeutral },
+  inactive: { backgroundColor: color.neutralWash, borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderStyle: "dashed", borderColor: color.borderNeutral },
   pressed: { backgroundColor: color.neutralWash },
   text: { flex: 1 },
   overline: { ...type.fieldMessage, color: color.charcoal },
@@ -54,8 +54,8 @@ const s = StyleSheet.create({
   subtitle: { ...type.fieldMessage, color: color.charcoal },
   message: { ...type.fieldMessage, color: color.alarmRed },
   muted: { color: color.slate },
-  box: { width: 24, height: 24, borderRadius: 6, borderWidth: 1.5, borderColor: color.slate, alignItems: "center", justifyContent: "center" },
-  radio: { width: 24, height: 24, borderRadius: radius.pill, borderWidth: 1.5, borderColor: color.slate, alignItems: "center", justifyContent: "center" },
+  box: { width: 24, height: 24, borderRadius: 6, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.slate, alignItems: "center", justifyContent: "center" },
+  radio: { width: 24, height: 24, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.slate, alignItems: "center", justifyContent: "center" },
   on: { borderColor: color.forestInk, backgroundColor: color.brightGreen },
-  dot: { width: 10, height: 10, borderRadius: radius.pill, backgroundColor: color.forestInk },
+  dot: { width: 10, height: 10, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.forestInk },
 });

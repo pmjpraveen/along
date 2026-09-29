@@ -44,10 +44,10 @@ export function Dialog({ visible, onClose, title, subheader, body, children, act
 const s = StyleSheet.create({
   root: { flex: 1, justifyContent: "flex-end", paddingHorizontal: space.s8 },
   scrim: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(22,51,0,0.4)" },
-  card: { backgroundColor: color.paper, borderRadius: radius.sheet, padding: space.s24, gap: space.s16 },
+  card: { backgroundColor: color.paper, borderRadius: radius.sheet, borderCurve: "continuous", padding: space.s24, gap: space.s16 },
   head: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s12 },
   title: { ...type.label, flex: 1, fontSize: 20, lineHeight: 28, color: color.obsidian },
-  close: { width: 32, height: 32, borderRadius: radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
+  close: { width: 32, height: 32, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
   copy: { gap: space.s4 },
   subheader: { ...type.label, color: color.obsidian },
   body: { ...type.fieldValue, color: color.obsidian },

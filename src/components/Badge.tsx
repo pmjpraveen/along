@@ -24,6 +24,6 @@ export function Badge({ variant = "info", label, align = "start" }: Props) {
 }
 
 const s = StyleSheet.create({
-  box: { flexDirection: "row", alignItems: "center", minHeight: 28, paddingHorizontal: space.s12, paddingVertical: 3, borderRadius: radius.pill },
+  box: { flexDirection: "row", alignItems: "center", minHeight: 28, paddingHorizontal: space.s12, paddingVertical: 3, borderRadius: radius.pill , borderCurve: "continuous"},
   label: { fontFamily: font.medium, fontSize: 14, lineHeight: 22, letterSpacing: 0.175 },
 });

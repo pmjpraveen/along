@@ -33,16 +33,16 @@ export function Avatar({ name = "", uri, size = 40, icon, guest = false, selecte
           : size >= 24 ? <Text maxFontSizeMultiplier={1.2} style={[s.initials, { fontSize: Math.round(size * 0.4), lineHeight: Math.round(size * 0.5) }]}>{initialsOf(name)}</Text> : null}
       </View>
       {badge && (
-        <View style={[s.chip, { width: chip, height: chip, borderRadius: chip / 2 }]}>
+        <View style={[s.chip, { width: chip, height: chip, borderRadius: chip / 2 , borderCurve: "continuous"}]}>
           <Text style={[s.chipText, { fontSize: Math.round(chip * 0.55) }]}>{badge}</Text>
         </View>
       )}
       {selected && (
-        <View style={[s.chip, s.check, { width: chip, height: chip, borderRadius: chip / 2 }]}>
+        <View style={[s.chip, s.check, { width: chip, height: chip, borderRadius: chip / 2 , borderCurve: "continuous"}]}>
           <Check size={Math.round(chip * 0.7)} color={color.paper} strokeWidth={3} />
         </View>
       )}
-      {notification && <View testID="avatar-notification" style={[s.dot, { width: dot, height: dot, borderRadius: dot / 2 }]} />}
+      {notification && <View testID="avatar-notification" style={[s.dot, { width: dot, height: dot, borderRadius: dot / 2 , borderCurve: "continuous"}]} />}
     </View>
   );
 }
@@ -56,12 +56,12 @@ export function AvatarGroup({ people, size = 40, max = 3 }: { people: Person[]; 
   return (
     <View accessible accessibilityLabel={`${people.length} ${people.length === 1 ? "person" : "people"}`} style={s.group}>
       {shown.map((p, i) => (
-        <View key={`${p.name}-${i}`} style={[s.ring, { borderRadius: size, marginLeft: i === 0 ? 0 : -Math.round(size * 0.2) }]}>
+        <View key={`${p.name}-${i}`} style={[s.ring, { borderRadius: size, borderCurve: "continuous", marginLeft: i === 0 ? 0 : -Math.round(size * 0.2) }]}>
           <Avatar name={p.name} uri={p.uri} guest={p.guest} size={size} />
         </View>
       ))}
       {more > 0 && (
-        <View style={[s.ring, { borderRadius: size, marginLeft: -Math.round(size * 0.2) }]}>
+        <View style={[s.ring, { borderRadius: size, borderCurve: "continuous", marginLeft: -Math.round(size * 0.2) }]}>
           <View style={[s.circle, { width: size, height: size }]}>
             <Text maxFontSizeMultiplier={1.2} style={[s.initials, { fontSize: Math.round(size * 0.4), lineHeight: Math.round(size * 0.5) }]}>+{more}</Text>
           </View>
@@ -72,7 +72,7 @@ export function AvatarGroup({ people, size = 40, max = 3 }: { people: Person[]; 
 }
 
 const s = StyleSheet.create({
-  circle: { borderRadius: radius.pill, overflow: "hidden", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
+  circle: { borderRadius: radius.pill, borderCurve: "continuous", overflow: "hidden", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
   iconCircle: { backgroundColor: color.paper, borderWidth: 1, borderColor: color.borderNeutral },
   guest: { borderWidth: 1.5, borderStyle: "dashed", borderColor: color.slate },
   selected: { borderWidth: 2, borderColor: color.forestInk },

@@ -22,8 +22,8 @@ export function SegmentedControl<T extends string>({ options, value, onChange, a
 }
 
 const s = StyleSheet.create({
-  track: { flexDirection: "row", padding: space.s4, borderRadius: radius.pill, backgroundColor: color.neutralWash },
-  item: { flex: 1, minHeight: 44, paddingHorizontal: space.s16, borderRadius: radius.pill, alignItems: "center", justifyContent: "center" },
+  track: { flexDirection: "row", padding: space.s4, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.neutralWash },
+  item: { flex: 1, minHeight: 44, paddingHorizontal: space.s16, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center" },
   on: { backgroundColor: color.paper },
   label: { ...type.fieldValue, color: color.forestInk },
 });

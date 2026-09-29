@@ -87,7 +87,7 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: space.s20, gap: space.s12 },
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   gap: { gap: space.s8 },
-  mine: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.neutralWash },
+  mine: { padding: space.s16, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.neutralWash },
   mineText: { ...type.display, fontSize: 28, lineHeight: 32, color: color.forestInk, fontVariant: ["tabular-nums"] },
   body: { ...type.body, color: color.charcoal },
   line: { ...type.body, color: color.obsidian, fontVariant: ["tabular-nums"] },
