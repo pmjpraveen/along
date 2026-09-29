@@ -5,6 +5,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BalancesResult, loadBalances } from "../../../src/api/balances";
 import { TextButton } from "../../../src/components/Buttons";
 import { describeBalance, describeTransfer, simplifyDebts } from "../../../src/domain/balance";
+import { useTripRealtime } from "../../../src/hooks/useTripRealtime";
 import { color, radius, space, type } from "../../../src/theme/tokens";
 
 // My net balance first, then the fewest payments that settle the group, then everyone else's net position. All derived on read.
@@ -15,6 +16,8 @@ export default function Balances() {
   const [state, setState] = useState<BalancesResult | null>(null);
   const load = useCallback(async () => setState(await loadBalances(id)), [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
+  // Live: another member's expense, split or payment refreshes this screen without a pull.
+  useTripRealtime(id, ["expenses", "expense_participants", "settlements"], load);
   const mine = state?.ok ? state.rows.find((r) => r.isMe) : undefined;
   const others = state?.ok ? state.rows.filter((r) => !r.isMe) : [];
   const transfers = state?.ok ? simplifyDebts(state.rows.map((r) => ({ memberId: r.memberId, net: r.net }))) : [];

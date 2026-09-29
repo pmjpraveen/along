@@ -11,7 +11,8 @@ export type FormResult = { ok: true; data: FormData } | { ok: false; message: st
 export type ExpenseRow = { id: string; title: string; amount_minor: number; expense_date: string; paidBy: string; addedBy: string; canEdit: boolean };
 export type ExpensesResult = { ok: true; currency: Currency; expenses: ExpenseRow[] } | { ok: false; message: string };
 export type CreateExpenseInput = { tripId: string; title: string; amountMinor: number; date: string; split: Share[]; key: string; paidBy?: string; method?: "equal" | "custom" | "percentage" | "shares"; values?: Record<string, number> };
-export type CreateExpenseResult = { ok: true } | { ok: false; message: string };
+// retry: the request could not be completed for a reason that is not the data (no connection, server hiccup), so it is safe to send again.
+export type CreateExpenseResult = { ok: true } | { ok: false; message: string; retry?: boolean };
 
 async function tripCurrency(tripId: string) {
   const { data, error } = await supabase.from("trips").select("primary_currency, currencies(minor_unit_exponent)").eq("id", tripId).single();
@@ -75,16 +76,18 @@ const splitPayload = (i: { split: Share[]; method?: string; values?: Record<stri
 // The key is minted once per form, so a retried tap returns the first expense instead of adding another.
 export async function createExpense(i: CreateExpenseInput): Promise<CreateExpenseResult> {
   try {
-    const { error } = await supabase.rpc("create_expense", {
+    const { error, status } = await supabase.rpc("create_expense", {
       p_trip: i.tripId, p_title: i.title, p_amount_minor: i.amountMinor, p_expense_date: i.date,
       p_split: splitPayload(i),
       ...(i.method && i.method !== "equal" && { p_split_method: i.method }),
       p_idempotency_key: i.key, ...(i.paidBy && { p_paid_by: i.paidBy }),
     });
     if (!error) return { ok: true };
-    return { ok: false, message: isOffline(error.message) ? OFFLINE : "Couldn't save the expense. Try again." };
+    if (isOffline(error.message)) return { ok: false, message: OFFLINE, retry: true };
+    const transient = status >= 500 || status === 408 || status === 429 || status === 401 || error.code === "28000";
+    return { ok: false, message: "Couldn't save the expense. Try again.", ...(transient && { retry: true }) };
   } catch {
-    return { ok: false, message: OFFLINE };
+    return { ok: false, message: OFFLINE, retry: true };
   }
 }
 

@@ -1,13 +1,15 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ExpensesResult, listExpenses } from "../../../src/api/expenses";
 import { BalancesResult, loadBalances } from "../../../src/api/balances";
 import { describeBalance } from "../../../src/domain/balance";
+import { discardQueued, useQueue } from "../../../src/offline/sync";
 import { PrimaryButton, TextButton } from "../../../src/components/Buttons";
 import { formatMinor } from "../../../src/domain/money";
 import { formatDate } from "../../../src/domain/trip";
+import { useTripRealtime } from "../../../src/hooks/useTripRealtime";
 import { color, radius, space, type } from "../../../src/theme/tokens";
 
 export default function Expenses() {
@@ -22,7 +24,26 @@ export default function Expenses() {
     setBal(b);
   }, [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
+  // Live: another member's expense, split or payment refreshes this screen without a pull.
+  useTripRealtime(id, ["expenses", "expense_participants", "settlements"], load);
+  // Expenses saved on this phone while offline, shown where they will land, until the server confirms them.
+  const queued = useQueue((s) => s.items).filter((i) => i.payload.tripId === id);
+  const queuedCount = queued.length;
+  useEffect(() => { if (queuedCount >= 0) load(); }, [queuedCount, load]);
   const add = () => router.push({ pathname: "/trip/[id]/add-expense", params: { id } });
+
+  const queuedRows = queued.map((q) => (
+    <View key={q.key} accessible style={[s.card, s.queued]}>
+      <View style={s.row}>
+        <Text maxFontSizeMultiplier={1.4} style={s.title}>{q.payload.title}</Text>
+        <Text maxFontSizeMultiplier={1.4} style={s.amount}>{state?.ok ? formatMinor(q.payload.amountMinor, state.currency.exponent, state.currency.code) : ""}</Text>
+      </View>
+      <Text maxFontSizeMultiplier={1.4} style={s.meta}>
+        {q.status === "failed" ? `Couldn't sync: ${q.error}` : "Saved on this phone. Will sync when you're back online."}
+      </Text>
+      {q.status === "failed" && <TextButton label={`Discard ${q.payload.title}`} onPress={() => discardQueued(q.key)} />}
+    </View>
+  ));
 
   return (
     <ScrollView style={s.screen} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
@@ -34,7 +55,7 @@ export default function Expenses() {
           <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {state.message}</Text>
           <TextButton label="Retry" onPress={load} />
         </View>
-      ) : state.expenses.length === 0 ? (
+      ) : state.expenses.length === 0 && queuedCount === 0 ? (
         <View style={s.gap}>
           <Text maxFontSizeMultiplier={1.4} style={s.body}>No expenses yet. Add what you paid and split it in seconds.</Text>
           <PrimaryButton label="Add an expense" onPress={add} />
@@ -49,6 +70,7 @@ export default function Expenses() {
               </View>
             ) : null;
           })()}
+          {queuedRows}
           {state.expenses.map((e) => (
             <Pressable key={e.id} accessible accessibilityRole={e.canEdit ? "button" : undefined} accessibilityLabel={e.canEdit ? `Edit ${e.title}` : undefined}
               disabled={!e.canEdit} onPress={() => router.push({ pathname: "/trip/[id]/add-expense", params: { id, expenseId: e.id } })} style={s.card}>
@@ -76,6 +98,7 @@ const s = StyleSheet.create({
   gap: { gap: space.s8 },
   balance: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.fog },
   balanceText: { ...type.display, fontSize: 24, lineHeight: 28, color: color.forestInk, fontVariant: ["tabular-nums"] },
+  queued: { borderStyle: "dashed", borderColor: color.slate },
   card: { gap: space.s4, padding: space.s16, borderRadius: radius.card, borderWidth: 1.5, borderColor: color.fog },
   row: { flexDirection: "row", justifyContent: "space-between", gap: space.s12 },
   title: { ...type.body, flex: 1, color: color.obsidian },

@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createExpense, ExpenseDetail, FormData, loadExpense, loadExpenseForm, updateExpense } from "../../../src/api/expenses";
+import { queueExpense } from "../../../src/offline/sync";
 import { PrimaryButton, TextButton } from "../../../src/components/Buttons";
 import { CustomAmounts } from "../../../src/components/CustomAmounts";
 import { ParticipantPicker } from "../../../src/components/ParticipantPicker";
@@ -95,8 +96,10 @@ export default function AddExpense() {
     const r = editing
       ? await updateExpense({ ...common, expenseId: editing.id, version: editing.version, paidBy: payerId ?? editing.paidBy })
       : await createExpense({ ...common, tripId: id, key, ...(payerId && payerId !== me?.id && { paidBy: payerId }) });
+    // No connection: keep the expense on this phone with its idempotency key; it syncs once when the connection returns.
+    if (!editing && !r.ok && r.retry) await queueExpense({ ...common, tripId: id, key, ...(payerId && payerId !== me?.id && { paidBy: payerId }) });
     setBusy(false);
-    if (r.ok) router.back();
+    if (r.ok || (!editing && !r.ok && r.retry)) router.back();
     else setFormError(r.message);
   };
 

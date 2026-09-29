@@ -4,6 +4,8 @@ import AddExpense from "../../app/trip/[id]/add-expense";
 const mockCreate = jest.fn();
 const mockBack = jest.fn();
 const mockUpdate = jest.fn();
+const mockQueue = jest.fn();
+jest.mock("../offline/sync", () => ({ queueExpense: (...a: unknown[]) => mockQueue(...a) }));
 let mockExpenseId: string | undefined;
 jest.mock("../api/expenses", () => ({
   updateExpense: (...a: unknown[]) => mockUpdate(...a),
@@ -298,5 +300,38 @@ test("5.7 a rejected edit keeps my changes and shows the reason", async () => {
   await fireEvent.press(screen.getByRole("button", { name: "Save changes" }));
   expect(await screen.findByText(/person who added this expense/)).toBeTruthy();
   expect(screen.getByLabelText("Title").props.value).toBe("Dinner out");
+  expect(mockBack).not.toHaveBeenCalled();
+});
+
+test("6.2 with no connection the expense is queued with its key and the screen closes as saved", async () => {
+  mockCreate.mockResolvedValue({ ok: false, message: "No connection. Check your internet and try again.", retry: true });
+  await render(<AddExpense />);
+  await fill("250.50", "Taxi");
+  await save();
+  await waitFor(() => expect(mockBack).toHaveBeenCalled());
+  expect(mockQueue).toHaveBeenCalledTimes(1);
+  const queued = mockQueue.mock.calls[0][0];
+  expect(queued).toMatchObject({ tripId: "t1", title: "Taxi", amountMinor: 25050, key: mockCreate.mock.calls[0][0].key });
+  expect(queued.split.reduce((s: number, x: { owedMinor: number }) => s + x.owedMinor, 0)).toBe(25050);
+});
+
+test("6.2 a real rejection is not queued: the form stays with the error", async () => {
+  mockCreate.mockResolvedValue({ ok: false, message: "Couldn't save the expense. Try again." });
+  await render(<AddExpense />);
+  await fill("250.50", "Taxi");
+  await save();
+  expect(await screen.findByText(/Couldn't save the expense/)).toBeTruthy();
+  expect(mockQueue).not.toHaveBeenCalled();
+  expect(mockBack).not.toHaveBeenCalled();
+});
+
+test("6.2 an edit made offline is not queued (only new expenses are)", async () => {
+  mockExpenseId = "e1";
+  mockUpdate.mockResolvedValue({ ok: false, message: "No connection.", retry: true });
+  await render(<AddExpense />);
+  await waitFor(() => expect(screen.getByLabelText("Amount").props.value).toBe("900.00"));
+  await fireEvent.press(screen.getByRole("button", { name: "Save changes" }));
+  expect(await screen.findByText(/No connection/)).toBeTruthy();
+  expect(mockQueue).not.toHaveBeenCalled();
   expect(mockBack).not.toHaveBeenCalled();
 });

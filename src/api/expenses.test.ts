@@ -15,7 +15,7 @@ test("US-05 sends amount in minor units, the split and the idempotency key; no p
 });
 
 test("US-05 a failed save returns a specific message", async () => {
-  mockRpc.mockResolvedValue({ error: { message: "boom" } });
+  mockRpc.mockResolvedValue({ error: { message: "boom" }, status: 400 });
   expect(await createExpense(input)).toEqual({ ok: false, message: "Couldn't save the expense. Try again." });
   mockRpc.mockRejectedValue(new Error("Network request failed"));
   expect((await createExpense(input)).ok).toBe(false);
@@ -65,4 +65,15 @@ test("5.7 a stale edit and a non-creator get distinct messages", async () => {
   mockRpc.mockResolvedValue({ error: { code: "42501", message: "x" } });
   const denied = await updateExpense(base);
   expect(denied.ok === false && denied.message).toMatch(/person who added this expense or the trip owner/);
+});
+
+test("6.2 no connection and server hiccups are marked retryable; a validation rejection is not", async () => {
+  mockRpc.mockRejectedValue(new Error("Network request failed"));
+  expect(await createExpense(input)).toMatchObject({ ok: false, retry: true });
+  mockRpc.mockResolvedValue({ error: { message: "TypeError: Network request failed" }, status: 0 });
+  expect(await createExpense(input)).toMatchObject({ ok: false, retry: true });
+  mockRpc.mockResolvedValue({ error: { message: "upstream" }, status: 503 });
+  expect(await createExpense(input)).toMatchObject({ ok: false, retry: true });
+  mockRpc.mockResolvedValue({ error: { message: "split_must_sum" }, status: 400 });
+  expect((await createExpense(input) as { retry?: boolean }).retry).toBeUndefined();
 });
