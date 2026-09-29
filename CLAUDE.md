@@ -65,8 +65,8 @@ Precedence: schema doc for the database, API doc for RPC shapes, PRD for behavio
 DESIGN.md is the single source for tokens, type scale, components, and states. Read it narrowly (the token table or component you need), never load it whole.
 
 - All colors, type, spacing, and radii come from `src/theme/tokens.ts`, generated from DESIGN.md's token tables. No hard-coded values in screens.
-- Feel: personal, lightweight, calm, playful, premium, travel-oriented — deep Forest Ink green with a single Daylight yellow accent, pill buttons, blocky Black display type at the moments that matter. Never a corporate dashboard, accounting-software look, dense table, or complex form.
-- Daylight is a fill only, never text, icon, or thin stroke on light surfaces; always pair it with Forest Ink content. One Daylight primary action per screen.
+- Feel: personal, lightweight, calm, playful, premium, travel-oriented — deep Forest Ink green with a single Bright Green accent, pill buttons, blocky Black display type at the moments that matter. Never a corporate dashboard, accounting-software look, dense table, or complex form.
+- Bright Green is a fill only, never text, icon, or thin stroke on light surfaces; always pair it with Forest Ink content. One Bright Green primary action per screen.
 - The common case is fastest. Adding an expense takes three taps or fewer using defaults (payer is me, equal split among selected, date today). Advanced split, category, and receipt are progressively disclosed.
 - Reuse the components DESIGN.md defines (Primary/Outlined/Text buttons, List Row, Participant Avatar Item, Amount Input, Bottom Sheet, Trip Summary Card, etc.) before inventing new ones.
 - Guests are visually distinguishable (dashed Slate ring, Guest tag) but never second-class in size or spacing. Use initials when there is no avatar.
@@ -76,7 +76,7 @@ DESIGN.md is the single source for tokens, type scale, components, and states. R
 - Accessibility: touch targets at least 44pt on iOS and 48dp on Android, Dynamic Type support with no fixed-height text containers (`minHeight` only), AA contrast, an accessibility label and role on every interactive element.
 - Text is Geist Sans only. Register each weight as its own family name; never combine a custom `fontFamily` with `fontWeight`.
 - Prefer native components and behavior (date picker, share sheet, safe areas, back gesture). iOS and Android have the same features and flows, each with its own platform conventions.
-- Passport stamps feel collectible and travel-themed (Forest Ink double-ring stamp, Black caps, Daylight dot), not like generic achievement badges.
+- Passport stamps feel collectible and travel-themed (Forest Ink double-ring stamp, Black caps, Bright Green dot), not like generic achievement badges.
 - Produce mockups only when asked.
 
 ## Animation rules

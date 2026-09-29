@@ -26,7 +26,7 @@ test("6.4 notifications are listed in plain words with unread ones marked", asyn
   await render(<Notifications />);
   expect(await screen.findByText("Ben added Dinner · ₹900.00")).toBeTruthy();
   expect(screen.getByText("Ben paid Asha ₹300.00")).toBeTruthy();
-  expect(screen.getAllByText("New")).toHaveLength(1);
+  expect(screen.getAllByLabelText(/^Unread\./)).toHaveLength(1);
 });
 
 test("6.4 tapping an unread notification marks it read and opens the right screen of its trip", async () => {
@@ -35,7 +35,7 @@ test("6.4 tapping an unread notification marks it read and opens the right scree
   await fireEvent.press(await screen.findByRole("button", { name: /Unread. Ben added Dinner/ }));
   expect(mockMark).toHaveBeenCalledWith("n1");
   expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/expenses", params: { id: "t1" } });
-  expect(screen.queryByText("New")).toBeNull();
+  expect(screen.queryByLabelText(/^Unread\./)).toBeNull();
 });
 
 test("6.4 an empty inbox explains what will show up, and the choices are still there", async () => {

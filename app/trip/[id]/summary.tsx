@@ -1,3 +1,4 @@
+import { Alert } from "../../../src/components/Alert";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -26,7 +27,7 @@ export default function Summary() {
         <ActivityIndicator accessibilityLabel="Loading trip summary" color={color.forestInk} />
       ) : !state.ok ? (
         <View style={s.gap}>
-          <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {state.message}</Text>
+          <Alert variant="negative">{state.message}</Alert>
           <TextButton label="Retry" onPress={load} />
         </View>
       ) : (

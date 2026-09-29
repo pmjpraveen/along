@@ -1,3 +1,8 @@
+import { Alert } from "../../../src/components/Alert";
+import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
+import { SectionHeader } from "../../../src/components/SectionHeader";
+import { Divider } from "../../../src/components/Divider";
+import { Card } from "../../../src/components/Card";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -16,6 +21,7 @@ export default function Balances() {
   const [state, setState] = useState<BalancesResult | null>(null);
   const load = useCallback(async () => setState(await loadBalances(id)), [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
+  const pull = usePullToRefresh(load);
   // Live: another member's expense, split or payment refreshes this screen without a pull.
   useTripRealtime(id, ["expenses", "expense_participants", "settlements"], load);
   const mine = state?.ok ? state.rows.find((r) => r.isMe) : undefined;
@@ -32,13 +38,13 @@ export default function Balances() {
   const ordered = [...transfers].sort((a, b) => Number(b.from === mine?.memberId || b.to === mine?.memberId) - Number(a.from === mine?.memberId || a.to === mine?.memberId));
 
   return (
-    <ScrollView style={s.screen} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
+    <ScrollView style={s.screen} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Balances</Text>
       {state === null ? (
         <ActivityIndicator accessibilityLabel="Loading balances" color={color.forestInk} />
       ) : !state.ok ? (
         <View style={s.gap}>
-          <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {state.message}</Text>
+          <Alert variant="negative">{state.message}</Alert>
           <TextButton label="Retry" onPress={load} />
         </View>
       ) : (
@@ -48,26 +54,27 @@ export default function Balances() {
               <Text maxFontSizeMultiplier={1.3} style={s.mineText}>{describeBalance(mine.net, mine.name, true, state.currency.exponent, state.currency.code)}</Text>
             </View>
           )}
-          <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>To settle up</Text>
+          <SectionHeader title="To settle up" />
           {ordered.length === 0 ? (
             <Text maxFontSizeMultiplier={1.4} style={s.body}>Everyone is settled up.</Text>
           ) : (
             ordered.map((t) => (
-              <View key={`${t.from}-${t.to}`} style={s.card}>
+              <Card key={`${t.from}-${t.to}`}>
                 <Text maxFontSizeMultiplier={1.4} style={s.line}>
                   {describeTransfer(t, (m) => state.rows.find((r) => r.memberId === m)?.name ?? "Someone", mine?.memberId ?? null, state.currency.exponent, state.currency.code)}
                 </Text>
                 {canSettle(t) && (
                   <TextButton label="Settle up" onPress={() => router.push({ pathname: "/trip/[id]/settle", params: { id, from: t.from, to: t.to, amount: String(t.amountMinor) } })} />
                 )}
-              </View>
+              </Card>
             ))
           )}
-          <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Everyone</Text>
+          <Divider kind="section" />
+          <SectionHeader title="Everyone" />
           {others.map((r) => (
-            <View key={r.memberId} accessible style={s.card}>
+            <Card key={r.memberId} accessible>
               <Text maxFontSizeMultiplier={1.4} style={s.line}>{describeBalance(r.net, r.name, false, state.currency.exponent, state.currency.code)}</Text>
-            </View>
+            </Card>
           ))}
         </>
       )}
@@ -80,10 +87,8 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: space.s20, gap: space.s12 },
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   gap: { gap: space.s8 },
-  card: { padding: space.s16, borderRadius: radius.card, borderWidth: 1.5, borderColor: color.fog },
-  mine: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.fog },
+  mine: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.neutralWash },
   mineText: { ...type.display, fontSize: 28, lineHeight: 32, color: color.forestInk, fontVariant: ["tabular-nums"] },
-  section: { ...type.label, color: color.charcoal, marginTop: space.s8 },
   body: { ...type.body, color: color.charcoal },
   line: { ...type.body, color: color.obsidian, fontVariant: ["tabular-nums"] },
   error: { ...type.label, color: color.alarmRed },

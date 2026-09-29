@@ -1,3 +1,6 @@
+import { Alert } from "../../../src/components/Alert";
+import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
+import { Card } from "../../../src/components/Card";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -24,27 +27,28 @@ export default function Activity() {
     if (feed.ok && feed.events.length) markSeen(id, feed.events[0].created_at);
   }, [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
+  const pull = usePullToRefresh(load);
   useTripRealtime(id, ["activity_events"], load);
 
   const now = new Date();
   return (
-    <ScrollView style={s.screen} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
+    <ScrollView style={s.screen} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Activity</Text>
       {state === null ? (
         <ActivityIndicator accessibilityLabel="Loading activity" color={color.forestInk} />
       ) : !state.ok ? (
         <View style={s.gap}>
-          <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {state.message}</Text>
+          <Alert variant="negative">{state.message}</Alert>
           <TextButton label="Retry" onPress={load} />
         </View>
       ) : state.events.length === 0 ? (
         <Text maxFontSizeMultiplier={1.4} style={s.body}>Nothing yet. When people join, add plans or log expenses, it shows up here.</Text>
       ) : (
         state.events.map((e) => (
-          <View key={e.id} accessible style={[s.card, isNew(e.created_at, since) && s.fresh]}>
+          <Card key={e.id} accessible selected={isNew(e.created_at, since)}>
             <Text maxFontSizeMultiplier={1.4} style={s.line}>{isNew(e.created_at, since) ? "New · " : ""}{describeEvent(e)}</Text>
             <Text maxFontSizeMultiplier={1.4} style={s.when}>{whenLabel(e.created_at, now)}</Text>
-          </View>
+          </Card>
         ))
       )}
     </ScrollView>
@@ -56,8 +60,6 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: space.s20, gap: space.s12 },
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   gap: { gap: space.s8 },
-  card: { gap: space.s4, padding: space.s16, borderRadius: radius.card, borderWidth: 1.5, borderColor: color.fog },
-  fresh: { borderColor: color.forestInk },
   line: { ...type.body, color: color.obsidian },
   when: { ...type.label, color: color.charcoal },
   body: { ...type.body, color: color.charcoal },

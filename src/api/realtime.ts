@@ -6,8 +6,10 @@ type Listener = { table: string; filter: string };
 
 // One channel, one listener per table, each with a row filter. RLS still decides which rows a subscriber receives.
 // onChange fires for every row event; onResubscribe fires when the connection comes back, so missed events are caught up.
+// The suffix keeps two screens listening to the same thing (Home tabs and Notifications) from being handed the same, already-subscribed channel.
+let seq = 0;
 function listen(name: string, listeners: Listener[], onChange: () => void, onResubscribe: () => void): () => void {
-  let channel = supabase.channel(name);
+  let channel = supabase.channel(`${name}#${++seq}`);
   for (const l of listeners) channel = channel.on("postgres_changes", { event: "*", schema: "public", ...l }, onChange);
   let connectedBefore = false;
   channel.subscribe((status) => {

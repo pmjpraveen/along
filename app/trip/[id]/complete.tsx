@@ -1,3 +1,4 @@
+import { Alert } from "../../../src/components/Alert";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -56,7 +57,7 @@ export default function Complete() {
         <ActivityIndicator accessibilityLabel="Loading trip summary" color={color.forestInk} />
       ) : !s0 ? (
         <View style={s.gap}>
-          <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {summary.ok ? "" : summary.message}</Text>
+          <Alert variant="negative">{summary.ok ? "" : summary.message}</Alert>
           <TextButton label="Retry" onPress={load} />
           <TextButton label="Not yet" onPress={() => router.back()} />
         </View>
@@ -67,7 +68,7 @@ export default function Complete() {
           <Text maxFontSizeMultiplier={1.4} style={s.body}>
             The trip moves to your history. Nothing is deleted or locked: expenses, the itinerary and everyone's balances stay exactly as they are, and you can still settle up.
           </Text>
-          {error && <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {error}</Text>}
+          {error && <Alert variant="negative">{error}</Alert>}
           <PrimaryButton label={busy ? "Completing…" : "Complete trip"} onPress={confirm} />
           <TextButton label="Not yet" onPress={() => router.back()} />
         </>
@@ -82,7 +83,7 @@ const s = StyleSheet.create({
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   gap: { gap: space.s8 },
   body: { ...type.body, color: color.charcoal },
-  card: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.fog },
+  card: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.neutralWash },
   cardText: { ...type.body, color: color.forestInk },
   error: { ...type.label, color: color.alarmRed },
 });

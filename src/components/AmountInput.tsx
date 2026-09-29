@@ -23,8 +23,8 @@ export function AmountInput({ label, value, onChange, exponent, symbol, invalid 
 }
 
 const s = StyleSheet.create({
-  box: { flexDirection: "row", alignItems: "center", gap: space.s8, minHeight: 64, paddingHorizontal: space.s16, borderRadius: radius.input, borderWidth: 1.5, borderColor: color.fog },
-  invalid: { borderColor: color.alarmRed },
+  box: { flexDirection: "row", alignItems: "center", gap: space.s8, minHeight: 64, paddingHorizontal: space.s16, borderRadius: radius.small, borderWidth: 1, borderColor: color.pebble, backgroundColor: color.paper },
+  invalid: { borderWidth: 3, borderColor: color.alarmRed, paddingHorizontal: 14 },
   symbol: { ...type.display, fontSize: 28, color: color.charcoal },
   input: { ...type.display, flex: 1, fontSize: 32, minHeight: 48, color: color.obsidian, fontVariant: ["tabular-nums"] },
 });

@@ -2,6 +2,9 @@ import { useState } from "react";
 import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { signInWithGoogle } from "../src/api/auth";
+import { Alert } from "../src/components/Alert";
+import { DEV_PEOPLE, devLoginEnabled, signInAsDev } from "../src/api/devAuth";
+import { OutlinedButton, PrimaryButton } from "../src/components/Buttons";
 import { color, radius, space, type } from "../src/theme/tokens";
 
 // Success needs no navigation here: the session store flips and the route guard moves to Home.
@@ -20,22 +23,29 @@ export default function SignIn() {
     if (!r.ok && !r.cancelled) setError(r.message);
   };
 
+  const devSignIn = async (email: string) => {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    const r = await signInAsDev(email);
+    setBusy(false);
+    if (!r.ok) setError(r.message);
+  };
+
   return (
     <View style={[s.screen, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <View style={s.hero}>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Sign in</Text>
         <Text maxFontSizeMultiplier={1.4} style={s.body}>Continue with your Google account to start.</Text>
-        {error && (
-          <View accessible accessibilityRole="alert" style={s.error}>
-            <Text style={s.errorIcon}>⚠</Text>
-            <Text maxFontSizeMultiplier={1.4} style={s.errorText}>{error}</Text>
-          </View>
-        )}
+        {error && <Alert variant="negative">{error}</Alert>}
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel="Continue with Google" accessibilityState={{ busy }}
-        onPress={onPress} style={({ pressed }) => [s.button, pressed && s.pressed]}>
-        {busy ? <ActivityIndicator color={color.forestInk} /> : <Text maxFontSizeMultiplier={1.3} style={s.label}>Continue with Google</Text>}
-      </Pressable>
+      <PrimaryButton label="Continue with Google" busy={busy} onPress={onPress} />
+      {devLoginEnabled() && (
+        <View style={s.dev}>
+          <Text maxFontSizeMultiplier={1.3} style={s.devLabel}>Development only: sign in as a test person</Text>
+          {DEV_PEOPLE.map((p) => <OutlinedButton key={p.email} label={`Sign in as ${p.name}`} onPress={() => devSignIn(p.email)} />)}
+        </View>
+      )}
     </View>
   );
 }
@@ -50,8 +60,10 @@ const s = StyleSheet.create({
   errorText: { ...type.label, flex: 1, color: color.alarmRed },
   button: {
     minHeight: 56, paddingHorizontal: space.s24, alignItems: "center", justifyContent: "center",
-    borderRadius: radius.pill, backgroundColor: color.daylight, borderWidth: 1, borderColor: color.forestInk,
+    borderRadius: radius.pill, backgroundColor: color.brightGreen, borderWidth: 1, borderColor: color.forestInk,
   },
   pressed: { opacity: 0.8 },
+  dev: { gap: space.s8, marginTop: space.s16 },
+  devLabel: { ...type.label, color: color.charcoal },
   label: { ...type.label, color: color.forestInk },
 });

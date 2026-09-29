@@ -1,8 +1,13 @@
+import { Alert } from "../../../src/components/Alert";
+import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
+import { SectionHeader } from "../../../src/components/SectionHeader";
+import { Card } from "../../../src/components/Card";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ItineraryResult, loadItinerary, moveItem } from "../../../src/api/itinerary";
+import { Badge } from "../../../src/components/Badge";
 import { DateField } from "../../../src/components/DateField";
 import { MapPreview } from "../../../src/components/MapPreview";
 import { PrimaryButton, TextButton } from "../../../src/components/Buttons";
@@ -18,6 +23,7 @@ export default function Itinerary() {
 
   const load = useCallback(async () => setState(await loadItinerary(id)), [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
+  const pull = usePullToRefresh(load);
 
   const [moving, setMoving] = useState<string | null>(null);
   const [moveError, setMoveError] = useState<string | null>(null);
@@ -32,13 +38,13 @@ export default function Itinerary() {
   const add = (day?: string) => router.push({ pathname: "/trip/[id]/add-item", params: { id, ...(day && { day }) } });
 
   return (
-    <ScrollView style={s.screen} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
+    <ScrollView style={s.screen} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Itinerary</Text>
       {state === null ? (
         <ActivityIndicator accessibilityLabel="Loading itinerary" color={color.forestInk} />
       ) : !state.ok ? (
         <View style={s.gap}>
-          <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {state.message}</Text>
+          <Alert variant="negative">{state.message}</Alert>
           <TextButton label="Retry" onPress={load} />
         </View>
       ) : state.items.length === 0 ? (
@@ -48,16 +54,17 @@ export default function Itinerary() {
         </View>
       ) : (
         <>
-          {moveError && <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {moveError}</Text>}
+          {moveError && <Alert variant="negative">{moveError}</Alert>}
           {groupByDay(state.items).map((d) => (
             <View key={d.date} style={s.gap}>
-              <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.day}>{formatDate(d.date)}</Text>
+              <SectionHeader kind="group" title={formatDate(d.date)} />
               {d.items.map((i) => (
-                <View key={i.id} accessible style={s.card}>
+                <Card key={i.id} accessible>
                   <Text maxFontSizeMultiplier={1.4} style={s.title}>{i.title}</Text>
                   <Text maxFontSizeMultiplier={1.4} style={s.meta}>
-                    {[i.start_time?.slice(0, 5), TYPE_LABEL[i.type], i.is_outside_trip_range ? "Outside trip dates" : null].filter(Boolean).join(" · ")}
+                    {[i.start_time?.slice(0, 5), TYPE_LABEL[i.type]].filter(Boolean).join(" · ")}
                   </Text>
+                  {i.is_outside_trip_range && <Badge variant="warning" label="Outside trip dates" />}
                   {i.latitude !== null && i.longitude !== null ? (
                     <MapPreview place={{ lat: i.latitude, lng: i.longitude, name: i.formatted_address }} />
                   ) : i.location_text ? (
@@ -71,7 +78,7 @@ export default function Itinerary() {
                   ) : (
                     <TextButton label={`Move ${i.title} to another day`} onPress={() => setMoving(i.id)} />
                   )}
-                </View>
+                </Card>
               ))}
             </View>
           ))}
@@ -87,8 +94,6 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   gap: { gap: space.s8 },
-  day: { ...type.label, color: color.charcoal },
-  card: { gap: space.s4, padding: space.s16, borderRadius: radius.card, borderWidth: 1.5, borderColor: color.fog },
   title: { ...type.body, color: color.obsidian },
   meta: { ...type.label, color: color.charcoal },
   body: { ...type.body, color: color.charcoal },

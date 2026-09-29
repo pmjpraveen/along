@@ -45,6 +45,6 @@ export function OfflineBanner() {
 }
 
 const s = StyleSheet.create({
-  bar: { minHeight: 40, paddingHorizontal: space.s16, paddingTop: space.s8, backgroundColor: color.fog, justifyContent: "center" },
+  bar: { minHeight: 40, paddingHorizontal: space.s16, paddingTop: space.s8, backgroundColor: color.neutralWash, justifyContent: "center" },
   text: { ...type.label, color: color.forestInk },
 });

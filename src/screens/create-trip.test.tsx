@@ -7,7 +7,10 @@ jest.mock("../components/DateField", () => {
   const { TextInput } = require("react-native");
   return { DateField: ({ label, value, onChange }: any) => <TextInput accessibilityLabel={label} value={value} onChangeText={onChange} /> };
 });
-jest.mock("../api/trips", () => ({ createTrip: (...a: unknown[]) => mockCreate(...a) }));
+const mockUploadCover = jest.fn();
+const mockPick = jest.fn();
+jest.mock("expo-image-picker", () => ({ launchImageLibraryAsync: (...a: unknown[]) => mockPick(...a) }));
+jest.mock("../api/trips", () => ({ createTrip: (...a: unknown[]) => mockCreate(...a), uploadCover: (...a: unknown[]) => mockUploadCover(...a) }));
 jest.mock("expo-router", () => ({ useRouter: () => ({ replace: mockReplace }) }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 
@@ -38,4 +41,33 @@ test("US-01 a failed create keeps the form data and a retry reuses the same idem
   await submit();
   await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]/people", params: { id: "t1" } }));
   expect(mockCreate.mock.calls[0][2]).toBe(mockCreate.mock.calls[1][2]);
+});
+
+test("cover: a photo picked while creating is uploaded to the new trip, and the trip opens", async () => {
+  mockCreate.mockResolvedValue({ ok: true, tripId: "t9" });
+  mockUploadCover.mockResolvedValue({ ok: true });
+  mockPick.mockResolvedValue({ canceled: false, assets: [{ uri: "file:///goa.jpg", mimeType: "image/png" }] });
+  await render(<CreateTrip />);
+  await fill("Goa");
+  await fireEvent.press(screen.getByRole("button", { name: "Add a cover photo" }));
+  expect(await screen.findByRole("button", { name: "Choose a different photo" })).toBeTruthy();
+  await submit();
+  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]/people", params: { id: "t9" } }));
+  expect(mockUploadCover).toHaveBeenCalledWith("t9", "file:///goa.jpg", "image/png");
+});
+
+test("cover: the cover is optional, and a failed cover upload never blocks the trip", async () => {
+  mockCreate.mockResolvedValue({ ok: true, tripId: "t9" });
+  await render(<CreateTrip />);
+  await fill("Goa");
+  await submit();
+  await waitFor(() => expect(mockReplace).toHaveBeenCalled());
+  expect(mockUploadCover).not.toHaveBeenCalled();
+  jest.clearAllMocks();
+  mockCreate.mockResolvedValue({ ok: true, tripId: "t10" });
+  mockUploadCover.mockResolvedValue({ ok: false, message: "Couldn't upload the photo. Try again." });
+  mockPick.mockResolvedValue({ canceled: false, assets: [{ uri: "file:///goa.jpg", mimeType: "image/jpeg" }] });
+  await fireEvent.press(screen.getByRole("button", { name: "Add a cover photo" }));
+  await submit();
+  await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]/people", params: { id: "t10" } }));
 });

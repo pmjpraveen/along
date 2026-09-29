@@ -44,7 +44,7 @@ set local request.jwt.claims = '{"sub":"00000000-0000-0000-0000-00000000000c"}';
 select is((select count(*)::int from passport_stamps), 0, '7.2 a member who was removed before completion gets none');
 
 reset role;
-select is((select count(*)::int from passport_stamps), 2, '7.2 one stamp per registered active member in total (the guest has no account)');
+select is((select count(*)::int from passport_stamps where trip_id in (select id from t)), 2, '7.2 one stamp per registered active member in total (the guest has no account)');
 
 -- retries and re-completion never duplicate
 set local role authenticated;
@@ -52,7 +52,7 @@ set local request.jwt.claims = '{"sub":"00000000-0000-0000-0000-00000000000a"}';
 select complete_trip((select id from t));
 select complete_trip((select id from t));
 reset role;
-select is((select count(*)::int from passport_stamps), 2, '7.2 re-completing creates no duplicate stamps');
+select is((select count(*)::int from passport_stamps where trip_id in (select id from t)), 2, '7.2 re-completing creates no duplicate stamps');
 select throws_ok($$ insert into passport_stamps (user_id, trip_id, destination_name, start_date, end_date, stamp_key)
   select user_id, trip_id, destination_name, start_date, end_date, stamp_key from passport_stamps limit 1 $$, '23505', null, '7.2 the database itself refuses a second stamp for the same trip');
 

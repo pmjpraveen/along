@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import type { PayerOption } from "../api/expenses";
+import { Avatar } from "./Avatar";
+import { Badge } from "./Badge";
 import { color, radius, space, type } from "../theme/tokens";
 
 type Props = { members: PayerOption[]; selected: string; onChange: (id: string) => void };
@@ -15,9 +17,9 @@ export function PayerPicker({ members, selected, onChange }: Props) {
         return (
           <Pressable key={m.id} accessibilityRole="radio" accessibilityLabel={m.guest ? `${name}, guest` : name}
             accessibilityState={{ selected: on }} onPress={() => onChange(m.id)} style={s.row}>
-            <View style={[s.avatar, m.guest && s.guestRing]}><Text style={s.initials}>{m.name.trim().slice(0, 1).toUpperCase()}</Text></View>
+            <Avatar name={m.name} guest={m.guest} size={40} />
             <Text maxFontSizeMultiplier={1.4} style={s.name}>{name}</Text>
-            {m.guest && <Text style={s.tag}>Guest</Text>}
+            {m.guest && <Badge label="Guest" align="center" />}
             <View style={[s.dot, on && s.dotOn]}>{on && <View style={s.dotInner} />}</View>
           </Pressable>
         );
@@ -28,12 +30,12 @@ export function PayerPicker({ members, selected, onChange }: Props) {
 
 const s = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: space.s12, minHeight: 56 },
-  avatar: { width: 40, height: 40, borderRadius: radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: color.fog, borderWidth: 1.5, borderColor: color.fog },
+  avatar: { width: 40, height: 40, borderRadius: radius.pill, alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash, borderWidth: 1.5, borderColor: color.borderNeutral },
   guestRing: { borderStyle: "dashed", borderColor: color.slate },
   initials: { ...type.label, color: color.forestInk },
   name: { ...type.body, flex: 1, color: color.obsidian },
   tag: { ...type.label, color: color.charcoal },
   dot: { width: 24, height: 24, borderRadius: radius.pill, borderWidth: 1.5, borderColor: color.forestInk, alignItems: "center", justifyContent: "center" },
-  dotOn: { backgroundColor: color.daylight },
+  dotOn: { backgroundColor: color.brightGreen },
   dotInner: { width: 10, height: 10, borderRadius: radius.pill, backgroundColor: color.forestInk },
 });

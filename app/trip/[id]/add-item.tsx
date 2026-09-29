@@ -1,3 +1,4 @@
+import { Alert } from "../../../src/components/Alert";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
@@ -6,6 +7,7 @@ import { createItem } from "../../../src/api/itinerary";
 import { resolveLocation, ResolvedLocation } from "../../../src/api/location";
 import { listMembers, Member } from "../../../src/api/members";
 import { MapPreview } from "../../../src/components/MapPreview";
+import { FieldLabel, FieldMessage, TextField } from "../../../src/components/TextField";
 import { ParticipantPicker } from "../../../src/components/ParticipantPicker";
 import { PrimaryButton } from "../../../src/components/Buttons";
 import { DateField } from "../../../src/components/DateField";
@@ -52,22 +54,20 @@ export default function AddItem() {
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Add to itinerary</Text>
         <View style={s.field}>
-          <Text maxFontSizeMultiplier={1.4} style={s.label}>Title</Text>
-          <TextInput accessibilityLabel="Title" placeholder="Beach day" placeholderTextColor={color.slate} value={title}
-            onChangeText={setTitle} autoCapitalize="sentences" style={[s.input, errors.title ? s.inputError : null]} />
-          {errors.title && <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {errors.title}</Text>}
+          <TextField label="Title" placeholder="Beach day" value={title} onChangeText={setTitle} autoCapitalize="sentences"
+            status={errors.title ? "error" : undefined} message={errors.title} />
         </View>
         <View style={s.field}>
-          <Text maxFontSizeMultiplier={1.4} style={s.label}>Date</Text>
+          <FieldLabel>Date</FieldLabel>
           <DateField label="Date" value={date} invalid={!!errors.day} onChange={setDate} />
-          {errors.day && <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {errors.day}</Text>}
+          {errors.day && <FieldMessage status="error">{errors.day}</FieldMessage>}
         </View>
         <View style={s.field}>
-          <Text maxFontSizeMultiplier={1.4} style={s.label}>Time</Text>
+          <FieldLabel>Time</FieldLabel>
           <TimeField label="Time" value={time} onChange={setTime} />
         </View>
         <View style={s.field}>
-          <Text maxFontSizeMultiplier={1.4} style={s.label}>Type</Text>
+          <FieldLabel>Type</FieldLabel>
           <View style={s.chips}>
             {ITEM_TYPES.map((t) => (
               <Pressable key={t} accessibilityRole="radio" accessibilityLabel={TYPE_LABEL[t]} accessibilityState={{ selected: kind === t }}
@@ -78,18 +78,17 @@ export default function AddItem() {
           </View>
         </View>
         <View style={s.field}>
-          <Text maxFontSizeMultiplier={1.4} style={s.label}>Location</Text>
-          <TextInput accessibilityLabel="Location" placeholder="Type a place or paste a Google Maps link" placeholderTextColor={color.slate}
-            value={location} onChangeText={setLocation} onEndEditing={resolve} autoCapitalize="none" style={s.input} />
+          <TextField label="Location" placeholder="Type a place or paste a Google Maps link"
+            value={location} onChangeText={setLocation} onEndEditing={resolve} autoCapitalize="none" />
           {resolved?.place && <MapPreview place={resolved.place} />}
         </View>
         {members.length > 0 && (
           <View style={s.field}>
-            <Text maxFontSizeMultiplier={1.4} style={s.label}>Who's joining?</Text>
+            <FieldLabel>Who's joining?</FieldLabel>
             <ParticipantPicker members={members} selected={going} onChange={setGoing} />
           </View>
         )}
-        {formError && <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {formError}</Text>}
+        {formError && <Alert variant="negative">{formError}</Alert>}
         <PrimaryButton label={busy ? "Saving…" : "Save"} onPress={save} />
       </ScrollView>
     </KeyboardAvoidingView>
@@ -102,11 +101,11 @@ const s = StyleSheet.create({
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   field: { gap: space.s8 },
   label: { ...type.label, color: color.charcoal },
-  input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderWidth: 1.5, borderColor: color.fog, ...type.body, color: color.obsidian },
+  input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderWidth: 1.5, borderColor: color.borderNeutral, ...type.body, color: color.obsidian },
   inputError: { borderColor: color.alarmRed },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s8 },
-  chip: { minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.pill, borderWidth: 1.5, borderColor: color.fog },
-  chipOn: { borderColor: color.forestInk, backgroundColor: color.daylight },
+  chip: { minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.pill, borderWidth: 1.5, borderColor: color.borderNeutral },
+  chipOn: { borderColor: color.forestInk, backgroundColor: color.brightGreen },
   chipText: { ...type.label, color: color.forestInk },
   error: { ...type.label, color: color.alarmRed },
 });

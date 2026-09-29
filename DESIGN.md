@@ -1,18 +1,18 @@
 # Along — Style Reference
-> deep moss with daylight yellow. Sunlit yellow sparks on a dark forest floor, with large, light-handed display type announcing every move.
+> deep moss with bright green. Fresh green sparks on a dark forest floor, with large, light-handed display type announcing every move.
 
 **Theme:** light. Forest Ink cards and sections invert the canvas for emphasis; there is no full dark theme in the MLP.
 **Platform:** iOS + Android, phone-first, React Native (Expo). All sizes are density-independent: 1 unit = 1pt on iOS, 1dp on Android. Text scales with the system font size.
 **Font:** Geist Sans, one family for everything.
 
-Along speaks in a confident, warm voice. A deep forest green (#163300) carries text, dark cards, and icons, while a single sunlit yellow, Daylight (#F5FF6A), marks the primary action, the active tab, the current selection, and key highlights. Display type is Geist Sans Medium, tightly tracked and set large at the moments that matter: the welcome screen, a trip header, "everyone is settled". Everything else stays restrained on a near-white canvas with soft gray-green surfaces (#e8ebe6). Buttons, tags, tabs, and avatars are pill-shaped; cards and inputs take gentle corners; large cards and sheets take 28. Nothing gradients. The yellow and forest pairing inverts cleanly when a card goes dark, which creates rhythm without decoration.
+Along speaks in a confident, warm voice. A deep forest green (#163300) carries text, dark cards, and icons, while a single fresh green, Bright Green (#9FE870), marks the primary action, the active tab, the current selection, and key highlights. Display type is Geist Sans Medium, tightly tracked and set large at the moments that matter: the welcome screen, a trip header, "everyone is settled". Everything else stays restrained on a near-white canvas with soft gray-green surfaces (#e8ebe6). Buttons, tags, tabs, and avatars are pill-shaped; cards and inputs take gentle corners; large cards and sheets take 28. Nothing gradients. The yellow and forest pairing inverts cleanly when a card goes dark, which creates rhythm without decoration.
 
 ## Tokens — Colors
 
 | Name | Value | Token | Role |
 |------|-------|-------|------|
-| Daylight | `#F5FF6A` | `color.daylight` | **Primary.** Fill for the primary action, active tab and segment, current selection, and key highlights. Always carries Forest Ink content on top. On light surfaces it is a fill only, never text, icon, or thin stroke (about 1.1:1 against white). On Forest Ink it can be text |
-| Forest Ink | `#163300` | `color.forestInk` | Dominant brand dark: headings in nav, dark card backgrounds, label text on Daylight, icon strokes, outline borders. Wherever you need weight or authority, reach for Forest Ink |
+| Bright Green | `#9FE870` | `color.brightGreen` | **Primary.** Fill for the primary action, active tab and segment, current selection, and key highlights. Always carries Forest Ink content on top. On light surfaces it is a fill only, never text, icon, or thin stroke (about 1.1:1 against white). On Forest Ink it can be text |
+| Forest Ink | `#163300` | `color.forestInk` | Dominant brand dark: headings in nav, dark card backgrounds, label text on Bright Green, icon strokes, outline borders. Wherever you need weight or authority, reach for Forest Ink |
 | Spruce | `#054d28` | `color.spruce` | Secondary dark green for card surfaces and tonal depth on dark sections where Forest Ink is too heavy |
 | Linen Mist | `#e2f6d5` | `color.linenMist` | Pale green wash for tinted card backgrounds, avatar placeholders, tag fills, pressed states on light rows |
 | Signal Blue | `#0b4c72` | `color.signalBlue` | Supporting accent for decorative details and low-frequency emphasis, such as map and link moments |
@@ -23,19 +23,41 @@ Along speaks in a confident, warm voice. A deep forest green (#163300) carries t
 | Pebble | `#868685` | `color.pebble` | Placeholders, disabled content, input borders, hairline icon strokes. Not for body or secondary text |
 | Fog | `#e8ebe6` | `color.fog` | Card surfaces, dividers, panel backgrounds, segmented-control track. A green-tinted off-white |
 | Paper | `#ffffff` | `color.paper` | Screen canvas, inverted card surfaces |
+| Positive | `#2f5711` | `color.positive` | Success icon and positive notices (Figma sentiment/positive). Always with an icon or words |
+| Warning | `#ffd11a` | `color.warning` | Warning icon and cautionary notices (Figma sentiment/warning). Obsidian glyph on top, never as text |
+| Neutral Wash | `rgba(22,51,0,0.08)` | `color.neutralWash` | Neutral background for alerts, cards and tracks: Forest Ink at 8% (Figma background/neutral) |
+| Border Neutral | `rgba(14,15,12,0.12)` | `color.borderNeutral` | Hairline borders on cards, inputs and chips: Obsidian at 12% (Figma border/neutral) |
+| Control | `#173301` | `color.control` | Interactive control fill on dark (Figma interactive/control) |
+| Bright Orange / Yellow / Blue / Pink | `#ffc091` `#ffeb69` `#a0e1e1` `#ffd7ef` | `color.brightOrange` `brightYellow` `brightBlue` `brightPink` | Secondary palette for tinted moments (tags, avatar placeholders). Never text on light |
+| Dark Purple / Gold / Charcoal / Maroon | `#260a2f` `#3a341c` `#21231d` `#320707` | `color.darkPurple` `darkGold` `darkCharcoal` `darkMaroon` | Secondary dark surfaces for rare emphasis |
+
+### Figma colour variables (source of truth)
+Imported from the Wise UI Kit "colours" page. `src/theme/tokens.ts` exports them as `core`, `secondary` and `product`, and `src/theme/tokens.test.ts` fails if any value drifts from Figma.
+
+| Group | Figma variable | Value |
+|-------|----------------|-------|
+| Core | `core/bright green` | `#9fe870` |
+| Core | `core/forest green` | `#163300` |
+| Secondary | `secondary/bright orange` `bright yellow` `bright blue` `bright pink` | `#ffc091` `#ffeb69` `#a0e1e1` `#ffd7ef` |
+| Secondary | `secondary/dark purple` `dark gold` `dark charcoal` `dark maroon` | `#260a2f` `#3a341c` `#21231d` `#320707` |
+| Product content | `primary` `secondary` `tertiary` `link` | `#0e0f0c` `#454745` `#6a6c6a` `#163300` |
+| Product interactive | `primary` `accent` `secondary` `control` `contrast` | `#163300` `#9fe870` `#868685` `#173301` `#9fe870` |
+| Product background | `screen` `elevated` `neutral` `overlay` | `#ffffff` `#ffffff` `#16330014` `#16330014` |
+| Product border | `neutral` `overlay` | `#0e0f0c1f` `#0e0f0c1f` |
+| Product sentiment | `negative` `positive` `warning` | `#cb272f` `#2f5711` `#ffd11a` |
 
 ### Contrast (approximate)
 
 | Pair | Ratio | Use |
 |------|-------|-----|
-| Forest Ink on Daylight | 12.9:1 | Primary button label, active tab text |
-| Charcoal on Daylight | 8.7:1 | Acceptable alternative label |
-| Daylight on Forest Ink | 12.9:1 | Headlines and numbers on dark cards |
+| Forest Ink on Bright Green | 9.5:1 | Primary button label, active tab text |
+| Charcoal on Bright Green | 6.4:1 | Acceptable alternative label |
+| Bright Green on Forest Ink | 9.5:1 | Headlines and numbers on dark cards |
 | Charcoal on Paper | 9.4:1 | Body text |
 | Slate on Paper | 5.4:1 | Secondary text (passes AA) |
 | Alarm Red on Paper | 5.4:1 | Error text |
 | Pebble on Paper | 3.6:1 | Placeholders, borders, disabled only |
-| Daylight on Paper | 1.1:1 | Never as text, icon, or stroke |
+| Bright Green on Paper | 1.5:1 | Never as text, icon, or stroke |
 
 ## Tokens — Typography
 
@@ -119,20 +141,78 @@ Letter spacing is in points. Dynamic Type stays on: body and caption scale up to
 
 ## Components
 
-### Primary Pill Button
-**Role:** The signature action: a filled yellow pill that says "do this next".
+### Buttons
+**Role:** Every action. One component (`Button` in `src/components/Buttons.tsx`), imported from the Figma "buttons" page: five types, three sizes, active and disabled, always a 9999-radius pill.
 
-Daylight fill, Forest Ink label in `label` type, 9999 radius, 24 horizontal padding, 52 tall (56 when full width in a bottom action bar). On Paper or Fog surfaces add a 1px Forest Ink border so the pill stays visible; on Forest Ink or Spruce surfaces there is no border. No shadow. One primary button per screen.
+| Type | Fill | Label | Use |
+|------|------|-------|-----|
+| primary | Bright Green | Forest Ink | The one "do this next" action. One per screen. No border, no shadow |
+| secondary | `#ddf7d2` (pale green) | Forest Ink | A second action that should not compete with primary |
+| secondary neutral | Forest Ink at 8% (`neutralWash`) | Forest Ink | Quiet actions on busy surfaces |
+| destructive | Paper, 1px Alarm Red border | Alarm Red | Delete and other destructive actions only |
+| tertiary | none | Forest Ink, underlined | Low-weight inline action |
 
-### Outlined Pill Button
-**Role:** Secondary action where a second filled button would compete.
+| Size | Height | Padding | Label |
+|------|--------|---------|-------|
+| large | 52, fills the width | 14 vertical, 24 horizontal | 16/24 |
+| medium | 44 (48 on Android) | 10 vertical, 16 horizontal | 16/24 |
+| small | 30 | 4 vertical, 12 horizontal | 14/22 |
 
-Paper fill, 1px Forest Ink border, Forest Ink label, 9999 radius, 48 tall. Same padding as primary.
+- **Labels:** the design system uses Inter SemiBold; we use Geist Medium, the closest weight we ship (`type.buttonLarge`, `type.buttonSmall`).
+- **Disabled:** primary, secondary and secondary neutral fall back to the neutral wash with a Pebble label. Destructive keeps its outline in the faint border colour. Tertiary fades to the faint border colour.
+- **Touch targets:** small and medium buttons keep a 44pt (48dp) touch area through `hitSlop`; the visible pill stays the size above.
+- **Focus:** a 2px Forest Ink ring, 2px outside the pill, shown for keyboard focus. It is an overlay, so it never moves the layout.
+- **Busy:** the label is replaced by a spinner and taps are ignored; the accessible name stays.
+- **Existing names:** `PrimaryButton` is primary large, `OutlinedButton` is secondary large, `TextButton` is tertiary medium.
+- **Not built yet:** icon buttons (44 and 24), the labelled quick-action button with text underneath, and the helper-text variant.
 
-### Text Link Button
-**Role:** Low-weight inline action, paired under or beside a primary button.
+### Date Picker
+**Role:** Choose a date from a calendar. `Calendar` (`src/components/Calendar.tsx`) is the design system's date picker, and `DateField` opens it from a form field over a Forest Ink scrim.
 
-Underlined Forest Ink text in `label` type, no background, no border, with `hitSlop` up to a 44 target.
+White card, `radius.small` (10), 16 vertical padding, `shadow.itemLight` (offset 0/6, blur 20, black at 8%). Header row (56 tall): a 48pt previous arrow, the month and year in `type.buttonLarge` Obsidian, a 48pt next arrow, arrows in Forest Ink. Week row Mon to Sun (weeks start on Monday). Days are 36pt circles (radius 32) with 24 horizontal padding and 6 vertical gap.
+
+- **Weekdays:** semibold-weight Obsidian. **Weekends:** regular-weight Charcoal.
+- **Selected:** Forest Ink circle with a Bright Green number.
+- **Unavailable:** dimmed and not pressable (used for an end date before the start date).
+- **Accessibility:** every day is a button labelled with its full date ("Friday 18 November 2022") and selected or disabled state; the week row is decorative. Days keep a 44pt touch area through hit slop.
+- **Values:** ISO (`YYYY-MM-DD`) inside, `DD-MM-YYYY` on screen. The time field still uses the platform's native picker.
+
+### Alert
+**Role:** An important message about the current task, in the context of a screen. `Alert` in `src/components/Alert.tsx`, from the Figma "alerts" page.
+
+| Kind | Look |
+|------|------|
+| neutral, positive, negative, warning | Soft pill (radius 32), Neutral Wash fill, 16 padding and gap, a 32pt status icon, one line of 16/24 Obsidian text |
+| with button | Card (radius 10), icon at the top, 14/22 Charcoal text, then a small secondary-neutral button |
+| with link | Same card, ending in a small underlined tertiary link |
+| critical banner | Card (radius 10) filled Alarm Red, white icon (white disc, red mark), semibold 16/24 white title, 16/24 white text, a small white button with a red label. No dismiss: it stays until the problem is dealt with |
+
+- **Icons:** neutral (Charcoal "i"), positive (`#2f5711` check), negative (red cross), warning (yellow, Obsidian mark). They are the Figma vector paths, so shape as well as colour tells them apart.
+- **Dismiss:** a 24pt circular control at the top right of the card kinds, with a 48pt touch area.
+- **Announcing:** negative, warning and critical are announced as alerts; neutral and positive are quiet notices.
+- **In use:** load and form errors are negative pills; a queued expense the server refused is a critical banner with Discard.
+
+### Avatar
+**Role:** Represents a person (or an object) at a glance. `Avatar` and `AvatarGroup` in `src/components/Avatar.tsx`, from the Figma "avatar" page.
+
+- **Types:** text (initials in Forest Ink, medium weight, on the Neutral Wash), photo, and icon (outlined circle with the icon inside).
+- **Sizes:** 16, 24, 32, 40, 48, 56, 72. The 16pt size is a plain circle; initials start at 24. Initials are about 40% of the circle.
+- **Selected:** 2px Forest Ink ring and a green check badge at the bottom right. Announced as "selected", never colour alone.
+- **Badge:** a small Bright Green circle at the bottom right with a 2px white edge. **Notification:** a red dot at the top right, announced as "has a notification".
+- **Group:** `AvatarGroup` overlaps avatars by 20% with a white 2px edge and folds the rest into a "+N" circle.
+- **Guests:** the same size and spacing as everyone, with a dashed 1.5px Slate ring (a rule of this app, on top of the design system) and a "guest" announcement.
+- **Not built yet:** flag avatars and the diagonal double avatar.
+
+### Bottom Navigation
+**Role:** Switch between the app's top-level places. `BottomNav` (presentational) and `MainTabs` (wired to the router and the unread count), from the Figma "bottom navigation" page.
+
+A Paper bar with a 1px hairline top border (`borderNeutral`), at least 64 tall plus the bottom safe-area inset. Items share the width evenly; each is a 24pt outlined line icon over a 12/16 label, with a 48pt-plus touch area.
+
+- **Active:** Forest Ink, heavier icon stroke and a medium-weight label. **Inactive:** Slate, lighter stroke, regular-weight label. Active is shown by weight and colour together and announced as "selected".
+- **Items in this app:** Trips (home icon), Passport (ticket icon), Notifications (bell icon). It appears on those three screens only, not inside a trip.
+- **Dot:** a red dot on Notifications when something is unread, announced as "new", updating live, hidden while that tab is open.
+- **Switching:** replaces the screen (no back-stack growth); tapping the active tab does nothing.
+- The Figma page shows four items (Home, Cards, Recipients, Manage); the layout is the same for any number.
 
 ### Screen Header
 **Role:** Names the screen and holds its actions.
@@ -142,17 +222,17 @@ Left-aligned large title in `heading` type (Forest Ink or Obsidian) that collaps
 ### Bottom Tab Bar
 **Role:** Global navigation: Trips and Profile.
 
-Paper background, hairline top border, 64 tall plus the bottom inset. Two items, each an icon over a `micro` label. Active: Forest Ink icon and label on a Daylight pill (56 by 32) behind the icon, with a 1px Forest Ink border. Inactive: Slate icon and label.
+Paper background, hairline top border, 64 tall plus the bottom inset. Two items, each an icon over a `micro` label. Active: Forest Ink icon and label on a Bright Green pill (56 by 32) behind the icon, with a 1px Forest Ink border. Inactive: Slate icon and label.
 
 ### Segmented Tab Control
-**Role:** Section switcher inside a trip (Overview, Itinerary, Expenses, People). Single active state in yellow.
+**Role:** Section switcher inside a trip (Overview, Itinerary, Expenses, People). Single active state in Bright Green.
 
-Pill track in Fog, four equal segments, about 40 tall. Active segment: Daylight fill, Forest Ink Medium label, 1px Forest Ink border. Inactive: transparent with Charcoal label.
+Pill track in Fog, four equal segments, about 40 tall. Active segment: Bright Green fill, Forest Ink Medium label, 1px Forest Ink border. Inactive: transparent with Charcoal label.
 
 ### Display Headline
 **Role:** The brand's voice, used on the welcome screen, trip header, and celebration moments.
 
-`display` or `heading-lg` in Medium, tight tracking. Obsidian or Forest Ink on light, Daylight on dark. Sentence case by default; all caps only for hero moments and stamp text.
+`display` or `heading-lg` in Medium, tight tracking. Obsidian or Forest Ink on light, Bright Green on dark. Sentence case by default; all caps only for hero moments and stamp text.
 
 ### Value Row
 **Role:** Icon, heading, and one supporting line, stacked in a list on the welcome screen and in empty states.
@@ -162,12 +242,12 @@ Pill track in Fog, four equal segments, about 40 tall. Active segment: Daylight 
 ### Participant Avatar Item
 **Role:** One person in a grid or row, used in the participant picker and the People screen.
 
-56 circular avatar (photo, or initials in Medium 18 Forest Ink on Linen Mist), name below in `labelSm`, one line, truncated. Guests use a dashed 1.5px Slate ring and a Guest tag, and are never second-class in size or spacing. Selected: 2px Forest Ink ring plus a 20 Daylight check badge with a 1px Forest Ink border. Grid of four columns with 16 gaps.
+56 circular avatar (photo, or initials in Medium 18 Forest Ink on Linen Mist), name below in `labelSm`, one line, truncated. Guests use a dashed 1.5px Slate ring and a Guest tag, and are never second-class in size or spacing. Selected: 2px Forest Ink ring plus a 20 Bright Green check badge with a 1px Forest Ink border. Grid of four columns with 16 gaps.
 
 ### Trip Summary Card (dark)
 **Role:** Inverted surface for emphasis: balances hero, trip overview, completion.
 
-Forest Ink background, 28 radius, 24 padding. Headline in Daylight, body in Paper. May hold an inset Paper card (16 radius, 16 padding) for the amount or the person owed. Pair with an outlined pill for the action inside.
+Forest Ink background, 28 radius, 24 padding. Headline in Bright Green, body in Paper. May hold an inset Paper card (16 radius, 16 padding) for the amount or the person owed. Pair with an outlined pill for the action inside.
 
 ### List Row (expense, itinerary item)
 **Role:** The repeating unit of the Expenses and Itinerary screens.
@@ -192,12 +272,12 @@ Centered `amount-xl` numerals in Forest Ink, currency symbol beside it in Slate 
 ### Quick Add Button
 **Role:** Persistent "+ Expense" shortcut on trip screens.
 
-Floating Daylight pill, 56 tall, plus icon and `label` text in Forest Ink, 1px Forest Ink border, `shadow.lg`. Right-aligned to the 20 screen padding and 16 above the tab bar. It is the primary action for that screen, so no second Daylight button appears.
+Floating Bright Green pill, 56 tall, plus icon and `label` text in Forest Ink, 1px Forest Ink border, `shadow.lg`. Right-aligned to the 20 screen padding and 16 above the tab bar. It is the primary action for that screen, so no second Bright Green button appears.
 
 ### Badge / Tag
 **Role:** Small status and category labels.
 
-9999 radius, 6 vertical and 12 horizontal padding, `micro` type. Linen Mist fill with Forest Ink text, or Forest Ink fill with Daylight text. Guest tag: Paper fill, 1px dashed Slate border, Slate text.
+9999 radius, 6 vertical and 12 horizontal padding, `micro` type. Linen Mist fill with Forest Ink text, or Forest Ink fill with Bright Green text. Guest tag: Paper fill, 1px dashed Slate border, Slate text. Badges carry no icon: the word carries the meaning (`src/components/Badge.tsx`: tinted pill, 12 horizontal padding, Medium 14).
 
 ### Bottom Sheet
 **Role:** Participant picker, split configuration, and other focused tasks.
@@ -211,7 +291,7 @@ Paper, 28 top radius, 24 padding, a 36 by 4 Pebble grabber, and a Forest Ink scr
 | Pressed | Opacity 0.8 on buttons and rows; rows may also fill Linen Mist. No hover on mobile |
 | Disabled | Fog fill, Pebble label, no border; still meets the touch target |
 | Focused (input) | Border Pebble to Forest Ink, same 1.5px width |
-| Selected | 2px Forest Ink ring plus a Daylight check; never color alone |
+| Selected | 2px Forest Ink ring plus a Bright Green check; never color alone |
 | Loading (button) | Label replaced by a small Forest Ink spinner, width unchanged |
 | Error | Alarm Red border or text, with an icon and a specific message |
 
@@ -221,23 +301,23 @@ Motion follows the animation rules in CLAUDE.md.
 
 ### Do
 - Set display headlines in Medium at 32 to 56 with -0.03em to -0.035em tracking. Size and tight tracking are the signature; never reach for a heavier weight.
-- Use Daylight for the primary action fill, the active tab or segment, and the current selection. One Daylight primary action per screen.
-- Always put Forest Ink on Daylight. On light surfaces give a Daylight fill a 1px Forest Ink border.
+- Use Bright Green for the primary action fill, the active tab or segment, and the current selection. One Bright Green primary action per screen.
+- Always put Forest Ink on Bright Green. On light surfaces give a Bright Green fill a 1px Forest Ink border.
 - Default to a 9999 radius for buttons, tags, avatars, and segments; 16 for cards, 12 for inputs, 28 for large cards and sheets.
 - Use Forest Ink for text and dark surfaces, not pure black.
 - Track tightly at large sizes and neutrally at 16 and below.
 - Pair one filled primary button with an underlined text link as the secondary action, never two filled buttons side by side.
-- Invert a card to Forest Ink to create rhythm; Daylight text on dark green is the built-in emphasis.
+- Invert a card to Forest Ink to create rhythm; Bright Green text on dark green is the built-in emphasis.
 - Show amounts with tabular numerals and a word or sign ("You owe Rahul ₹800"), never color alone.
 - Keep touch targets at 44 on iOS and 48 on Android, and let text grow with Dynamic Type.
 
 ### Don't
 - Don't use Charcoal for display headlines; use Obsidian or Forest Ink.
 - Don't add gradients or blurs. Shadows are for floating elements only (Quick Add, sheets, modals); everything else uses hairlines.
-- Don't use Daylight as text, icon, or thin stroke on a light background.
+- Don't use Bright Green as text, icon, or thin stroke on a light background.
 - Don't use corners below 8 on buttons, tags, or segments.
 - Don't set headlines above 28 in Regular or Medium.
-- Don't put two Daylight elements close together, and never a Quick Add button and a primary button on the same screen.
+- Don't put two Bright Green elements close together, and never a Quick Add button and a primary button on the same screen.
 - Don't use #000000 for body text, and don't use Pebble for body or secondary text.
 - Don't pair a custom `fontFamily` with `fontWeight`, and don't fall back to the system font mid-app.
 - Don't use Alarm Red decoratively or to signal who owes whom.
@@ -249,7 +329,7 @@ Motion follows the animation rules in CLAUDE.md.
 | 0 | Paper | `#ffffff` | Screen canvas, the default background |
 | 1 | Fog | `#e8ebe6` | Cards, panels, segmented-control track, separators |
 | 2 | Linen Mist | `#e2f6d5` | Tinted highlights: avatar placeholders, tag fills, pressed rows |
-| 3 | Daylight | `#F5FF6A` | Active surface: primary button, active tab, selection |
+| 3 | Bright Green | `#9FE870` | Active surface: primary button, active tab, selection |
 | 4 | Forest Ink | `#163300` | Inverted surface: dark cards, high-contrast blocks |
 
 ## Elevation
@@ -263,7 +343,7 @@ Flat by design. Use a hairline for containment and a shadow only when an element
 
 ## Imagery
 
-The group's own photography is the hero: cover photos and memories fill headers and cards in rounded masks (28 for cards, full circles for avatars), high-key and casual. Illustration is rare and flat, drawn in Forest Ink and Daylight only, and reserved for empty states. The collectible motif is the passport stamp: a rounded or circular Forest Ink double-ring stamp holding the destination in Black caps, the dates in Medium, and a Daylight dot, set at a slight fixed tilt. It should feel like something you want to keep, not a generic achievement badge. No stock patterns and no abstract decoration.
+The group's own photography is the hero: cover photos and memories fill headers and cards in rounded masks (28 for cards, full circles for avatars), high-key and casual. Illustration is rare and flat, drawn in Forest Ink and Bright Green only, and reserved for empty states. The collectible motif is the passport stamp: a rounded or circular Forest Ink double-ring stamp holding the destination in Black caps, the dates in Medium, and a Bright Green dot, set at a slight fixed tilt. It should feel like something you want to keep, not a generic achievement badge. No stock patterns and no abstract decoration.
 
 ## Layout
 
@@ -275,18 +355,18 @@ Quick Color Reference
 - text: `color.charcoal` for body, `color.obsidian` for display, `color.slate` for secondary
 - background: `color.paper` canvas, `color.fog` cards and tracks
 - border: `color.pebble` for hairlines and inputs, `color.forestInk` for emphasis and outlines
-- primary action: `color.daylight` fill with `color.forestInk` label (1px Forest Ink border on light surfaces)
-- dark surface: `color.forestInk`, with `color.daylight` headlines
+- primary action: `color.brightGreen` fill with `color.forestInk` label (1px Forest Ink border on light surfaces)
+- dark surface: `color.forestInk`, with `color.brightGreen` headlines
 
 Example Component Prompts
 
-1. Primary button: a `Pressable`, height 52, `borderRadius` 9999, `paddingHorizontal` 24, `backgroundColor` `color.daylight`, label in `type.label` and `color.forestInk`. On Paper or Fog add `borderWidth` 1 and `borderColor` `color.forestInk`. Pressed opacity 0.8. Full-width variant is 56 tall and pinned above the bottom safe-area inset.
+1. Primary button: a `Pressable`, height 52, `borderRadius` 9999, `paddingHorizontal` 24, `backgroundColor` `color.brightGreen`, label in `type.label` and `color.forestInk`. On Paper or Fog add `borderWidth` 1 and `borderColor` `color.forestInk`. Pressed opacity 0.8. Full-width variant is 56 tall and pinned above the bottom safe-area inset.
 
-2. Segmented control: Fog pill track, four equal segments about 40 tall, `borderRadius` 9999. Active segment `color.daylight` fill, `color.forestInk` `type.label` text, 1px Forest Ink border; inactive transparent with `color.charcoal` text.
+2. Segmented control: Fog pill track, four equal segments about 40 tall, `borderRadius` 9999. Active segment `color.brightGreen` fill, `color.forestInk` `type.label` text, 1px Forest Ink border; inactive transparent with `color.charcoal` text.
 
-3. Participant avatar item: 56 circular avatar (photo, or initials in Medium 18 on `color.linenMist`), name below in `type.labelSm`, one line. Guest: dashed 1.5px `color.slate` ring plus a Guest tag. Selected: 2px `color.forestInk` ring and a 20 Daylight check badge with a 1px Forest Ink border. Four-column grid, 16 gaps.
+3. Participant avatar item: 56 circular avatar (photo, or initials in Medium 18 on `color.linenMist`), name below in `type.labelSm`, one line. Guest: dashed 1.5px `color.slate` ring plus a Guest tag. Selected: 2px `color.forestInk` ring and a 20 Bright Green check badge with a 1px Forest Ink border. Four-column grid, 16 gaps.
 
-4. Trip summary card: `color.forestInk` background, `borderRadius` 28, padding 24. Headline in `type.title` and `color.daylight`, body in `type.body` and `color.paper`. Inset Paper card with `borderRadius` 16 and padding 16 holds the amount in `type.amount`. An outlined pill sits below.
+4. Trip summary card: `color.forestInk` background, `borderRadius` 28, padding 24. Headline in `type.title` and `color.brightGreen`, body in `type.body` and `color.paper`. Inset Paper card with `borderRadius` 16 and padding 16 holds the amount in `type.amount`. An outlined pill sits below.
 
 5. Amount input: centered `type.amountXl` numerals in `color.forestInk`, currency symbol in `color.slate` Medium 24, numeric keypad, `fontVariant: ['tabular-nums']`, formatted by the currency's minor-unit exponent.
 
@@ -307,7 +387,7 @@ Keep every value in one module, `src/theme/tokens.ts`, and import from it. No ha
 
 ```ts
 export const color = {
-  daylight: '#F5FF6A',
+  brightGreen: '#9FE870',
   forestInk: '#163300',
   spruce: '#054d28',
   linenMist: '#e2f6d5',
@@ -319,6 +399,10 @@ export const color = {
   pebble: '#868685',
   fog: '#e8ebe6',
   paper: '#ffffff',
+  positive: '#2f5711',
+  warning: '#ffd11a',
+  neutralWash: 'rgba(22, 51, 0, 0.08)',
+  borderNeutral: 'rgba(14, 15, 12, 0.12)',
   scrim: 'rgba(22, 51, 0, 0.4)',
 } as const;
 
@@ -363,3 +447,65 @@ export const shadow = {
 
 export const layout = { screenPadding: 20, tabBarHeight: 64, contentMaxWidth: 600 } as const;
 ```
+
+## Card
+
+Source: Figma "Card" page (read from a screenshot, so values are approximate). Component: `src/components/Card.tsx`.
+
+- Fill Neutral Wash, radius 16, padding 16, no visible border (a transparent 2px border keeps layout steady across states).
+- Pressed: darker fill (Forest Green at 20%). Focused: 2px Forest Ink ring. Selected: 2px Forest Ink ring plus a Bright Green check badge top right.
+- Not-yet-built Figma variants: large card with footer actions, currency card, dashed "add" card, illustration card.
+
+## Divider
+
+Source: Figma "Divider" page (screenshot, approximate). Component: `src/components/Divider.tsx`.
+
+- Section divider: 4px Neutral Wash rule, full width of the container. Sub-section divider: 1px Border Neutral hairline, inset to match content.
+
+## List item
+
+Source: Figma "List item" page (screenshot, approximate). Component: `src/components/ListItem.tsx`.
+
+- Row on Paper: leading Avatar, title (medium) with subtitle or overline (14/22 charcoal), one trailing control: none, chevron, edit, checkbox, radio, switch, or a small secondary button.
+- Prompt variant adds an inline error message under the title. Inactive: dashed border on Neutral Wash ("Connect an account"). Disabled/cancelled: title and value in Slate.
+
+## Modal
+
+Source: Figma "Modal" page (screenshot, approximate). Component: `src/components/Dialog.tsx` (named Dialog to avoid clashing with React Native's Modal).
+
+- Phone: an inset card floating 8pt above the bottom edge, radius 28, padding 24. Header with a 32px close circle at the right, bold subheader, body, optional content, one Bright Green primary button. Use BottomSheet for browsing/long content, Dialog for one interrupting message.
+
+## Section header
+
+Source: Figma "Section header" page (screenshot, approximate). Component: `src/components/SectionHeader.tsx`.
+
+- Section: large title (24) with an optional underlined Forest Ink link on the right ("See all"). Group: small charcoal label over a 1px hairline.
+
+## Segmented control
+
+Source: Figma "Segmented control" page (screenshot, approximate). Component: `src/components/SegmentedControl.tsx`.
+
+- 2-3 alike options in a full-pill Neutral Wash track; the selected option is a white pill with Medium-weight Forest Ink text. Segments are at least 44pt tall.
+
+## Tab
+
+Source: Figma "Tab" page (screenshot, approximate). Component: `src/components/Tabs.tsx`.
+
+- Underlined text tabs over a 1px hairline. Selected: Medium Forest Ink text and a 2px Forest Ink underline. Unselected: Regular Slate text. At least 44pt tall. Use SegmentedControl to choose between options, Tabs to switch sections.
+
+## Notification item
+
+Source: Figma "Notifications" page (screenshot, approximate). Component: `src/components/NotificationItem.tsx`.
+
+- Flat row (no card): 10px status dot, title, optional date at the right, optional body. Unread: Warning-yellow dot and Medium Obsidian title. Read: pale dot and Regular Charcoal title. Unread is also spoken in the accessibility label.
+- Not built: the Inbox screen chrome (circular back button, large "Inbox" title, "Notifications" group header).
+
+## Upload
+
+Source: Figma "Upload" page (screenshot, approximate). Component: `src/components/UploadCard.tsx`.
+
+- Centred Neutral Wash card, radius 32, padding 32: 56px white icon circle, title, hint with the size limit, one primary medium button. No drag and drop on phones.
+
+## Home and navigation
+
+There is no tab bar. Home (`app/index.tsx`) is the hub: greeting, a bell (notifications, with an unread dot) and the avatar (profile, which holds the Travel Passport) on top; "Planning" with a history button beside the title; trips as two-up tiles tilted a few degrees, alternating; "Invite friends"; and one pinned "Start new trip" primary button. Finished trips live in Trip history (`app/history.tsx`). Source: user mockup (screenshot, approximate).

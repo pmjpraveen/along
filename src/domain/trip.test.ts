@@ -1,4 +1,4 @@
-import { formatDate, toIso, validateTrip } from "./trip";
+import { formatDate, formatRange, toIso, validateTrip } from "./trip";
 
 const ok = { name: "Goa", destination: "Goa, India", start: "2026-12-01", end: "2026-12-05" };
 
@@ -17,3 +17,9 @@ test("US-01 dates display as DD-MM-YYYY and convert from a local Date", () => {
   expect(toIso(new Date(2026, 11, 5))).toBe("2026-12-05");
 });
 test("US-01 unset dates ask for a pick", () => expect(validateTrip({ ...ok, start: "" }).start).toBe("Pick a start date."));
+
+test("formatRange shows day and month without leading zeros, and nothing when a date is missing", () => {
+  expect(formatRange("2026-11-23", "2026-11-28")).toBe("23 Nov - 28 Nov");
+  expect(formatRange("2026-09-05", "2026-10-02")).toBe("5 Sep - 2 Oct");
+  expect(formatRange("", "2026-10-02")).toBe("");
+});

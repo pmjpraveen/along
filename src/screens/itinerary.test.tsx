@@ -65,3 +65,16 @@ test("3.5 a rejected move shows the reason and reloads so the user sees the curr
   expect(await screen.findByRole("alert")).toHaveTextContent(/Someone else just changed/);
   expect(mockLoad).toHaveBeenCalledTimes(2);
 });
+
+test("an item outside the trip dates carries a warning badge, and one inside does not", async () => {
+  load({ is_outside_trip_range: true });
+  await render(<Itinerary />);
+  expect(await screen.findByLabelText("Outside trip dates")).toBeTruthy();
+});
+
+test("an item inside the trip dates has no such badge", async () => {
+  load({ is_outside_trip_range: false });
+  await render(<Itinerary />);
+  await screen.findByText("Lunch");
+  expect(screen.queryByLabelText("Outside trip dates")).toBeNull();
+});

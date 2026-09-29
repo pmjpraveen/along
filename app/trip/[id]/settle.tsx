@@ -1,3 +1,4 @@
+import { Alert } from "../../../src/components/Alert";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -50,7 +51,7 @@ export default function Settle() {
         <Text accessibilityLabel="Loading" style={s.body}>Loading…</Text>
       ) : !bal.ok ? (
         <View style={s.gap}>
-          <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {bal.message}</Text>
+          <Alert variant="negative">{bal.message}</Alert>
           <TextButton label="Retry" onPress={load} />
         </View>
       ) : (
@@ -63,7 +64,7 @@ export default function Settle() {
             <AmountInput label="Amount" value={text} onChange={setText} exponent={bal.currency.exponent} symbol={symbol} invalid={!!error} />
           </View>
           <Text maxFontSizeMultiplier={1.4} style={s.body}>This records a payment that already happened. It can't be edited afterwards.</Text>
-          {error && <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {error}</Text>}
+          {error && <Alert variant="negative">{error}</Alert>}
           <PrimaryButton label={busy ? "Recording…" : "Confirm payment"} onPress={save} />
         </>
       )}
@@ -76,7 +77,7 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   gap: { gap: space.s8 },
-  card: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.fog },
+  card: { padding: space.s16, borderRadius: radius.card, backgroundColor: color.neutralWash },
   who: { ...type.display, fontSize: 24, lineHeight: 28, color: color.forestInk },
   label: { ...type.label, color: color.charcoal },
   body: { ...type.body, color: color.slate },

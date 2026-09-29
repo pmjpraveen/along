@@ -29,29 +29,32 @@ export default function Layout() {
 
   return (
     <View style={{ flex: 1 }}>
+      {/* Order matters: the first available screen is where the app starts, so the invite link screen must not come first. */}
       <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="join/[token]" />
         <Stack.Protected guard={status === "in"}>
           <Stack.Screen name="index" />
-          <Stack.Screen name="create-trip" />
           <Stack.Screen name="notifications" />
-          <Stack.Screen name="passport" />
+          <Stack.Screen name="profile" />
+          <Stack.Screen name="history" />
+          {/* Forms rise from the bottom and dismiss back down (swipe or back), the same path in and out. */}
+          <Stack.Screen name="create-trip" options={{ presentation: "modal" }} />
           <Stack.Screen name="trip/[id]/people" />
           <Stack.Screen name="trip/[id]/activity" />
           <Stack.Screen name="trip/[id]/complete" />
           <Stack.Screen name="trip/[id]/memories" />
           <Stack.Screen name="trip/[id]/summary" />
           <Stack.Screen name="trip/[id]/itinerary" />
-          <Stack.Screen name="trip/[id]/add-item" />
+          <Stack.Screen name="trip/[id]/add-item" options={{ presentation: "modal" }} />
           <Stack.Screen name="trip/[id]/expenses" />
-          <Stack.Screen name="trip/[id]/add-expense" />
+          <Stack.Screen name="trip/[id]/add-expense" options={{ presentation: "modal" }} />
           <Stack.Screen name="trip/[id]/balances" />
-          <Stack.Screen name="trip/[id]/settle" />
+          <Stack.Screen name="trip/[id]/settle" options={{ presentation: "modal" }} />
         </Stack.Protected>
         <Stack.Protected guard={status === "out"}>
           <Stack.Screen name="welcome" />
           <Stack.Screen name="sign-in" />
         </Stack.Protected>
+        <Stack.Screen name="join/[token]" />
       </Stack>
       <OfflineBanner />
     </View>

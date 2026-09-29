@@ -43,7 +43,7 @@ test("US-05 a missing amount or title shows inline errors and saves nothing", as
   await screen.findByLabelText("Amount");
   await save();
   expect(await screen.findByText(/Enter an amount greater than zero/)).toBeTruthy();
-  expect(screen.getByText("⚠ What was it for?")).toBeTruthy();
+  expect(screen.getByText("Enter what this was for.")).toBeTruthy();
   expect(mockCreate).not.toHaveBeenCalled();
 });
 

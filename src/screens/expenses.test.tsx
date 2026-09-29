@@ -186,7 +186,8 @@ test("6.2 queued expenses of another trip are not shown here", async () => {
 test("6.2 a rejected queued expense shows why and can be discarded", async () => {
   mockQueued = [queuedItem({ status: "failed", error: "Couldn't save the expense. Try again." })];
   await render(<Expenses />);
-  expect(await screen.findByText(/Couldn't sync: Couldn't save the expense/)).toBeTruthy();
+  expect(await screen.findByText("Couldn't sync Taxi")).toBeTruthy();
+  expect(screen.getByText("Couldn't save the expense. Try again.")).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Discard Taxi" }));
   expect(mockDiscard).toHaveBeenCalledWith("k1");
 });

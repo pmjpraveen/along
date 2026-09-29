@@ -1,9 +1,11 @@
+import { Alert } from "../../../src/components/Alert";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createExpense, ExpenseDetail, FormData, loadExpense, loadExpenseForm, updateExpense } from "../../../src/api/expenses";
 import { queueExpense } from "../../../src/offline/sync";
+import { FieldLabel, FieldMessage, TextField } from "../../../src/components/TextField";
 import { PrimaryButton, TextButton } from "../../../src/components/Buttons";
 import { CustomAmounts } from "../../../src/components/CustomAmounts";
 import { ParticipantPicker } from "../../../src/components/ParticipantPicker";
@@ -75,7 +77,7 @@ export default function AddExpense() {
   const save = async () => {
     if (busy || !form) return;
     const minor = parseMinor(amount, form.currency.exponent);
-    const e = { ...(minor ? {} : { amount: "Enter an amount greater than zero." }), ...(title.trim() ? {} : { title: "What was it for?" }) };
+    const e = { ...(minor ? {} : { amount: "Enter an amount greater than zero." }), ...(title.trim() ? {} : { title: "Enter what this was for." }) };
     setErrors(e);
     setFormError(null);
     if (!minor || Object.keys(e).length) return;
@@ -141,7 +143,7 @@ export default function AddExpense() {
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>{expenseId ? "Edit expense" : "Add expense"}</Text>
         {loadError ? (
           <View style={s.field}>
-            <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {loadError}</Text>
+            <Alert variant="negative">{loadError}</Alert>
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : !form ? (
@@ -149,18 +151,16 @@ export default function AddExpense() {
         ) : (
           <>
             <View style={s.field}>
-              <Text maxFontSizeMultiplier={1.4} style={s.label}>Amount</Text>
+              <FieldLabel>Amount</FieldLabel>
               <AmountInput label="Amount" value={amount} onChange={setAmount} exponent={form.currency.exponent} symbol={symbol} invalid={!!errors.amount} />
-              {errors.amount && <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {errors.amount}</Text>}
+              {errors.amount && <FieldMessage status="error">{errors.amount}</FieldMessage>}
             </View>
             <View style={s.field}>
-              <Text maxFontSizeMultiplier={1.4} style={s.label}>What was it for?</Text>
-              <TextInput accessibilityLabel="Title" placeholder="Lunch" placeholderTextColor={color.slate} value={title}
-                onChangeText={setTitle} autoCapitalize="sentences" style={[s.input, errors.title ? s.inputError : null]} />
-              {errors.title && <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {errors.title}</Text>}
+              <TextField label="What was it for?" accessibilityLabel="Title" placeholder="Lunch" value={title} onChangeText={setTitle}
+                autoCapitalize="sentences" status={errors.title ? "error" : undefined} message={errors.title} />
             </View>
             <View style={s.field}>
-              <Text maxFontSizeMultiplier={1.4} style={s.label}>Paid by</Text>
+              <FieldLabel>Paid by</FieldLabel>
               {pickingPayer ? (
                 <PayerPicker members={form.members} selected={payerId ?? ""} onChange={(id) => { setPayerId(id); setPickingPayer(false); }} />
               ) : (
@@ -168,7 +168,7 @@ export default function AddExpense() {
               )}
             </View>
             <View style={s.field}>
-              <Text maxFontSizeMultiplier={1.4} style={s.label}>Split</Text>
+              <FieldLabel>Split</FieldLabel>
               <View style={s.chips}>
                 {METHODS.map((m) => (
                   <Pressable key={m.key} accessibilityRole="radio" accessibilityLabel={m.label} accessibilityState={{ selected: method === m.key }}
@@ -204,7 +204,7 @@ export default function AddExpense() {
               )}
               {method === "equal" && shares && form && <Text maxFontSizeMultiplier={1.4} style={s.hint}>{shareSummary(shares, form.currency.exponent, form.currency.code)}</Text>}
             </View>
-            {formError && <Text accessibilityRole="alert" maxFontSizeMultiplier={1.4} style={s.error}>⚠ {formError}</Text>}
+            {formError && <Alert variant="negative">{formError}</Alert>}
             <PrimaryButton label={busy ? "Saving…" : editing ? "Save changes" : "Save"} onPress={save} />
           </>
         )}
@@ -220,11 +220,11 @@ const s = StyleSheet.create({
   field: { gap: space.s8 },
   label: { ...type.label, color: color.charcoal },
   hint: { ...type.body, color: color.slate },
-  input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderWidth: 1.5, borderColor: color.fog, ...type.body, color: color.obsidian },
+  input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderWidth: 1.5, borderColor: color.borderNeutral, ...type.body, color: color.obsidian },
   inputError: { borderColor: color.alarmRed },
   error: { ...type.label, color: color.alarmRed },
   chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s8 },
-  chip: { minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.pill, borderWidth: 1.5, borderColor: color.fog },
-  chipOn: { borderColor: color.forestInk, backgroundColor: color.daylight },
+  chip: { minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.pill, borderWidth: 1.5, borderColor: color.borderNeutral },
+  chipOn: { borderColor: color.forestInk, backgroundColor: color.brightGreen },
   chipText: { ...type.label, color: color.forestInk },
 });
