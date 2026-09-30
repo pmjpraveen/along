@@ -1,12 +1,16 @@
 import { Alert } from "../../../src/components/Alert";
+import { toast } from "../../../src/stores/toast";
+import { haptic } from "../../../src/haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { ChevronRight, X } from "lucide-react-native";
 import { useEffect, useRef, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createExpense, ExpenseDetail, FormData, loadExpense, loadExpenseForm, updateExpense } from "../../../src/api/expenses";
 import { queueExpense } from "../../../src/offline/sync";
 import { FieldLabel, FieldMessage, TextField } from "../../../src/components/TextField";
-import { PrimaryButton, TextButton } from "../../../src/components/Buttons";
+import { Button, TextButton } from "../../../src/components/Buttons";
 import { CustomAmounts } from "../../../src/components/CustomAmounts";
 import { ParticipantPicker } from "../../../src/components/ParticipantPicker";
 import { PayerPicker } from "../../../src/components/PayerPicker";
@@ -14,7 +18,7 @@ import { AmountInput } from "../../../src/components/AmountInput";
 import { formatMinor, parseMinor } from "../../../src/domain/money";
 import { customError, customRemaining, customShares, formatPercent, percentError, shareSummary, sharesError, splitEqual, splitPercentage, splitShares } from "../../../src/domain/split";
 import { toIso } from "../../../src/domain/trip";
-import { color, radius, space, type } from "../../../src/theme/tokens";
+import { color, font, radius, space, type } from "../../../src/theme/tokens";
 
 type Method = "equal" | "custom" | "percentage" | "shares";
 const METHODS: { key: Method; label: string }[] = [
@@ -101,8 +105,8 @@ export default function AddExpense() {
     // No connection: keep the expense on this phone with its idempotency key; it syncs once when the connection returns.
     if (!editing && !r.ok && r.retry) await queueExpense({ ...common, tripId: id, key, ...(payerId && payerId !== me?.id && { paidBy: payerId }) });
     setBusy(false);
-    if (r.ok || (!editing && !r.ok && r.retry)) router.back();
-    else setFormError(r.message);
+    if (r.ok || (!editing && !r.ok && r.retry)) { haptic.success(); toast(r.ok ? (editing ? "Expense updated" : "Expense saved") : "Saved on this phone. Will sync when you're back online."); router.back(); }
+    else { haptic.warn(); setFormError(r.message); }
   };
 
   // Live equal split: recomputed on every amount or participant change, so the numbers are never stale.
@@ -139,8 +143,11 @@ export default function AddExpense() {
   const symbol = form ? formatMinor(0, form.currency.exponent, form.currency.code).replace(/[\d.,]/g, "") : "";
   return (
     <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>{expenseId ? "Edit expense" : "Add expense"}</Text>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
+          <X size={22} color={color.forestInk} strokeWidth={2} />
+        </Pressable>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>{expenseId ? "Edit expense" : "Add expense"}</Text>
         {loadError ? (
           <View style={s.field}>
             <Alert variant="negative">{loadError}</Alert>
@@ -160,23 +167,25 @@ export default function AddExpense() {
                 autoCapitalize="sentences" status={errors.title ? "error" : undefined} message={errors.title} />
             </View>
             <View style={s.field}>
-              <FieldLabel>Paid by</FieldLabel>
               {pickingPayer ? (
-                <PayerPicker members={form.members} selected={payerId ?? ""} onChange={(id) => { setPayerId(id); setPickingPayer(false); }} />
+                <>
+                  <FieldLabel>Paid by</FieldLabel>
+                  <PayerPicker members={form.members} selected={payerId ?? ""} onChange={(id) => { setPayerId(id); setPickingPayer(false); }} />
+                </>
               ) : (
-                <TextButton label={`${payer?.isMe || !payer ? "You" : payer.name} paid. Change who paid`} onPress={() => setPickingPayer(true)} />
+                <PickRow label="Paid by" value={payer?.isMe || !payer ? "You" : payer.name} spoken={`${payer?.isMe || !payer ? "You" : payer.name} paid. Change who paid`} onPress={() => setPickingPayer(true)} />
               )}
             </View>
             <View style={s.field}>
               <FieldLabel>Split</FieldLabel>
-              <View style={s.chips}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipScroll} contentContainerStyle={s.chips} accessibilityRole="radiogroup" accessibilityLabel="Split method">
                 {METHODS.map((m) => (
                   <Pressable key={m.key} accessibilityRole="radio" accessibilityLabel={m.label} accessibilityState={{ selected: method === m.key }}
                     onPress={() => switchMethod(m.key)} style={[s.chip, method === m.key && s.chipOn]}>
-                    <Text maxFontSizeMultiplier={1.3} style={s.chipText}>{m.label}</Text>
+                    <Text maxFontSizeMultiplier={1.3} style={[s.chipText, method === m.key && s.chipTextOn]}>{m.label}</Text>
                   </Pressable>
                 ))}
-              </View>
+              </ScrollView>
               {pickingSplit ? (
                 <>
                   <ParticipantPicker selected={splitWith ?? []} onChange={setSplitWith} amounts={method === "equal" ? amounts : undefined}
@@ -184,8 +193,8 @@ export default function AddExpense() {
                   <TextButton label="Done" onPress={() => setPickingSplit(false)} />
                 </>
               ) : (
-                <TextButton label={`${!splitWith || splitWith.length === form.members.length ? "Everyone" : `${splitWith.length} of ${form.members.length} people`}. Change who's in`}
-                  onPress={() => setPickingSplit(true)} />
+                <PickRow label="Split with" value={!splitWith || splitWith.length === form.members.length ? "Everyone" : `${splitWith.length} of ${form.members.length} people`}
+                  spoken={`${!splitWith || splitWith.length === form.members.length ? "Everyone" : `${splitWith.length} of ${form.members.length} people`}. Change who's in`} onPress={() => setPickingSplit(true)} />
               )}
               {method === "custom" && form && (
                 <CustomAmounts people={form.members.filter((m) => splitWith?.includes(m.id)).map((m) => ({ id: m.id, name: m.isMe ? "You" : m.name }))}
@@ -205,26 +214,51 @@ export default function AddExpense() {
               {method === "equal" && shares && form && <Text maxFontSizeMultiplier={1.4} style={s.hint}>{shareSummary(shares, form.currency.exponent, form.currency.code)}</Text>}
             </View>
             {formError && <Alert variant="negative">{formError}</Alert>}
-            <PrimaryButton label={busy ? "Saving…" : editing ? "Save changes" : "Save"} onPress={save} />
           </>
         )}
       </ScrollView>
+      {form && (
+        <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
+          {/* Neutral until there is an amount and a name, then the one green action; pressing it early still explains what is missing. */}
+          <Button label={busy ? "Saving…" : editing ? "Save changes" : "Save"} onPress={save} type={liveMinor && title.trim() ? "primary" : "secondaryNeutral"} size="large" />
+        </View>
+      )}
     </KeyboardAvoidingView>
   );
 }
 
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
-  content: { paddingHorizontal: space.s20, gap: space.s16 },
-  heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
+  content: { paddingHorizontal: space.s20, paddingTop: space.s20, paddingBottom: space.s24, gap: space.s20 },
+  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.neutralWash, alignItems: "center", justifyContent: "center" },
+  heading: { ...type.sheetTitle, color: color.obsidian },
+  footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },
+  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s16, minHeight: 64, paddingHorizontal: space.s16, paddingVertical: space.s12, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.neutralWash },
+  rowLabel: { ...type.fieldMessage, color: color.slate },
+  rowValue: { ...type.label, fontSize: 17, color: color.obsidian },
   field: { gap: space.s8 },
   label: { ...type.label, color: color.charcoal },
   hint: { ...type.body, color: color.slate },
   input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.borderNeutral, ...type.body, color: color.obsidian },
   inputError: { borderColor: color.alarmRed },
   error: { ...type.label, color: color.alarmRed },
-  chips: { flexDirection: "row", flexWrap: "wrap", gap: space.s8 },
-  chip: { minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.borderNeutral },
-  chipOn: { borderColor: color.forestInk, backgroundColor: color.brightGreen },
-  chipText: { ...type.label, color: color.forestInk },
+  chipScroll: { flexGrow: 0 },
+  chips: { gap: space.s8 },
+  chip: { minHeight: 44, paddingHorizontal: space.s16, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
+  chipOn: { backgroundColor: color.darkMaroon },
+  chipText: { ...type.buttonLarge, fontFamily: font.regular, color: color.slate },
+  chipTextOn: { color: color.brightOrange },
 });
+
+// A tappable summary row ("Paid by / You") that opens the picker for that choice.
+function PickRow({ label, value, spoken, onPress }: { label: string; value: string; spoken: string; onPress: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" accessibilityLabel={spoken} onPress={onPress} style={s.row}>
+      <View>
+        <Text maxFontSizeMultiplier={1.4} style={s.rowLabel}>{label}</Text>
+        <Text maxFontSizeMultiplier={1.4} style={s.rowValue}>{value}</Text>
+      </View>
+      <ChevronRight size={20} color={color.forestInk} strokeWidth={1.75} />
+    </Pressable>
+  );
+}

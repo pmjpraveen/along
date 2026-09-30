@@ -1,7 +1,8 @@
 import { useGlobalSearchParams, useRouter } from "expo-router";
 import { X } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { addGuest } from "../../../src/api/members";
 import { PrimaryButton } from "../../../src/components/Buttons";

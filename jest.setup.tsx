@@ -11,3 +11,9 @@ jest.mock("react-native-maps", () => {
   const { View } = require("react-native");
   return { __esModule: true, default: ({ children }: { children?: unknown }) => <View>{children as never}</View>, Marker: () => null };
 });
+
+// Haptics are native.
+jest.mock("expo-haptics", () => ({
+  impactAsync: () => Promise.resolve(), notificationAsync: () => Promise.resolve(),
+  ImpactFeedbackStyle: { Light: "light" }, NotificationFeedbackType: { Success: "success", Warning: "warning" },
+}));

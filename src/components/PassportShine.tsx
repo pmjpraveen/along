@@ -1,23 +1,25 @@
+import { useIsFocused } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming } from "react-native-reanimated";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 
-// A glint that sweeps across the passport cover, then rests, forever. Two slanted bands of light (a wide soft one and a thin bright one)
+// A glint that sweeps across the passport cover, then rests, three times when the screen opens, and only while it is in front. Two slanted bands of light (a wide soft one and a thin bright one)
 // travel left to right, clipped by the card. With Reduce Motion on it stays still, resting on the cover. Ignores touches.
 const SWEEP_MS = 1600;
 const REST_MS = 3200;
 
 export function PassportShine() {
   const reduced = useReducedMotion();
+  const focused = useIsFocused();
   const [width, setWidth] = useState(0);
   const x = useSharedValue(-200);
 
   useEffect(() => {
-    if (reduced || width === 0) { x.value = width * 0.38; return; }
+    if (reduced || width === 0 || !focused) { x.value = width * 0.38; return; }
     x.value = -200;
-    x.value = withRepeat(withDelay(REST_MS, withTiming(width + 200, { duration: SWEEP_MS, easing: Easing.inOut(Easing.quad) })), -1, false);
-  }, [reduced, width, x]);
+    x.value = withRepeat(withDelay(REST_MS, withTiming(width + 200, { duration: SWEEP_MS, easing: Easing.inOut(Easing.quad) })), 3, false);
+  }, [reduced, focused, width, x]);
 
   const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
   return (

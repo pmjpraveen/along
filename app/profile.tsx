@@ -3,7 +3,8 @@ import { Bell, ChevronLeft, FileText, Globe, LogOut, Shield, Trash2 } from "luci
 
 const GOLD = "#e8cf8a";   // the gold used for embossing on a passport cover
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadStamps, StampsResult } from "../src/api/passport";
 import { loadPreferences, setPreference } from "../src/api/notifications";

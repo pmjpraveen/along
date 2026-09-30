@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Pressable } from "./Pressable";
 import { addMonths, dayLabel, isoOf, monthGrid, monthsFrom, monthTitle, nextRange, parseIso, Range, rangeRole, WEEKDAYS, Ym } from "../domain/calendar";
 import { color, font, radius, shadow, space, type } from "../theme/tokens";
 

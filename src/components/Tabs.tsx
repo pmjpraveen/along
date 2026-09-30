@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Pressable } from "./Pressable";
 import { color, font, space, type } from "../theme/tokens";
 
 // Figma "Tab": underlined text tabs that organise one screen into sections. Selected: Forest Ink medium text with a 2px

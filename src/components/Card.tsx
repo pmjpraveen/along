@@ -1,5 +1,6 @@
 import { ReactNode, useState } from "react";
-import { Pressable, StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
+import { Pressable } from "./Pressable";
 import { Check } from "lucide-react-native";
 import { color, radius, space } from "../theme/tokens";
 

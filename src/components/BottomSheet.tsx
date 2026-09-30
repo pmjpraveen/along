@@ -1,5 +1,5 @@
 import { ReactNode, useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, { cancelAnimation, Extrapolation, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { X } from "lucide-react-native";
@@ -13,6 +13,7 @@ import { Button, ButtonType } from "./Buttons";
 type Props = {
   visible: boolean;
   onClose: () => void;
+  onClosed?: () => void;                // after the sheet has fully left, so another screen can safely be presented
   title: string;
   body?: string;                        // a line or two under the title
   children?: ReactNode;                 // the sheet's content; scrolls if it is taller than the screen allows
@@ -22,7 +23,7 @@ type Props = {
 // The design system's bottom sheet (Figma "bottom sheet"): a white container with rounded top corners, a close button at the
 // top left (44pt circle on the neutral wash), a header and optional body, content, and a footer with one primary button above
 // a hairline. It slides up over a Forest Ink scrim; tapping the scrim, the close button, or the system back gesture closes it.
-export function BottomSheet({ visible, onClose, title, body, children, actionLabel, onAction, actionBusy, actionDisabled, actionType = "primary" }: Props) {
+export function BottomSheet({ visible, onClose, onClosed, title, body, children, actionLabel, onAction, actionBusy, actionDisabled, actionType = "primary" }: Props) {
   const { bottom } = useSafeAreaInsets();
   const reduceMotion = useReducedMotion();   // with Reduce Motion the sheet fades in and out instead of moving
   const { height: screenH } = useWindowDimensions();
@@ -39,7 +40,7 @@ export function BottomSheet({ visible, onClose, title, body, children, actionLab
 
   useEffect(() => {
     if (visible) { setMounted(true); y.value = reduceMotion ? 0 : screenH; settle(0, 0); }
-    else settle(screenH, 0, () => setMounted(false));
+    else settle(screenH, 0, () => { setMounted(false); if (Platform.OS !== "ios") onClosed?.(); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
@@ -64,7 +65,7 @@ export function BottomSheet({ visible, onClose, title, body, children, actionLab
   const scrimStyle = useAnimatedStyle(() => ({ opacity: interpolate(y.value, [0, screenH], [1, 0], Extrapolation.CLAMP) }));
   const dismiss = () => settle(sheetH.value, 0, onClose);
   return (
-    <Modal transparent visible={mounted} animationType={reduceMotion ? "fade" : "none"} onRequestClose={dismiss} accessibilityViewIsModal>
+    <Modal transparent visible={mounted} onDismiss={onClosed} animationType={reduceMotion ? "fade" : "none"} onRequestClose={dismiss} accessibilityViewIsModal>
       <GestureHandlerRootView style={s.root}>
         <Animated.View style={[s.scrimFill, scrimStyle]}>
           <Pressable accessibilityRole="button" accessibilityLabel={`Close ${title}`} onPress={dismiss} style={s.scrim} />

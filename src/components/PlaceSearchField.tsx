@@ -1,6 +1,7 @@
 import { MapPin } from "lucide-react-native";
 import { useState } from "react";
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { Pressable } from "./Pressable";
 import { FoundPlace } from "../domain/places";
 import { usePlaceSearch } from "../hooks/usePlaceSearch";
 import { color, radius, space, type } from "../theme/tokens";

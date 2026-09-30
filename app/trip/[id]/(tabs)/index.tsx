@@ -1,7 +1,11 @@
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, MapPin, Settings, UserPlus } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable } from "../../../../src/components/Pressable";
+import Animated, { FadeIn } from "react-native-reanimated";
+import { useReducedMotion } from "../../../../src/hooks/useReducedMotion";
+import { motion } from "../../../../src/theme/motion";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { ItineraryResult, loadItinerary, moveItem } from "../../../../src/api/itinerary";
@@ -36,6 +40,7 @@ const placeLabel = (i: Item): string | null => {
 export default function Trip() {
   const { id } = useGlobalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
+  const reduced = useReducedMotion();
   const router = useRouter();
   const [state, setState] = useState<ItineraryResult | null>(null);
   const [members, setMembers] = useState<Member[]>([]);
@@ -153,6 +158,7 @@ export default function Trip() {
         {ok && ok.items.length > 0 && (
           <>
             {moveError && <Alert variant="negative">{moveError}</Alert>}
+            <Animated.View key={selected} entering={reduced ? undefined : FadeIn.duration(motion.fadeMs)} style={s.dayList}>
             {items.length === 0 ? (
               <View style={s.gap}>
                 <Text maxFontSizeMultiplier={1.4} style={s.text}>Nothing planned for this day.</Text>
@@ -187,6 +193,7 @@ export default function Trip() {
                 </View>
               ))
             )}
+            </Animated.View>
           </>
         )}
       </View>
@@ -232,5 +239,6 @@ const s = StyleSheet.create({
   place: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   placeText: { ...type.fieldMessage, flexShrink: 1, color: color.charcoal },
   gap: { gap: space.s8 },
+  dayList: { gap: space.s16 },
   text: { ...type.fieldValue, color: color.charcoal },
 });

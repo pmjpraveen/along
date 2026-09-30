@@ -1,4 +1,5 @@
-import { Linking, Pressable, StyleSheet, View } from "react-native";
+import { Linking, StyleSheet, View } from "react-native";
+import { Pressable } from "./Pressable";
 import MapView, { Marker } from "react-native-maps";
 import { mapsOpenUrl, Place } from "../domain/maps";
 import { color, radius } from "../theme/tokens";

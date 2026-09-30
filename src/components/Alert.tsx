@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Pressable } from "./Pressable";
 import { CircleAlert, CircleCheck, CircleX, Info, X } from "lucide-react-native";
 import { color, radius, space, type } from "../theme/tokens";
 import { Button } from "./Buttons";

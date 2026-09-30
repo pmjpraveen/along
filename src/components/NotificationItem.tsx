@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Pressable } from "./Pressable";
 import { Part } from "../domain/notifications";
 import { color, font, space, type } from "../theme/tokens";
 import { Avatar } from "./Avatar";

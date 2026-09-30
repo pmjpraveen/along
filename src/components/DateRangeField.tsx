@@ -1,6 +1,7 @@
 import { ChevronRight } from "lucide-react-native";
 import { useState } from "react";
-import { Pressable, StyleSheet, Text } from "react-native";
+import { StyleSheet, Text } from "react-native";
+import { Pressable } from "./Pressable";
 import { Range } from "../domain/calendar";
 import { formatDate, toIso } from "../domain/trip";
 import { color, radius, space, type } from "../theme/tokens";

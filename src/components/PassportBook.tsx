@@ -1,7 +1,8 @@
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { ReactNode, useRef, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
-import Animated, { interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Pressable } from "./Pressable";
+import Animated, { interpolate, runOnJS, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { color, font, radius, space } from "../theme/tokens";
 
@@ -14,13 +15,19 @@ export function PassportBook({ pages, firstNumber = 1, tint }: { pages: ReactNod
   const ref = useRef<ScrollView>(null);
   const x = useSharedValue(0);
   const [index, setIndex] = useState(0);
-  const onScroll = useAnimatedScrollHandler((e) => { x.value = e.contentOffset.x; });
+  // The page label follows the page that is nearest the middle while it turns, not only after it settles.
+  const nearest = useSharedValue(0);
+  const onScroll = useAnimatedScrollHandler((e) => {
+    x.value = e.contentOffset.x;
+    const n = Math.round(e.contentOffset.x / width);
+    if (n !== nearest.value) { nearest.value = n; runOnJS(setIndex)(n); }
+  });
   const goTo = (i: number) => { const n = Math.max(0, Math.min(pages.length - 1, i)); ref.current?.scrollTo({ x: n * width, animated: !reduced }); setIndex(n); };
 
   return (
     <View>
       <Animated.ScrollView ref={ref as never} horizontal pagingEnabled showsHorizontalScrollIndicator={false} onScroll={onScroll} scrollEventThrottle={16}
-        decelerationRate="fast" onMomentumScrollEnd={(e) => setIndex(Math.round(e.nativeEvent.contentOffset.x / width))} accessibilityLabel="Passport pages">
+        decelerationRate="fast" accessibilityLabel="Passport pages">
         {pages.map((p, i) => <Leaf key={i} i={i} x={x} width={width} swing={!reduced}>{p}</Leaf>)}
       </Animated.ScrollView>
       <View style={s.bar}>

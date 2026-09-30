@@ -1,7 +1,10 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { toast } from "../../../src/stores/toast";
+import { haptic } from "../../../src/haptics";
 import { X } from "lucide-react-native";
 import { useEffect, useMemo, useState } from "react";
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createItem, loadItinerary } from "../../../src/api/itinerary";
 import { resolveLocation, ResolvedLocation } from "../../../src/api/location";
@@ -55,7 +58,7 @@ export default function AddItem() {
     const loc = resolved?.text === location.trim() ? resolved : location.trim() ? await resolveLocation(location) : undefined;
     const r = await createItem({ tripId: id, title, type: "activity", day: date, startTime: time, participantIds: [], location: loc ?? undefined, description: message });
     setBusy(false);
-    if (r.ok) router.back();
+    if (r.ok) { haptic.success(); toast("Plan added"); router.back(); }
     else setFormError(r.message);
   };
 

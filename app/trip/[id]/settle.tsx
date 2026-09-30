@@ -1,4 +1,6 @@
 import { Alert } from "../../../src/components/Alert";
+import { toast } from "../../../src/stores/toast";
+import { haptic } from "../../../src/haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -39,7 +41,7 @@ export default function Settle() {
     setError(null);
     const r = await createSettlement({ tripId: id, fromMemberId: from, toMemberId: to, amountMinor: minor, key });
     setBusy(false);
-    if (r.ok) router.back();
+    if (r.ok) { haptic.success(); toast("Payment recorded"); router.back(); }
     else setError(r.message);
   };
 

@@ -1,8 +1,10 @@
 import { Alert } from "../../../src/components/Alert";
+import { haptic } from "../../../src/haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadTripSummary, SummaryResult } from "../../../src/api/passport";
 import { completeTrip, stampForTrip } from "../../../src/api/trips";
@@ -33,7 +35,7 @@ export default function Complete() {
     setError(null);
     const r = await completeTrip(id);
     setBusy(false);
-    if (r.ok) setDone(true);
+    if (r.ok) { haptic.success(); setDone(true); }
     else setError(r.message);
   };
 

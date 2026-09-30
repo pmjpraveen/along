@@ -4,6 +4,7 @@ import { View } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect } from "react";
 import { OfflineBanner } from "../src/components/OfflineBanner";
+import { Toast } from "../src/components/Toast";
 import { StatusBarScrim } from "../src/components/StatusBarScrim";
 import { startConnectivity } from "../src/offline/connectivity";
 import { startSync } from "../src/offline/sync";
@@ -52,6 +53,7 @@ export default function Layout() {
       </Stack>
       <StatusBarScrim />
       <OfflineBanner />
+      <Toast />
     </View>
   );
 }

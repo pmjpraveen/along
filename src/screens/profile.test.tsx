@@ -22,7 +22,7 @@ jest.mock("../api/notifications", () => ({
 jest.mock("../api/passport", () => ({ loadStamps: (...a: unknown[]) => mockStamps(...a), loadTripSummary: (...a: unknown[]) => mockSummary(...a) }));
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush, back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
-  useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
+  useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]), useIsFocused: () => true,
 }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 

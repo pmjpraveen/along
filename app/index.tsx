@@ -1,7 +1,8 @@
 import { Redirect, useFocusEffect, useRouter } from "expo-router";
 import { Bell, History, Users } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { unreadCount } from "../src/api/notifications";

@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { ActivityIndicator, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Platform, StyleSheet, Text, View } from "react-native";
+import { Pressable } from "./Pressable";
 import { color, radius, space, type } from "../theme/tokens";
 
 export type ButtonType = "primary" | "secondary" | "secondaryNeutral" | "destructive" | "tertiary";

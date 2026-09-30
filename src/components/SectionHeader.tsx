@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Pressable } from "./Pressable";
 import { color, space, type } from "../theme/tokens";
 
 // Figma "Section header": `section` is a large title with an optional underlined link on the right ("See all");

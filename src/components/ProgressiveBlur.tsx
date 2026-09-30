@@ -1,11 +1,16 @@
 import { BlurView } from "expo-blur";
 import { StyleSheet, View } from "react-native";
+import { useReduceTransparency } from "../hooks/useReduceTransparency";
+import { color } from "../theme/tokens";
 
 // A blur that thins out smoothly. React Native cannot mask a blur (a masked blur view stops blurring), so this stacks many
 // blur layers that each reach a little less far than the last; where more layers overlap the blur is stronger. With this many
 // layers of low strength the steps are far too small to see. `edge` is the fully blurred side. Ignores touches.
 const LAYERS = 14;
+// With Reduce Transparency on it is a near-solid page colour instead of a blur.
 export function ProgressiveBlur({ edge }: { edge: "top" | "bottom" }) {
+  const solid = useReduceTransparency();
+  if (solid) return <View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: color.paper, opacity: 0.94 }]} />;
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill}>
       {Array.from({ length: LAYERS }, (_, i) => (

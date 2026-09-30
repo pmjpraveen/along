@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Pressable } from "./Pressable";
 import { color, font, radius, space, type } from "../theme/tokens";
 
 // Figma "Segmented control": 2-3 alike options in a Neutral Wash pill; the selected one is a white pill with medium-weight text.

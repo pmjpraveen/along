@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
+import { Pressable } from "./Pressable";
 import { Check } from "lucide-react-native";
 import type { Member } from "../api/members";
 import { Avatar } from "./Avatar";

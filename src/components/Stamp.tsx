@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet } from "react-native";
+import { StyleSheet } from "react-native";
+import { Pressable } from "./Pressable";
 import Svg, { Circle, Defs, Ellipse, G, Mask, Path, RadialGradient, Rect, Stop, Text as SvgText, TextPath } from "react-native-svg";
 import { StampKind, StampShape, stampDate } from "../domain/stampShape";
 import { stampWear } from "../domain/stampWear";
