@@ -1,7 +1,8 @@
 import { ReactNode, useEffect, useState } from "react";
+import { scheduleOnRN } from "react-native-worklets";
 import { Modal, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
-import Animated, { cancelAnimation, Extrapolation, interpolate, runOnJS, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import Animated, { cancelAnimation, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 import { X } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { rubberband, shouldDismiss } from "../domain/gesture";
@@ -35,7 +36,7 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
   // One spring drives every move and always starts from where the sheet is right now, so any move can be interrupted.
   const settle = (to: number, velocity: number, done?: () => void) => {
     if (reduceMotion) { y.value = to; done?.(); return; }
-    y.value = withSpring(to, { ...motion.sheet, velocity, overshootClamping: to !== 0 }, (finished) => { if (finished && done) runOnJS(done)(); });
+    y.value = withSpring(to, { ...motion.sheet, velocity, overshootClamping: to !== 0 }, (finished) => { if (finished && done) scheduleOnRN(done); });
   };
 
   useEffect(() => {
@@ -55,7 +56,7 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
     })
     .onEnd((e) => {
       if (shouldDismiss(startY.value + e.translationY, e.velocityY, sheetH.value)) {
-        y.value = withSpring(sheetH.value, { ...motion.sheet, velocity: e.velocityY, overshootClamping: true }, (finished) => { if (finished) runOnJS(onClose)(); });
+        y.value = withSpring(sheetH.value, { ...motion.sheet, velocity: e.velocityY, overshootClamping: true }, (finished) => { if (finished) scheduleOnRN(onClose); });
       } else {
         y.value = withSpring(0, { ...motion.sheet, velocity: e.velocityY });
       }

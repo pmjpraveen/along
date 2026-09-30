@@ -181,7 +181,7 @@ export default function AddExpense() {
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipScroll} contentContainerStyle={s.chips} accessibilityRole="radiogroup" accessibilityLabel="Split method">
                 {METHODS.map((m) => (
                   <Pressable key={m.key} accessibilityRole="radio" accessibilityLabel={m.label} accessibilityState={{ selected: method === m.key }}
-                    onPress={() => switchMethod(m.key)} style={[s.chip, method === m.key && s.chipOn]}>
+                    onPress={() => { if (method !== m.key) haptic.select(); switchMethod(m.key); }} style={[s.chip, method === m.key && s.chipOn]}>
                     <Text maxFontSizeMultiplier={1.3} style={[s.chipText, method === m.key && s.chipTextOn]}>{m.label}</Text>
                   </Pressable>
                 ))}

@@ -75,7 +75,7 @@ export default function AddItem() {
             {numbered.map(({ d, n }) => {
               const on = d === date;
               return (
-                <Pressable key={d} accessibilityRole="tab" accessibilityLabel={`Day ${n}, ${short(d)}`} accessibilityState={{ selected: on }} onPress={() => setDate(d)} style={[s.chip, on && s.chipOn]}>
+                <Pressable key={d} accessibilityRole="tab" accessibilityLabel={`Day ${n}, ${short(d)}`} accessibilityState={{ selected: on }} onPress={() => { if (!on) haptic.select(); setDate(d); }} style={[s.chip, on && s.chipOn]}>
                   <Text maxFontSizeMultiplier={1.3} style={[s.chipText, on && s.chipTextOn]}>
                     {short(d)} - <Text style={[s.chipDay, on && s.chipTextOn]}>Day {n}</Text>
                   </Text>

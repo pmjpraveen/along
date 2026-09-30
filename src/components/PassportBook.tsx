@@ -1,8 +1,9 @@
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { scheduleOnRN } from "react-native-worklets";
 import { ReactNode, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "./Pressable";
-import Animated, { interpolate, runOnJS, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
+import Animated, { interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { color, font, radius, space } from "../theme/tokens";
 
@@ -20,7 +21,7 @@ export function PassportBook({ pages, firstNumber = 1, tint }: { pages: ReactNod
   const onScroll = useAnimatedScrollHandler((e) => {
     x.value = e.contentOffset.x;
     const n = Math.round(e.contentOffset.x / width);
-    if (n !== nearest.value) { nearest.value = n; runOnJS(setIndex)(n); }
+    if (n !== nearest.value) { nearest.value = n; scheduleOnRN(setIndex, n); }
   });
   const goTo = (i: number) => { const n = Math.max(0, Math.min(pages.length - 1, i)); ref.current?.scrollTo({ x: n * width, animated: !reduced }); setIndex(n); };
 

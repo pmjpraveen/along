@@ -1,4 +1,5 @@
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
+import { haptic } from "../../../../src/haptics";
 import { ChevronLeft, MapPin, Settings, UserPlus } from "lucide-react-native";
 import { useCallback, useMemo, useRef, useState } from "react";
 import { ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, View } from "react-native";
@@ -138,7 +139,7 @@ export default function Trip() {
                 const on = d === selected;
                 return (
                   <Pressable key={d} accessibilityRole="tab" accessibilityLabel={`Day ${n + 1}, ${formatDate(d)}`} accessibilityState={{ selected: on }}
-                    onPress={() => setPicked(d)} style={[s.chip, on && s.chipOn]}>
+                    onPress={() => { if (!on) haptic.select(); setPicked(d); }} style={[s.chip, on && s.chipOn]}>
                     <Text maxFontSizeMultiplier={1.3} style={[s.chipText, on && s.chipTextOn]}>Day {n + 1}</Text>
                   </Pressable>
                 );

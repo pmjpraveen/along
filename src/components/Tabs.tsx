@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { haptic } from "../haptics";
 import { Pressable } from "./Pressable";
 import { color, font, space, type } from "../theme/tokens";
 
@@ -12,7 +13,7 @@ export function Tabs<T extends string>({ tabs, value, onChange, accessibilityLab
       {tabs.map((t) => {
         const on = t.value === value;
         return (
-          <Pressable key={t.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => on || onChange(t.value)} style={[s.tab, on && s.on]}>
+          <Pressable key={t.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => on || (haptic.select(), onChange(t.value))} style={[s.tab, on && s.on]}>
             <Text maxFontSizeMultiplier={1.3} style={[s.label, on ? s.labelOn : s.labelOff]}>{t.label}</Text>
           </Pressable>
         );

@@ -14,6 +14,6 @@ jest.mock("react-native-maps", () => {
 
 // Haptics are native.
 jest.mock("expo-haptics", () => ({
-  impactAsync: () => Promise.resolve(), notificationAsync: () => Promise.resolve(),
+  impactAsync: () => Promise.resolve(), selectionAsync: () => Promise.resolve(), notificationAsync: () => Promise.resolve(),
   ImpactFeedbackStyle: { Light: "light" }, NotificationFeedbackType: { Success: "success", Warning: "warning" },
 }));

@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { AccessibilityInfo, StyleSheet, Text } from "react-native";
-import Animated, { cancelAnimation, useAnimatedStyle, useSharedValue, withDelay, withTiming } from "react-native-reanimated";
+import Animated, { cancelAnimation, useAnimatedStyle, useSharedValue, withDelay, withSequence, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useToast } from "../stores/toast";
-import { motion } from "../theme/motion";
+import { EASE_OUT, motion } from "../theme/motion";
 import { color, radius, space, type } from "../theme/tokens";
 
 // Confirms a save quietly: a pill that fades in above the tab bar, holds, and fades out. Opacity only, announced to screen readers,
@@ -16,8 +16,7 @@ export function Toast() {
     if (!n) return;
     AccessibilityInfo.announceForAccessibility(message);
     cancelAnimation(o);
-    o.value = withTiming(1, { duration: motion.fadeMs });
-    o.value = withDelay(motion.toastMs, withTiming(0, { duration: motion.fadeMs }));
+    o.value = withSequence(withTiming(1, { duration: motion.fadeMs, easing: EASE_OUT }), withDelay(motion.toastMs, withTiming(0, { duration: motion.fadeMs })));
   }, [n, message, o]);
   const style = useAnimatedStyle(() => ({ opacity: o.value }));
   if (!n) return null;

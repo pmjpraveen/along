@@ -1,4 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
+import { haptic } from "../haptics";
 import { Pressable } from "./Pressable";
 import { color, font, radius, space, type } from "../theme/tokens";
 
@@ -12,7 +13,7 @@ export function SegmentedControl<T extends string>({ options, value, onChange, a
       {options.map((o) => {
         const on = o.value === value;
         return (
-          <Pressable key={o.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => on || onChange(o.value)}
+          <Pressable key={o.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => on || (haptic.select(), onChange(o.value))}
             style={[s.item, on && s.on]}>
             <Text maxFontSizeMultiplier={1.3} style={[s.label, { fontFamily: on ? font.medium : font.regular }]}>{o.label}</Text>
           </Pressable>
