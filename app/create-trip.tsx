@@ -7,6 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createTrip, uploadCover } from "../src/api/trips";
 import { Image as ImageIcon, X } from "lucide-react-native";
 import { PrimaryButton } from "../src/components/Buttons";
+import { PlaceSearchField } from "../src/components/PlaceSearchField";
 import { FieldLabel, FieldMessage, TextField } from "../src/components/TextField";
 import { DateRangeField } from "../src/components/DateRangeField";
 import { toIso, TripDraft, TripErrors, validateTrip } from "../src/domain/trip";
@@ -65,7 +66,8 @@ export default function CreateTrip() {
 
         <TextField label="Trip name" placeholder="Trip name" value={draft.name} autoCapitalize="words" onChangeText={(v) => setDraft({ ...draft, name: v })}
           status={errors.name ? "error" : undefined} message={errors.name} />
-        <TextField label="Location" placeholder="Add trip location" value={draft.destination} autoCapitalize="words" onChangeText={(v) => setDraft({ ...draft, destination: v })}
+        <PlaceSearchField label="Location" placeholder="Search a city or place" value={draft.destination} autoCapitalize="words" onChangeText={(v) => setDraft({ ...draft, destination: v })}
+          onPick={(p) => setDraft({ ...draft, destination: p.subtitle ? `${p.title}, ${p.subtitle.split(", ").pop()}` : p.title })}
           status={errors.destination ? "error" : undefined} message={errors.destination} />
         <View style={s.field}>
           <FieldLabel>Duration</FieldLabel>

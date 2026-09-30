@@ -37,6 +37,9 @@ export default function Layout() {
           <Stack.Screen name="notifications" />
           <Stack.Screen name="profile" />
           <Stack.Screen name="history" />
+          <Stack.Screen name="passport" />
+          <Stack.Screen name="privacy" />
+          <Stack.Screen name="terms" />
           <Stack.Screen name="trip/[id]" />
           {/* Forms rise from the bottom and dismiss back down (swipe or back), the same path in and out. */}
           <Stack.Screen name="create-trip" options={{ presentation: "modal" }} />

@@ -2,7 +2,7 @@ import { formatMinor } from "./money";
 import { formatDate, short, toIso } from "./trip";
 
 export type FeedEvent = {
-  id: string; entity_type: "expense" | "itinerary_item" | "member"; action: "created" | "joined" | "claimed" | "guest_added";
+  id: string; entity_type: "expense" | "itinerary_item" | "member"; action: "created" | "edited" | "removed" | "joined" | "claimed" | "guest_added";
   actor: string | null; created_at: string; summary: Record<string, string | number | undefined>;
 };
 
@@ -12,6 +12,8 @@ export type Part = { text: string; bold?: boolean };
 export function describeParts(e: Pick<FeedEvent, "entity_type" | "action" | "actor" | "summary">): Part[] {
   const s = e.summary;
   const who: Part = { text: e.actor ?? "Someone", bold: true };
+  if (e.entity_type === "expense" && e.action === "edited") return [who, { text: " edited " }, { text: String(s.title), bold: true }, { text: ` · ${formatMinor(Number(s.amount_minor), Number(s.exponent ?? 2), String(s.currency ?? ""))}` }];
+  if (e.entity_type === "expense" && e.action === "removed") return [who, { text: " removed " }, { text: String(s.title), bold: true }];
   if (e.entity_type === "expense") {
     return [who, { text: " added " }, { text: String(s.title), bold: true }, { text: ` · ${formatMinor(Number(s.amount_minor), Number(s.exponent ?? 2), String(s.currency ?? ""))}, paid by ` }, { text: String(s.paid_by), bold: true }];
   }

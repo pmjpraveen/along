@@ -24,6 +24,19 @@ export async function loadInbox(): Promise<InboxResult> {
   }
 }
 
+// Just the on/off choice per type, for Settings (no row means on).
+export async function loadPreferences(): Promise<{ ok: true; enabled: Record<NotificationType, boolean> } | { ok: false; message: string }> {
+  try {
+    const { data, error } = await supabase.from("notification_preferences").select("type, enabled").is("trip_id", null);
+    if (error) return { ok: false, message: isOffline(error.message) ? OFFLINE : "Couldn't load your choices. Try again." };
+    const enabled = { trip_invitation: true, itinerary_change: true, new_expense: true, balance_change: true, settlement_update: true } as Record<NotificationType, boolean>;
+    for (const p of data ?? []) enabled[p.type as NotificationType] = p.enabled;
+    return { ok: true, enabled };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}
+
 export async function markRead(id: string): Promise<ActionResult> {
   try {
     const { error } = await supabase.rpc("mark_notification_read", { p_id: id });

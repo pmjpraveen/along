@@ -8,7 +8,7 @@ const mockBack = jest.fn();
 const mockReplace = jest.fn();
 jest.mock("../api/passport", () => ({ loadTripSummary: (...a: unknown[]) => mockSummary(...a) }));
 jest.mock("../api/trips", () => ({ completeTrip: (...a: unknown[]) => mockComplete(...a), stampForTrip: (...a: unknown[]) => mockStamp(...a) }));
-jest.mock("expo-router", () => ({ useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ back: mockBack, replace: mockReplace }) }));
+jest.mock("expo-router", () => ({ useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ back: mockBack, replace: mockReplace, canGoBack: () => true }) }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 const summary = { trip_id: "t1", name: "Goa 2026", destination_name: "Goa, India", start_date: "2026-12-01", end_date: "2026-12-05", status: "published",
   currency: "INR", exponent: 2, people: 4, activities: 6, total_spend_minor: 1234500, outstanding_minor: 45000 };

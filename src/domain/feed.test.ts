@@ -48,3 +48,10 @@ test("days are headed Today, Yesterday or the date, times are 12-hour, and event
   expect(groupByDayHeading([{ created_at: a }, { created_at: b }, { created_at: c }, { created_at: d }], now).map((g) => [g.heading, g.events.length]))
     .toEqual([["Today", 2], ["Yesterday", 1], ["01-11-2026", 1]]);
 });
+
+test("an edited expense reads as edited with its new amount, and a removed one as removed", () => {
+  const s = { title: "Dinner", amount_minor: 120000, currency: "INR", exponent: 2, paid_by: "Ben" };
+  expect(describeEvent(ev("expense" as never, "edited" as never, s, "Asha"))).toBe("Asha edited Dinner · ₹1,200.00");
+  expect(describeEvent(ev("expense" as never, "removed" as never, s, "Asha"))).toBe("Asha removed Dinner");
+  expect(describeParts(ev("expense" as never, "edited" as never, s, "Asha")).filter((p) => p.bold).map((p) => p.text)).toEqual(["Asha", "Dinner"]);
+});

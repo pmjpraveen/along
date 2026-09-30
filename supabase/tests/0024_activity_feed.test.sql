@@ -1,5 +1,5 @@
 begin;
-select plan(12);
+select plan(13);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000000a', 'a@example.com', '{"full_name":"Asha"}'),
@@ -47,7 +47,8 @@ select is((select count(*)::int from activity_events where entity_type = 'expens
 select update_expense((select id from expenses limit 1), 1, 'Dinner', 1000, '2026-12-02', jsonb_build_array(
   jsonb_build_object('member_id', (select id from asha), 'owed_minor', 500),
   jsonb_build_object('member_id', (select id from ben), 'owed_minor', 500)));
-select is((select count(*)::int from activity_events where entity_type = 'expense'), 1, '6.5 an edit does not add a feed entry');
+select is((select count(*)::int from activity_events where entity_type = 'expense' and action = 'created'), 1, '6.5 an edit does not add a second created entry');
+select is((select count(*)::int from activity_events where entity_type = 'expense' and action = 'edited'), 1, '6.5 an edit is logged as edited');
 
 -- claiming
 set local request.jwt.claims = '{"sub":"00000000-0000-0000-0000-00000000000a"}';

@@ -1,0 +1,40 @@
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { useState } from "react";
+import { PlaceSearchField } from "./PlaceSearchField";
+
+const mockSearch = jest.fn();
+jest.mock("../api/placeSearch", () => ({ searchPlaces: (...a: unknown[]) => mockSearch(...a) }));
+jest.useFakeTimers();
+
+const goa = { id: "1", title: "Goa", subtitle: "India", lat: 15.3, lng: 74.1 };
+beforeEach(() => { mockSearch.mockReset().mockResolvedValue({ ok: true, places: [goa] }); });
+
+function Harness({ onPick }: { onPick: (p: unknown) => void }) {
+  const [v, setV] = useState("");
+  return <PlaceSearchField label="Location" placeholder="Search" value={v} onChangeText={setV} onPick={(p) => { setV(p.title); onPick(p); }} />;
+}
+const type = async (text: string) => { await fireEvent.changeText(screen.getByLabelText("Location"), text); await act(async () => { jest.advanceTimersByTime(800); }); };
+
+test("suggestions appear after a pause in typing, and choosing one fills the field, reports the place and stops searching", async () => {
+  const onPick = jest.fn();
+  await render(<Harness onPick={onPick} />);
+  await type("Goa");
+  expect(mockSearch).toHaveBeenCalledTimes(1);
+  await fireEvent.press(await screen.findByRole("button", { name: "Goa, India" }));
+  expect(onPick).toHaveBeenCalledWith(goa);
+  expect(screen.getByLabelText("Location").props.value).toBe("Goa");
+  expect(screen.queryByLabelText("Place suggestions")).toBeNull();
+  await act(async () => { jest.advanceTimersByTime(3000); });
+  expect(mockSearch).toHaveBeenCalledTimes(1);
+});
+
+test("nothing is searched for short text or a pasted link, and a failed search says so without blocking typing", async () => {
+  await render(<Harness onPick={jest.fn()} />);
+  await type("Go");
+  await type("https://maps.app.goo.gl/abc");
+  expect(mockSearch).not.toHaveBeenCalled();
+  mockSearch.mockResolvedValue({ ok: false, message: "No connection. You can still type the place." });
+  await type("Goa beach");
+  expect(await screen.findByText(/You can still type the place/)).toBeTruthy();
+  expect(screen.getByLabelText("Location").props.value).toBe("Goa beach");
+});

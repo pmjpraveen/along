@@ -10,7 +10,7 @@ jest.mock("../api/memories", () => ({
 }));
 jest.mock("expo-image-picker", () => ({ launchImageLibraryAsync: (...a: unknown[]) => mockPick(...a) }));
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ id: "t1" }),
+  useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
 }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));

@@ -14,22 +14,32 @@ export const TYPE_LABEL: Record<NotificationType, string> = {
 export const TYPES = Object.keys(TYPE_LABEL) as NotificationType[];
 
 // The server stores who / what / how much; this words it. Plain language, never debit or credit.
-export function describeNotification(n: Pick<Notification, "type" | "payload">): string {
+// The notification as pieces, so names and titles can be drawn bold; joined together they are the plain sentence.
+export type Part = { text: string; bold?: boolean };
+const B = (text: unknown): Part => ({ text: String(text), bold: true });
+const T = (text: string): Part => ({ text });
+
+export function describeParts(n: Pick<Notification, "type" | "payload">): Part[] {
   const p = n.payload;
   const money = () => formatMinor(Number(p.amount_minor), Number(p.exponent ?? 2), String(p.currency ?? ""));
   switch (n.type) {
     case "trip_invitation":
-      return `${p.actor} ${p.action === "claimed" ? "claimed their spot in" : "joined"} ${p.trip}`;
+      return [B(p.actor), T(p.action === "claimed" ? " claimed their spot in " : " joined "), B(p.trip)];
     case "itinerary_change":
-      return p.action === "moved" ? `${p.actor} moved "${p.title}" to ${formatDate(String(p.day))}` : `${p.actor} added "${p.title}" to ${p.trip}`;
+      return p.action === "moved" ? [B(p.actor), T(" moved "), B(`"${p.title}"`), T(" to "), B(formatDate(String(p.day)))] : [B(p.actor), T(" added "), B(`"${p.title}"`), T(" to "), B(p.trip)];
     case "new_expense":
-      return `${p.actor} added ${p.title} · ${money()}`;
+      return [B(p.actor), T(" added "), B(p.title), T(` · ${money()}`)];
     case "balance_change":
-      return p.action === "edited" ? `${p.actor} edited ${p.title}. Your balance changed.` : `${p.actor} added ${p.title} (${money()}). Your balance changed.`;
+      return p.action === "edited" ? [B(p.actor), T(" edited "), B(p.title), T(". Your balance changed.")] : [B(p.actor), T(" added "), B(p.title), T(` (${money()}). Your balance changed.`)];
     case "settlement_update":
-      return p.kind === "reversal" ? `${p.from}'s payment of ${money()} to ${p.to} was reversed` : `${p.from} paid ${p.to} ${money()}`;
+      return p.kind === "reversal" ? [B(p.from), T(`'s payment of ${money()} to `), B(p.to), T(" was reversed")] : [B(p.from), T(" paid "), B(p.to), T(` ${money()}`)];
   }
 }
+
+export const describeNotification = (n: Pick<Notification, "type" | "payload">): string => describeParts(n).map((x) => x.text).join("");
+
+// Who the notification is about, for its avatar.
+export const notificationActor = (n: Pick<Notification, "type" | "payload">): string => String(n.payload.actor ?? n.payload.from ?? "?");
 
 // Where tapping a notification should take you within its trip.
 export const routeFor = (t: NotificationType): "people" | "itinerary" | "expenses" | "balances" =>

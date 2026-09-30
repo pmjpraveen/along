@@ -1,7 +1,8 @@
 import { Alert } from "../../../src/components/Alert";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadTripSummary, SummaryResult } from "../../../src/api/passport";
 import { completeTrip, stampForTrip } from "../../../src/api/trips";
@@ -38,7 +39,10 @@ export default function Complete() {
 
   const s0 = summary?.ok ? summary.summary : null;
   return (
-    <ScrollView style={s.screen} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
+    <ScrollView style={s.screen} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
+        <ChevronLeft size={22} color={color.forestInk} strokeWidth={1.75} />
+      </Pressable>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>{done ? "Trip completed" : "Complete this trip?"}</Text>
       {done ? (
         <>
@@ -80,10 +84,11 @@ export default function Complete() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
-  heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
+  round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
+  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian },
   gap: { gap: space.s8 },
-  body: { ...type.body, color: color.charcoal },
-  card: { padding: space.s16, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.neutralWash },
-  cardText: { ...type.body, color: color.forestInk },
+  body: { ...type.fieldValue, color: color.charcoal },
+  card: { padding: space.s20, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.neutralWash },
+  cardText: { ...type.fieldValue, color: color.forestInk },
   error: { ...type.label, color: color.alarmRed },
 });

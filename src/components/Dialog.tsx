@@ -3,18 +3,19 @@ import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { X } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { color, radius, space, type } from "../theme/tokens";
-import { PrimaryButton } from "./Buttons";
+import { Button, ButtonType } from "./Buttons";
 
 type Props = {
   visible: boolean; onClose: () => void; title: string;
   subheader?: string; body?: string; children?: ReactNode;
-  actionLabel?: string; onAction?: () => void; actionBusy?: boolean;
+  actionLabel?: string; onAction?: () => void; actionBusy?: boolean; actionType?: ButtonType;
+  secondaryLabel?: string; onSecondary?: () => void;
 };
 
 // Figma "Modal": an overlay that interrupts the task for one important message. On a phone it floats above the bottom edge
 // as an inset card (unlike BottomSheet, which is full-bleed for browsing content). Header with a close button at the right,
 // subheader and body, content, then one primary button. Scrim tap, close button and the back gesture all dismiss it.
-export function Dialog({ visible, onClose, title, subheader, body, children, actionLabel, onAction, actionBusy }: Props) {
+export function Dialog({ visible, onClose, title, subheader, body, children, actionLabel, onAction, actionBusy, actionType = "primary", secondaryLabel, onSecondary }: Props) {
   const { bottom } = useSafeAreaInsets();
   return (
     <Modal transparent visible={visible} animationType="fade" onRequestClose={onClose} accessibilityViewIsModal>
@@ -34,7 +35,8 @@ export function Dialog({ visible, onClose, title, subheader, body, children, act
             </View>
           )}
           {children}
-          {actionLabel && onAction && <PrimaryButton label={actionLabel} onPress={onAction} busy={actionBusy} />}
+          {actionLabel && onAction && <Button label={actionLabel} onPress={onAction} busy={actionBusy} type={actionType} size="large" />}
+          {secondaryLabel && onSecondary && <Button label={secondaryLabel} onPress={onSecondary} type="tertiary" size="large" align="center" />}
         </View>
       </View>
     </Modal>

@@ -1,36 +1,32 @@
 import { Pressable, StyleSheet, Text, View } from "react-native";
-import { color, font, radius, space, type } from "../theme/tokens";
+import { Part } from "../domain/notifications";
+import { color, font, space, type } from "../theme/tokens";
+import { Avatar } from "./Avatar";
+import { Badge } from "./Badge";
 
-// Figma "Notifications" row: a flat row with a status dot, a title, an optional date and body. Unread has a warning-yellow dot and a
-// Medium obsidian title; read has a pale dot and a Regular charcoal title. Unread is also in the accessibility label, never dot colour alone.
-type Props = { title: string; body?: string; date?: string; unread?: boolean; onPress: () => void };
+// One notification as a flat row, like a History entry: the person's avatar, a sentence with names and titles in bold, and the time on
+// the right. Unread ones carry a "New" badge, and the words "Unread." in the accessibility label, so it never relies on colour alone.
+type Props = { actor: string; parts: Part[]; time: string; unread?: boolean; onPress: () => void };
 
-export function NotificationItem({ title, body, date, unread = false, onPress }: Props) {
+export function NotificationItem({ actor, parts, time, unread = false, onPress }: Props) {
+  const plain = parts.map((p) => p.text).join("");
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={`${unread ? "Unread. " : ""}${title}`} onPress={onPress} style={({ pressed }) => [s.row, pressed && s.pressed]}>
-      <View style={[s.dot, unread ? s.dotOn : s.dotOff]} />
+    <Pressable accessibilityRole="button" accessibilityLabel={`${unread ? "Unread. " : ""}${plain}, ${time}`} onPress={onPress} style={({ pressed }) => [s.row, pressed && s.pressed]}>
+      <Avatar name={actor} size={40} />
       <View style={s.text}>
-        <View style={s.head}>
-          <Text maxFontSizeMultiplier={1.4} style={[s.title, unread ? s.titleOn : s.titleOff]}>{title}</Text>
-          {date ? <Text maxFontSizeMultiplier={1.4} style={s.date}>{date}</Text> : null}
-        </View>
-        {body ? <Text maxFontSizeMultiplier={1.4} style={s.body}>{body}</Text> : null}
+        <Text maxFontSizeMultiplier={1.4} style={s.line}>{parts.map((p, i) => <Text key={i} style={p.bold ? s.bold : undefined}>{p.text}</Text>)}</Text>
+        {unread && <Badge label="New" variant="success" />}
       </View>
+      <Text maxFontSizeMultiplier={1.4} style={s.time}>{time}</Text>
     </Pressable>
   );
 }
 
 const s = StyleSheet.create({
-  row: { flexDirection: "row", gap: space.s12, minHeight: 48, paddingVertical: space.s12 },
+  row: { flexDirection: "row", alignItems: "flex-start", gap: space.s16, paddingVertical: space.s16, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
   pressed: { backgroundColor: color.neutralWash },
-  dot: { width: 10, height: 10, borderRadius: radius.pill, borderCurve: "continuous", marginTop: space.s8 },
-  dotOn: { backgroundColor: color.warning },
-  dotOff: { backgroundColor: color.borderNeutral },
-  text: { flex: 1, gap: space.s4 },
-  head: { flexDirection: "row", justifyContent: "space-between", gap: space.s12 },
-  title: { ...type.body, flex: 1 },
-  titleOn: { fontFamily: font.medium, color: color.obsidian },
-  titleOff: { color: color.charcoal },
-  date: { ...type.fieldMessage, color: color.slate },
-  body: { ...type.fieldValue, color: color.charcoal },
+  text: { flex: 1, gap: space.s8, alignItems: "flex-start" },
+  line: { ...type.fieldValue, color: color.charcoal },
+  bold: { fontFamily: font.medium, color: color.obsidian },
+  time: { ...type.fieldMessage, color: color.slate, fontVariant: ["tabular-nums"] },
 });

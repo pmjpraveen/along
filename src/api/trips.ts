@@ -105,3 +105,57 @@ export async function uploadCover(tripId: string, uri: string, mimeType: string)
     return { ok: false, message: OFFLINE };
   }
 }
+
+
+export type TripSettings = { start: string; end: string; currency: string; status: "draft" | "published" | "completed" | "archived"; hasMoney: boolean; isOwner: boolean; currencies: { code: string; name: string }[] };
+export type SettingsResult = { ok: true; settings: TripSettings } | { ok: false; message: string };
+
+// What Trip settings needs: the dates, the currency (and whether it can still change), and whether I own the trip.
+export async function loadTripSettings(tripId: string): Promise<SettingsResult> {
+  try {
+    const [trip, exp, sett, members, session, cur] = await Promise.all([
+      supabase.from("trips").select("start_date, end_date, primary_currency, status").eq("id", tripId).single(),
+      supabase.from("expenses").select("id", { count: "exact", head: true }).eq("trip_id", tripId).is("deleted_at", null),
+      supabase.from("settlements").select("id", { count: "exact", head: true }).eq("trip_id", tripId),
+      supabase.from("trip_members").select("user_id, role").eq("trip_id", tripId),
+      supabase.auth.getSession(),
+      supabase.from("currencies").select("code, name").order("code"),
+    ]);
+    const err = trip.error ?? exp.error ?? sett.error ?? members.error ?? cur.error;
+    if (err || !trip.data) return { ok: false, message: isOffline(err?.message ?? "") ? OFFLINE : "Couldn't load the trip settings. Try again." };
+    const me = (members.data ?? []).find((m) => m.user_id === session.data.session?.user.id);
+    return { ok: true, settings: {
+      start: trip.data.start_date, end: trip.data.end_date, currency: String(trip.data.primary_currency).trim(), status: trip.data.status,
+      hasMoney: (exp.count ?? 0) > 0 || (sett.count ?? 0) > 0, isOwner: me?.role === "owner", currencies: (cur.data ?? []) as { code: string; name: string }[],
+    } };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}
+
+export async function updateTripDates(tripId: string, start: string, end: string): Promise<CompleteResult> {
+  try {
+    const { error } = await supabase.rpc("update_trip_dates", { p_trip: tripId, p_start: start, p_end: end });
+    if (!error) return { ok: true };
+    if (isOffline(error.message)) return { ok: false, message: OFFLINE };
+    if (error.code === "42501") return { ok: false, message: "Only the trip owner can change the dates." };
+    if (error.code === "55000") return { ok: false, message: "This trip is over, so its dates can't change." };
+    return { ok: false, message: "Couldn't change the dates. Try again." };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}
+
+export async function setTripCurrency(tripId: string, code: string): Promise<CompleteResult> {
+  try {
+    const { error } = await supabase.rpc("set_trip_currency", { p_trip: tripId, p_currency: code });
+    if (!error) return { ok: true };
+    if (isOffline(error.message)) return { ok: false, message: OFFLINE };
+    if (error.message === "currency_locked") return { ok: false, message: "The currency can't change once expenses have been added." };
+    if (error.code === "42501") return { ok: false, message: "Only the trip owner can change the currency." };
+    if (error.code === "55000") return { ok: false, message: "This trip is over, so its currency can't change." };
+    return { ok: false, message: "Couldn't change the currency. Try again." };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}

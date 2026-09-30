@@ -11,16 +11,16 @@ import { Button } from "./Buttons";
 export type ListItemTrailing = "none" | "chevron" | "edit" | "checkbox" | "radio" | "switch" | "button";
 type Props = {
   title: string; subtitle?: string; overline?: string; leading?: ReactNode; trailing?: ListItemTrailing; buttonLabel?: string;
-  checked?: boolean; onPress?: () => void; inactive?: boolean; disabled?: boolean; value?: string; message?: string;
+  checked?: boolean; onPress?: () => void; inactive?: boolean; disabled?: boolean; value?: string; message?: string; destructive?: boolean;
 };
 
-export function ListItem({ title, subtitle, overline, leading, trailing = "none", buttonLabel, checked = false, onPress, inactive, disabled, value, message }: Props) {
+export function ListItem({ title, subtitle, overline, leading, trailing = "none", buttonLabel, checked = false, onPress, inactive, disabled, value, message, destructive }: Props) {
   const body = (
     <>
       {leading}
       <View style={s.text}>
         {overline ? <Text maxFontSizeMultiplier={1.4} style={s.overline}>{overline}</Text> : null}
-        <Text maxFontSizeMultiplier={1.4} style={[s.title, disabled && s.muted]}>{title}</Text>
+        <Text maxFontSizeMultiplier={1.4} style={[s.title, disabled && s.muted, destructive && s.destructive]}>{title}</Text>
         {subtitle ? <Text maxFontSizeMultiplier={1.4} style={s.subtitle}>{subtitle}</Text> : null}
         {message ? <Text maxFontSizeMultiplier={1.4} style={s.message}>{message}</Text> : null}
       </View>
@@ -54,6 +54,7 @@ const s = StyleSheet.create({
   subtitle: { ...type.fieldMessage, color: color.charcoal },
   message: { ...type.fieldMessage, color: color.alarmRed },
   muted: { color: color.slate },
+  destructive: { color: color.alarmRed },
   box: { width: 24, height: 24, borderRadius: 6, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.slate, alignItems: "center", justifyContent: "center" },
   radio: { width: 24, height: 24, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.slate, alignItems: "center", justifyContent: "center" },
   on: { borderColor: color.forestInk, backgroundColor: color.brightGreen },

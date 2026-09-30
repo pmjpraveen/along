@@ -8,6 +8,7 @@ import { resolveLocation, ResolvedLocation } from "../../../src/api/location";
 import { Alert } from "../../../src/components/Alert";
 import { Button } from "../../../src/components/Buttons";
 import { MapPreview } from "../../../src/components/MapPreview";
+import { PlaceSearchField } from "../../../src/components/PlaceSearchField";
 import { FieldLabel, FieldMessage, TextField } from "../../../src/components/TextField";
 import { TimeField } from "../../../src/components/TimeField";
 import { tripDays, validateItem } from "../../../src/domain/itinerary";
@@ -85,7 +86,8 @@ export default function AddItem() {
         <TextField label="Plan name" placeholder="e.g. Sunset at Baga Beach" value={title} onChangeText={setTitle} autoCapitalize="sentences"
           status={errors.title ? "error" : undefined} message={errors.title} />
         <View style={s.field}>
-          <TextField label="Location" placeholder="Paste a Google or Apple Maps link" value={location} onChangeText={setLocation} onEndEditing={resolve} autoCapitalize="none" />
+          <PlaceSearchField label="Location" placeholder="Search a place, or paste a Google or Apple Maps link" value={location} onChangeText={setLocation} onEndEditing={resolve}
+            onPick={(p) => { setLocation(p.title); setResolved({ text: p.title, url: null, place: { lat: p.lat, lng: p.lng, name: p.title } }); }} />
           {resolved?.place && <MapPreview place={resolved.place} />}
         </View>
         <View style={s.field}>

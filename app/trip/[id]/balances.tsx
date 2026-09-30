@@ -1,14 +1,14 @@
 import { Alert } from "../../../src/components/Alert";
+import { Avatar } from "../../../src/components/Avatar";
+import { ChevronLeft } from "lucide-react-native";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
-import { SectionHeader } from "../../../src/components/SectionHeader";
-import { Divider } from "../../../src/components/Divider";
-import { Card } from "../../../src/components/Card";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BalancesResult, loadBalances } from "../../../src/api/balances";
-import { TextButton } from "../../../src/components/Buttons";
+import { Button, TextButton } from "../../../src/components/Buttons";
 import { describeBalance, describeTransfer, simplifyDebts } from "../../../src/domain/balance";
 import { useTripRealtime } from "../../../src/hooks/useTripRealtime";
 import { color, radius, space, type } from "../../../src/theme/tokens";
@@ -37,59 +37,88 @@ export default function Balances() {
   // Payments that involve me come first.
   const ordered = [...transfers].sort((a, b) => Number(b.from === mine?.memberId || b.to === mine?.memberId) - Number(a.from === mine?.memberId || a.to === mine?.memberId));
 
+  const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
+  const nameOf = (m: string) => state?.ok ? state.rows.find((r) => r.memberId === m)?.name ?? "Someone" : "Someone";
+
   return (
-    <ScrollView style={s.screen} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
-      <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Balances</Text>
-      {state === null ? (
-        <ActivityIndicator accessibilityLabel="Loading balances" color={color.forestInk} />
-      ) : !state.ok ? (
-        <View style={s.gap}>
-          <Alert variant="negative">{state.message}</Alert>
-          <TextButton label="Retry" onPress={load} />
-        </View>
-      ) : (
-        <>
-          {mine && (
-            <View accessible style={s.mine}>
-              <Text maxFontSizeMultiplier={1.3} style={s.mineText}>{describeBalance(mine.net, mine.name, true, state.currency.exponent, state.currency.code)}</Text>
+    <View style={s.screen}>
+      {/* A soft blue glow behind the header. */}
+      <Svg style={s.glow} width="100%" height={260} pointerEvents="none">
+        <Defs>
+          <RadialGradient id="tide" cx="50%" cy="0%" rx="90%" ry="85%" fx="50%" fy="0%">
+            <Stop offset="0" stopColor={color.brightBlue} stopOpacity={0.5} />
+            <Stop offset="1" stopColor={color.brightBlue} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+        <Rect width="100%" height="100%" fill="url(#tide)" />
+      </Svg>
+      <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
+          <ChevronLeft size={22} color={color.forestInk} strokeWidth={1.75} />
+        </Pressable>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Balances</Text>
+        {state === null ? (
+          <ActivityIndicator accessibilityLabel="Loading balances" color={color.forestInk} />
+        ) : !state.ok ? (
+          <View style={s.gap}>
+            <Alert variant="negative">{state.message}</Alert>
+            <TextButton label="Retry" onPress={load} />
+          </View>
+        ) : (
+          <>
+            {mine && (
+              <View accessible style={s.mine}>
+                <Text maxFontSizeMultiplier={1.3} style={s.mineLabel}>Your balance</Text>
+                <Text maxFontSizeMultiplier={1.3} style={s.mineText}>{describeBalance(mine.net, mine.name, true, state.currency.exponent, state.currency.code)}</Text>
+              </View>
+            )}
+
+            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>To settle up</Text>
+            {ordered.length === 0 ? (
+              <Text maxFontSizeMultiplier={1.4} style={s.body}>Everyone is settled up.</Text>
+            ) : (
+              <View>
+                {ordered.map((t) => (
+                  <View key={`${t.from}-${t.to}`} style={s.row}>
+                    <Avatar name={nameOf(t.from)} size={40} />
+                    <Text maxFontSizeMultiplier={1.4} style={s.line}>{describeTransfer(t, nameOf, mine?.memberId ?? null, state.currency.exponent, state.currency.code)}</Text>
+                    {canSettle(t) && (
+                      <Button label="Settle up" type="secondaryNeutral" size="small" onPress={() => router.push({ pathname: "/trip/[id]/settle", params: { id, from: t.from, to: t.to, amount: String(t.amountMinor) } })} />
+                    )}
+                  </View>
+                ))}
+              </View>
+            )}
+
+            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Everyone</Text>
+            <View>
+              {others.map((r) => (
+                <View key={r.memberId} accessible style={s.row}>
+                  <Avatar name={r.name} guest={r.guest} size={40} />
+                  <Text maxFontSizeMultiplier={1.4} style={s.line}>{describeBalance(r.net, r.name, false, state.currency.exponent, state.currency.code)}</Text>
+                </View>
+              ))}
             </View>
-          )}
-          <SectionHeader title="To settle up" />
-          {ordered.length === 0 ? (
-            <Text maxFontSizeMultiplier={1.4} style={s.body}>Everyone is settled up.</Text>
-          ) : (
-            ordered.map((t) => (
-              <Card key={`${t.from}-${t.to}`}>
-                <Text maxFontSizeMultiplier={1.4} style={s.line}>
-                  {describeTransfer(t, (m) => state.rows.find((r) => r.memberId === m)?.name ?? "Someone", mine?.memberId ?? null, state.currency.exponent, state.currency.code)}
-                </Text>
-                {canSettle(t) && (
-                  <TextButton label="Settle up" onPress={() => router.push({ pathname: "/trip/[id]/settle", params: { id, from: t.from, to: t.to, amount: String(t.amountMinor) } })} />
-                )}
-              </Card>
-            ))
-          )}
-          <Divider kind="section" />
-          <SectionHeader title="Everyone" />
-          {others.map((r) => (
-            <Card key={r.memberId} accessible>
-              <Text maxFontSizeMultiplier={1.4} style={s.line}>{describeBalance(r.net, r.name, false, state.currency.exponent, state.currency.code)}</Text>
-            </Card>
-          ))}
-        </>
-      )}
-    </ScrollView>
+          </>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
-  content: { paddingHorizontal: space.s20, gap: space.s12 },
-  heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
+  scroll: { flex: 1 },
+  glow: { position: "absolute", top: 0, left: 0, right: 0 },
+  content: { paddingHorizontal: space.s20, gap: space.s16 },
+  round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
+  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian },
   gap: { gap: space.s8 },
-  mine: { padding: space.s16, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.neutralWash },
-  mineText: { ...type.display, fontSize: 28, lineHeight: 32, color: color.forestInk, fontVariant: ["tabular-nums"] },
-  body: { ...type.body, color: color.charcoal },
-  line: { ...type.body, color: color.obsidian, fontVariant: ["tabular-nums"] },
-  error: { ...type.label, color: color.alarmRed },
+  mine: { gap: space.s4, padding: space.s20, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.neutralWash },
+  mineLabel: { ...type.fieldValue, color: color.slate },
+  mineText: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.forestInk, fontVariant: ["tabular-nums"] },
+  section: { ...type.fieldValue, color: color.charcoal, marginTop: space.s8 },
+  row: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 72, paddingVertical: space.s12, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
+  body: { ...type.fieldValue, color: color.charcoal },
+  line: { ...type.fieldValue, flex: 1, color: color.obsidian, fontVariant: ["tabular-nums"] },
 });
