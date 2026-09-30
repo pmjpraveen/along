@@ -10,7 +10,11 @@ export function parseMinor(text: string, exponent: number): number | null {
   return minor > 0 ? minor : null;
 }
 
+// The phone's JS engine may not know a currency's symbol (it then gives the code), so the common ones are listed here.
+const SYMBOLS: Record<string, string> = { INR: "₹", USD: "$", EUR: "€", GBP: "£", JPY: "¥", CNY: "¥", AUD: "A$", CAD: "C$", SGD: "S$", AED: "AED ", THB: "฿", KRW: "₩", CHF: "CHF ", NZD: "NZ$", IDR: "Rp", VND: "₫", MYR: "RM", PHP: "₱" };
+
 function symbol(code: string): string {
+  if (SYMBOLS[code]) return SYMBOLS[code];
   try {
     return new Intl.NumberFormat("en", { style: "currency", currency: code, currencyDisplay: "narrowSymbol" })
       .formatToParts(0).find((p) => p.type === "currency")?.value ?? code;
@@ -26,4 +30,12 @@ export function formatMinor(minor: number, exponent: number, code: string): stri
   const whole = abs.slice(0, abs.length - exponent).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
   const frac = exponent ? `.${abs.slice(abs.length - exponent)}` : "";
   return `${sign}${symbol(code)}${whole}${frac}`;
+}
+
+// The amount split for display: "₹8,533.05" -> { prefix: "₹", whole: "8,533", frac: ".05" } (frac is "" for zero-decimal currencies).
+export function moneyParts(minor: number, exponent: number, code: string) {
+  const s = formatMinor(minor, exponent, code);
+  const cut = exponent ? s.lastIndexOf(".") : s.length;
+  const m = /^(-?[^\d-]*)(.*)$/.exec(s.slice(0, cut))!;
+  return { prefix: m[1], whole: m[2], frac: s.slice(cut) };
 }

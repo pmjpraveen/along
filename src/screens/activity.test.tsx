@@ -1,5 +1,5 @@
 import { act, render, screen, waitFor } from "@testing-library/react-native";
-import Activity from "../../app/trip/[id]/(tabs)/activity";
+import History from "../../app/trip/[id]/(tabs)/activity";
 
 const mockLoad = jest.fn();
 const mockSeen = jest.fn();
@@ -10,7 +10,7 @@ jest.mock("../api/feed", () => ({
 }));
 jest.mock("../hooks/useTripRealtime", () => ({ useTripRealtime: (_i: string, _t: string[], reload: () => void) => { mockReload = reload; } }));
 jest.mock("expo-router", () => ({
-  useGlobalSearchParams: () => ({ id: "t1" }), useLocalSearchParams: () => ({ id: "t1" }),
+  useGlobalSearchParams: () => ({ id: "t1" }), useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
 }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
@@ -23,52 +23,52 @@ const events = [
 ];
 beforeEach(() => { jest.clearAllMocks(); mockLoad.mockResolvedValue({ ok: true, events }); mockSeen.mockResolvedValue(null); });
 
-test("6.5 the feed lists joins, itinerary additions and expenses, newest first, in plain words", async () => {
-  await render(<Activity />);
-  const lines = await screen.findAllByText(/Ben added Dinner|added "Beach day"|joined the trip/);
-  expect(lines.map((l) => l.props.children.join?.("") ?? l.props.children)).toEqual([
-    expect.stringContaining("Ben added Dinner · ₹900.00, paid by Ben"),
-    expect.stringContaining('Asha added "Beach day" to the itinerary for 03-12-2026'),
-    expect.stringContaining("Ben joined the trip"),
+test("6.5 the feed lists joins, plans and expenses, newest first, in plain words with the time", async () => {
+  await render(<History />);
+  const rows = await screen.findAllByLabelText(/added Dinner|added Beach day|joined the trip/);
+  expect(rows.map((r) => r.props.accessibilityLabel)).toEqual([
+    expect.stringMatching(/^Ben added Dinner · ₹900.00, paid by Ben, 12:00 PM$/),
+    expect.stringMatching(/^Asha added Beach day to the plan for 3 Dec, 11:00 AM$/),
+    expect.stringMatching(/^Ben joined the trip, 10:00 AM$/),
   ]);
 });
 
 test("6.5 a first visit marks nothing as new, and remembers the newest entry for next time", async () => {
-  await render(<Activity />);
-  await screen.findByText(/Ben added Dinner/);
-  expect(screen.queryByText(/New ·/)).toBeNull();
+  await render(<History />);
+  await screen.findByLabelText(/added Dinner/);
+  expect(screen.queryByText("New")).toBeNull();
   await waitFor(() => expect(mockMark).toHaveBeenCalledWith("t1", at(12)));
 });
 
 test("6.5 entries since the last visit are marked New", async () => {
   mockSeen.mockResolvedValue(at(10));
-  await render(<Activity />);
-  expect(await screen.findByText(/New · Ben added Dinner/)).toBeTruthy();
-  expect(screen.getByText(/New · Asha added "Beach day"/)).toBeTruthy();
-  expect(screen.queryByText(/New · Ben joined/)).toBeNull();
+  await render(<History />);
+  expect(await screen.findByLabelText(/^New\. Ben added Dinner/)).toBeTruthy();
+  expect(screen.getByLabelText(/^New\. Asha added Beach day/)).toBeTruthy();
+  expect(screen.queryByLabelText(/^New\. Ben joined/)).toBeNull();
 });
 
 test("6.5 the markers from the start of the visit stay while new entries arrive live", async () => {
   mockSeen.mockResolvedValue(at(11));
-  await render(<Activity />);
-  await screen.findByText(/New · Ben added Dinner/);
+  await render(<History />);
+  await screen.findByLabelText(/^New\. Ben added Dinner/);
   mockLoad.mockResolvedValue({ ok: true, events: [{ ...events[0], id: "e4", created_at: at(13), summary: { ...events[0].summary, title: "Taxi" } }, ...events] });
   await act(async () => { mockReload?.(); });
-  expect(await screen.findByText(/New · Ben added Taxi/)).toBeTruthy();
-  expect(screen.getByText(/New · Ben added Dinner/)).toBeTruthy();
+  expect(await screen.findByLabelText(/^New\. Ben added Taxi/)).toBeTruthy();
+  expect(screen.getByLabelText(/^New\. Ben added Dinner/)).toBeTruthy();
   expect(mockSeen).toHaveBeenCalledTimes(1);
 });
 
 test("6.5 an empty feed says what will appear", async () => {
   mockLoad.mockResolvedValue({ ok: true, events: [] });
-  await render(<Activity />);
+  await render(<History />);
   expect(await screen.findByText(/Nothing yet/)).toBeTruthy();
   expect(mockMark).not.toHaveBeenCalled();
 });
 
 test("6.5 a load failure shows retry", async () => {
   mockLoad.mockResolvedValueOnce({ ok: false, message: "No connection. Check your internet and try again." });
-  await render(<Activity />);
+  await render(<History />);
   expect(await screen.findByRole("alert")).toHaveTextContent(/No connection/);
   expect(screen.getByRole("button", { name: "Retry" })).toBeTruthy();
 });

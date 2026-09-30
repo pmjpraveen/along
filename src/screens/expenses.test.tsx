@@ -18,7 +18,7 @@ jest.mock("../offline/sync", () => ({
 jest.mock("../api/expenses", () => ({ listExpenses: (...a: unknown[]) => mockList(...a) }));
 jest.mock("../api/balances", () => ({ loadBalances: (...a: unknown[]) => mockBal(...a) }));
 jest.mock("expo-router", () => ({
-  useGlobalSearchParams: () => ({ id: "t1" }), useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush }),
+  useGlobalSearchParams: () => ({ id: "t1" }), useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush, back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
 }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
@@ -126,15 +126,28 @@ test("5.6 a non-owner gets no Settle up on someone else's payment even if a gues
   expect(screen.queryByRole("button", { name: "Settle up" })).toBeNull();
 });
 
-test("5.7 an expense I can edit opens the edit screen; one I cannot edit is not tappable", async () => {
-  mockList.mockResolvedValue({ ok: true, currency: cur, expenses: [
-    { id: "e1", title: "Lunch", amount_minor: 100000, expense_date: "2026-12-02", paidBy: "Asha", addedBy: "Asha", canEdit: true },
-    { id: "e2", title: "Cab", amount_minor: 50000, expense_date: "2026-12-02", paidBy: "Ben", addedBy: "Ben", canEdit: false },
+test("each row says what the expense means for me: paid by me, owed to the payer, or just added by someone", async () => {
+  mockList.mockResolvedValue({ ok: true, currency: cur, meId: "m1", trip: { name: "Goa", destination: "Goa" }, members: [{ name: "Asha", guest: false }], expenses: [
+    { id: "e1", title: "Lunch", amount_minor: 100000, expense_date: "2026-12-02", paidBy: "Asha", addedBy: "Asha", paidById: "m1", addedById: "m1", myShareMinor: 50000, canEdit: true },
+    { id: "e2", title: "Cab", amount_minor: 50000, expense_date: "2026-12-02", paidBy: "Ben", addedBy: "Ben", paidById: "m2", addedById: "m2", myShareMinor: 25000, canEdit: false },
+    { id: "e3", title: "Museum", amount_minor: 30000, expense_date: "2026-12-02", paidBy: "Rahul", addedBy: "Rahul", paidById: "m3", addedById: "m3", myShareMinor: 0, canEdit: false },
   ] });
   await render(<Expenses />);
-  await fireEvent.press(await screen.findByRole("button", { name: "Edit Lunch" }));
-  expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/add-expense", params: { id: "t1", expenseId: "e1" } });
-  expect(screen.queryByRole("button", { name: "Edit Cab" })).toBeNull();
+  expect(await screen.findByText("Paid by You")).toBeTruthy();
+  expect(screen.getByText("Owed to Ben")).toBeTruthy();
+  expect(screen.getByText("Added by Rahul")).toBeTruthy();
+});
+
+test("the header shows the trip, the total of every expense, and tapping any row opens that expense", async () => {
+  mockList.mockResolvedValue({ ok: true, currency: cur, meId: "m1", trip: { name: "Japan Trip", destination: "Japan" }, members: [{ name: "Asha", guest: false }], expenses: [
+    { id: "e1", title: "Lunch", amount_minor: 100000, expense_date: "2026-12-02", paidBy: "Asha", addedBy: "Asha", canEdit: true },
+    { id: "e2", title: "Cab", amount_minor: 50005, expense_date: "2026-12-02", paidBy: "Ben", addedBy: "Ben", canEdit: false },
+  ] });
+  await render(<Expenses />);
+  expect(await screen.findByText("Trip to Japan")).toBeTruthy();
+  expect(screen.getByLabelText("Total expenses ₹1,500.05")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: /^Cab,/ }));
+  expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/expense", params: { id: "t1", expenseId: "e2" } });
 });
 
 test("6.1 a realtime change reloads the expense list and my balance without a pull", async () => {

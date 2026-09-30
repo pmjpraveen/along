@@ -5,10 +5,10 @@ import Summary from "../../app/trip/[id]/summary";
 const mockStamps = jest.fn();
 const mockSummary = jest.fn();
 const mockPush = jest.fn();
-jest.mock("../api/profile", () => ({ loadMyName: async () => "Asha" }));
+jest.mock("../api/profile", () => ({ loadMyProfile: async () => ({ name: "Asha", email: "asha@along.test", since: "2026-09-29" }) }));
 jest.mock("../api/passport", () => ({ loadStamps: (...a: unknown[]) => mockStamps(...a), loadTripSummary: (...a: unknown[]) => mockSummary(...a) }));
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush }),
+  useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush, back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
 }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
@@ -22,7 +22,7 @@ test("7.4 the passport shows a stamp per completed trip, in the order given, wit
   expect(await screen.findByText("LISBON")).toBeTruthy();
   expect(screen.getByText("GOA, INDIA")).toBeTruthy();
   expect(screen.getByText("10-06-2026 → 14-06-2026")).toBeTruthy();
-  const stamps = screen.getAllByRole("button");
+  const stamps = screen.getAllByRole("button").filter((b) => b.props.accessibilityLabel !== "Back");
   expect(stamps.map((b) => b.props.accessibilityLabel)).toEqual(["Lisbon, 10-06-2026 → 14-06-2026", "Goa, India, 01-12-2025 → 05-12-2025"]);
 });
 
@@ -39,10 +39,11 @@ test("7.4 a one-day trip shows a single date", async () => {
   expect(await screen.findByText("07-05-2026")).toBeTruthy();
 });
 
-test("7.4 an empty passport says how to earn a stamp; a failure offers retry", async () => {
+test("7.4 an empty passport shows zero trips and no stamps; a failure offers retry", async () => {
   mockStamps.mockResolvedValueOnce({ ok: true, stamps: [] });
   await render(<Profile />);
-  expect(await screen.findByText(/No stamps yet/)).toBeTruthy();
+  expect(await screen.findByLabelText("Passport, total trips 0")).toBeTruthy();
+  expect(screen.queryByText("Stamps")).toBeNull();
   mockStamps.mockResolvedValueOnce({ ok: false, message: "No connection. Check your internet and try again." });
   await render(<Profile />);
   expect(await screen.findByRole("button", { name: "Retry" })).toBeTruthy();
@@ -74,4 +75,13 @@ test("7.4 a summary that cannot be loaded explains why", async () => {
   mockSummary.mockResolvedValue({ ok: false, message: "This trip isn't available to you any more." });
   await render(<Summary />);
   expect(await screen.findByRole("alert")).toHaveTextContent(/isn't available/);
+});
+
+test("the profile shows who I am and how many trips I have completed", async () => {
+  mockStamps.mockResolvedValue({ ok: true, stamps: [stamp("a", "Goa, India", "2025-12-01", "2025-12-05"), stamp("b", "Lisbon", "2026-06-10", "2026-06-14")] });
+  await render(<Profile />);
+  expect(await screen.findByText("asha@along.test")).toBeTruthy();
+  expect(screen.getByText("29-09-2026")).toBeTruthy();
+  expect(screen.getByLabelText("Passport, total trips 2")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Back" })).toBeTruthy();
 });

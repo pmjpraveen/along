@@ -8,6 +8,7 @@ export default function TripLayout() {
       <Stack.Screen name="settings" />
       <Stack.Screen name="memories" />
       <Stack.Screen name="balances" />
+      <Stack.Screen name="expense" />
       <Stack.Screen name="complete" />
       <Stack.Screen name="summary" />
       <Stack.Screen name="add-guest" options={{ presentation: "modal" }} />

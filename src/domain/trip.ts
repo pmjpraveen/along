@@ -9,6 +9,9 @@ export const formatDate = (iso: string) => (iso ? iso.split("-").reverse().join(
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 // "9 Oct": the short day label used on the itinerary chips and under trip tiles.
 export const short = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]}`;
+// "08SEP26": the compact date used in the passport's machine-readable lines.
+export const compactDate = (iso: string) => (iso ? `${iso.slice(8, 10)}${MONTHS[Number(iso.slice(5, 7)) - 1].toUpperCase()}${iso.slice(2, 4)}` : "");
+
 // "25 Sep - 2 Oct": the compact range under a trip tile.
 export const formatRange = (start: string, end: string) => (start && end ? `${short(start)} - ${short(end)}` : "");
 export const toIso = (d: Date) =>

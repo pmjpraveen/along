@@ -1,20 +1,26 @@
-import { Alert } from "../../../../src/components/Alert";
-import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
-import { Card } from "../../../../src/components/Card";
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
+import { Backpack, ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ExpensesResult, listExpenses } from "../../../../src/api/expenses";
+import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { BalancesResult, loadBalances } from "../../../../src/api/balances";
-import { describeBalance } from "../../../../src/domain/balance";
-import { discardQueued, useQueue } from "../../../../src/offline/sync";
+import { ExpensesResult, listExpenses } from "../../../../src/api/expenses";
+import { Alert } from "../../../../src/components/Alert";
+import { AvatarGroup } from "../../../../src/components/Avatar";
 import { PrimaryButton, TextButton } from "../../../../src/components/Buttons";
-import { formatMinor } from "../../../../src/domain/money";
-import { formatDate } from "../../../../src/domain/trip";
+import { CategoryIcon } from "../../../../src/components/CategoryIcon";
+import { describeBalance } from "../../../../src/domain/balance";
+import { expenseLine } from "../../../../src/domain/expense";
+import { formatMinor, moneyParts } from "../../../../src/domain/money";
 import { useTripRealtime } from "../../../../src/hooks/useTripRealtime";
-import { color, radius, space, type } from "../../../../src/theme/tokens";
+import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
+import { discardQueued, useQueue } from "../../../../src/offline/sync";
+import { color, mix, radius, shadow, space, type } from "../../../../src/theme/tokens";
+import { Card } from "../../../../src/components/Card";
 
+// The trip's money: what the trip has cost in total and who is in it, then every expense as a row (category, name, what it means for
+// me, amount). Tapping a row opens the expense with its split.
 export default function Expenses() {
   const { id } = useGlobalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
@@ -35,6 +41,7 @@ export default function Expenses() {
   const queuedCount = queued.length;
   useEffect(() => { if (queuedCount >= 0) load(); }, [queuedCount, load]);
   const add = () => router.push({ pathname: "/trip/[id]/add-expense", params: { id } });
+  const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
   // A queued expense that the server refused for good is a critical banner: it says what failed, why, and offers Discard.
   const queuedRows = queued.map((q) => q.status === "failed" ? (
@@ -44,72 +51,129 @@ export default function Expenses() {
     </Alert>
   ) : (
     <Card key={q.key} accessible style={s.queued}>
-      <View style={s.row}>
+      <View style={s.queuedRow}>
         <Text maxFontSizeMultiplier={1.4} style={s.title}>{q.payload.title}</Text>
         <Text maxFontSizeMultiplier={1.4} style={s.amount}>{state?.ok ? formatMinor(q.payload.amountMinor, state.currency.exponent, state.currency.code) : ""}</Text>
       </View>
-      <Text maxFontSizeMultiplier={1.4} style={s.meta}>Saved on this phone. Will sync when you're back online.</Text>
+      <Text maxFontSizeMultiplier={1.4} style={s.sub}>Saved on this phone. Will sync when you're back online.</Text>
     </Card>
   ));
 
+  const ok = state?.ok ? state : null;
+  const total = ok ? ok.expenses.reduce((sum, e) => sum + e.amount_minor, 0) : 0;
+  const parts = ok ? moneyParts(total, ok.currency.exponent, ok.currency.code) : null;
+  const mine = bal?.ok ? bal.rows.find((r) => r.isMe) : undefined;
+
   return (
-    <ScrollView style={s.screen} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s64 + space.s32 }]}>
-      <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Expenses</Text>
-      {state === null ? (
-        <ActivityIndicator accessibilityLabel="Loading expenses" color={color.forestInk} />
-      ) : !state.ok ? (
-        <View style={s.gap}>
-          <Alert variant="negative">{state.message}</Alert>
-          <TextButton label="Retry" onPress={load} />
-        </View>
-      ) : state.expenses.length === 0 && queuedCount === 0 ? (
-        <View style={s.gap}>
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>No expenses yet. Add what you paid and split it in seconds.</Text>
-          <PrimaryButton label="Add an expense" onPress={add} />
-        </View>
-      ) : (
-        <>
-          {bal?.ok && (() => {
-            const mine = bal.rows.find((r) => r.isMe);
-            return mine ? (
-              <View accessible style={s.balance}>
-                <Text maxFontSizeMultiplier={1.3} style={s.balanceText}>{describeBalance(mine.net, mine.name, true, bal.currency.exponent, bal.currency.code)}</Text>
+    <View style={s.screen}>
+      {/* A soft pink glow behind the header. */}
+      <Svg style={s.glow} width="100%" height={260} pointerEvents="none">
+        <Defs>
+          <RadialGradient id="pink" cx="50%" cy="0%" rx="90%" ry="85%" fx="50%" fy="0%">
+            <Stop offset="0" stopColor={color.brightPink} stopOpacity={0.75} />
+            <Stop offset="1" stopColor={color.brightPink} stopOpacity={0} />
+          </RadialGradient>
+        </Defs>
+        <Rect width="100%" height="100%" fill="url(#pink)" />
+      </Svg>
+      <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull}
+        contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s64 + space.s32 }]}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
+          <ChevronLeft size={22} color={color.forestInk} strokeWidth={1.75} />
+        </Pressable>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Expenses</Text>
+
+        {state === null ? (
+          <ActivityIndicator accessibilityLabel="Loading expenses" color={color.forestInk} />
+        ) : !ok ? (
+          <View style={s.gap}>
+            <Alert variant="negative">{(state as { message: string }).message}</Alert>
+            <TextButton label="Retry" onPress={load} />
+          </View>
+        ) : (
+          <>
+            <View style={s.summary}>
+              <View style={s.strips}>
+                {Array.from({ length: 48 }, (_, i) => <View key={i} style={{ flex: 1, backgroundColor: mix(color.brightPink, "#fffcfe", i / 47) }} />)}
               </View>
-            ) : null;
-          })()}
-          {queuedRows}
-          {state.expenses.map((e) => (
-            <Card key={e.id} accessible accessibilityLabel={e.canEdit ? `Edit ${e.title}` : undefined}
-              disabled={!e.canEdit} onPress={e.canEdit ? () => router.push({ pathname: "/trip/[id]/add-expense", params: { id, expenseId: e.id } }) : undefined}>
-              <View style={s.row}>
-                <Text maxFontSizeMultiplier={1.4} style={s.title}>{e.title}</Text>
-                <Text maxFontSizeMultiplier={1.4} style={s.amount}>{formatMinor(e.amount_minor, state.currency.exponent, state.currency.code)}</Text>
+              <View style={s.tripRow}>
+                <Backpack size={20} color={color.darkPurple} strokeWidth={1.75} />
+                <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={s.tripName}>Trip to {ok.trip?.destination ?? ok.trip?.name ?? ""}</Text>
               </View>
-              <Text maxFontSizeMultiplier={1.4} style={s.meta}>
-                Paid by {e.paidBy}{e.addedBy !== e.paidBy ? ` · added by ${e.addedBy}` : ""} · {formatDate(e.expense_date)}
-              </Text>
-            </Card>
-          ))}
-          <PrimaryButton label="Add an expense" onPress={add} />
-          <TextButton label="See everyone's balances" onPress={() => router.push({ pathname: "/trip/[id]/balances", params: { id } })} />
-        </>
-      )}
-    </ScrollView>
+              <View accessible accessibilityLabel={`Total expenses ${formatMinor(total, ok.currency.exponent, ok.currency.code)}`} style={s.inner}>
+                <Text maxFontSizeMultiplier={1.3} style={s.innerLabel}>Expenses</Text>
+                {parts && (
+                  <Text maxFontSizeMultiplier={1.2} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={s.total}>
+                    <Text style={s.frac}>{parts.prefix}</Text> {parts.whole}<Text style={s.frac}>{parts.frac}</Text>
+                  </Text>
+                )}
+                {mine && bal?.ok && <Text maxFontSizeMultiplier={1.4} style={s.balance}>{describeBalance(mine.net, mine.name, true, bal.currency.exponent, bal.currency.code)}</Text>}
+                {!!ok.members?.length && <AvatarGroup people={ok.members} size={40} max={4} />}
+              </View>
+            </View>
+
+            {ok.expenses.length === 0 && queuedCount === 0 ? (
+              <View style={s.gap}>
+                <Text maxFontSizeMultiplier={1.4} style={s.body}>No expenses yet. Add what you paid and split it in seconds.</Text>
+                <PrimaryButton label="Add an expense" onPress={add} />
+              </View>
+            ) : (
+              <>
+                <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Transactions</Text>
+                {queuedRows}
+                <View>
+                  {ok.expenses.map((e) => {
+                    const line = expenseLine({ meId: ok.meId ?? null, paidById: e.paidById ?? "", addedById: e.addedById ?? "", paidBy: e.paidBy, addedBy: e.addedBy, myShareMinor: e.myShareMinor ?? 0 });
+                    const amount = formatMinor(e.amount_minor, ok.currency.exponent, ok.currency.code);
+                    return (
+                      <Pressable key={e.id} accessibilityRole="button" accessibilityLabel={`${e.title}, ${line}, ${amount}`}
+                        onPress={() => router.push({ pathname: "/trip/[id]/expense", params: { id, expenseId: e.id } })}
+                        style={({ pressed }) => [s.tx, pressed && s.pressed]}>
+                        <CategoryIcon category={e.category} />
+                        <View style={s.txText}>
+                          <Text maxFontSizeMultiplier={1.4} style={s.title}>{e.title}</Text>
+                          <Text maxFontSizeMultiplier={1.4} style={s.sub}>{line}</Text>
+                        </View>
+                        <Text maxFontSizeMultiplier={1.4} style={s.amount}>{amount}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                <TextButton label="See everyone's balances" onPress={() => router.push({ pathname: "/trip/[id]/balances", params: { id } })} />
+              </>
+            )}
+          </>
+        )}
+      </ScrollView>
+    </View>
   );
 }
 
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
+  scroll: { flex: 1 },
+  glow: { position: "absolute", top: 0, left: 0, right: 0 },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
-  heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
+  round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
+  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian, marginTop: 0 },
   gap: { gap: space.s8 },
-  balance: { padding: space.s16, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.neutralWash },
-  balanceText: { ...type.display, fontSize: 24, lineHeight: 28, color: color.forestInk, fontVariant: ["tabular-nums"] },
+  summary: { borderRadius: radius.xLarge, borderCurve: "continuous", overflow: "hidden", paddingBottom: space.s8, paddingHorizontal: space.s8, ...shadow.itemLight },
+  strips: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+  tripRow: { flexDirection: "row", alignItems: "center", gap: space.s8, paddingHorizontal: space.s16, paddingVertical: space.s16 },
+  tripName: { ...type.label, flex: 1, fontSize: 16, lineHeight: 22, color: color.darkPurple },
+  inner: { gap: space.s8, padding: space.s16, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.paper },
+  innerLabel: { ...type.fieldValue, color: color.charcoal },
+  total: { ...type.display, fontSize: 40, lineHeight: 48, letterSpacing: -1.2, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  frac: { color: color.slate },
+  balance: { ...type.fieldMessage, color: color.charcoal },
+  section: { ...type.fieldValue, color: color.charcoal, marginTop: space.s16 },
+  tx: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 72, paddingVertical: space.s16, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
+  pressed: { backgroundColor: color.neutralWash },
+  txText: { flex: 1, gap: 2 },
+  title: { ...type.label, fontSize: 17, lineHeight: 24, color: color.obsidian },
+  sub: { ...type.fieldMessage, color: color.slate },
+  amount: { ...type.label, fontSize: 17, color: color.obsidian, fontVariant: ["tabular-nums"] },
   queued: { borderStyle: "dashed", borderColor: color.slate },
-  row: { flexDirection: "row", justifyContent: "space-between", gap: space.s12 },
-  title: { ...type.body, flex: 1, color: color.obsidian },
-  amount: { ...type.body, color: color.obsidian, fontVariant: ["tabular-nums"] },
-  meta: { ...type.label, color: color.charcoal },
-  body: { ...type.body, color: color.charcoal },
-  error: { ...type.label, color: color.alarmRed },
+  queuedRow: { flexDirection: "row", justifyContent: "space-between", gap: space.s12 },
+  body: { ...type.fieldValue, color: color.charcoal },
 });

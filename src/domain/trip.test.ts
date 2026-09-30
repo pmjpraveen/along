@@ -1,4 +1,4 @@
-import { formatDate, formatRange, toIso, validateTrip } from "./trip";
+import { compactDate, formatDate, formatRange, toIso, validateTrip } from "./trip";
 
 const ok = { name: "Goa", destination: "Goa, India", start: "2026-12-01", end: "2026-12-05" };
 
@@ -29,4 +29,10 @@ test("validateTrip rejects a start date before today when today is given, and al
   expect(validateTrip(d, "2026-09-29").start).toBe("Start date can't be in the past.");
   expect(validateTrip({ ...d, start: "2026-09-29" }, "2026-09-29").start).toBeUndefined();
   expect(validateTrip(d).start).toBeUndefined();
+});
+
+test("compactDate writes day, month and year the way a passport's machine-readable lines do", () => {
+  expect(compactDate("2026-09-08")).toBe("08SEP26");
+  expect(compactDate("2025-12-31")).toBe("31DEC25");
+  expect(compactDate("")).toBe("");
 });
