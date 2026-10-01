@@ -1,5 +1,6 @@
 import { Alert } from "../../../src/components/Alert";
 import { toast } from "../../../src/stores/toast";
+import { Chip } from "../../../src/components/Chip";
 import { haptic } from "../../../src/haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronRight, X } from "lucide-react-native";
@@ -7,7 +8,7 @@ import { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { createExpense, ExpenseDetail, FormData, loadExpense, loadExpenseForm, updateExpense } from "../../../src/api/expenses";
+import { createExpense, ExpenseDetail, FormData, loadExpense, loadExpenseAccess, loadExpenseForm, updateExpense } from "../../../src/api/expenses";
 import { queueExpense } from "../../../src/offline/sync";
 import { FieldLabel, FieldMessage, TextField } from "../../../src/components/TextField";
 import { Button, TextButton } from "../../../src/components/Buttons";
@@ -55,6 +56,7 @@ export default function AddExpense() {
     const r = await loadExpenseForm(id);
     if (!r.ok) return setLoadError(r.message);
     const { currency } = r.data;
+    if (!expenseId && !(await loadExpenseAccess(id))) return setLoadError("This trip is completed, so only the owner can add expenses.");
     setForm(r.data);
     if (!expenseId) {
       setPayerId((p) => p ?? r.data.members.find((m) => m.isMe)?.id ?? null);
@@ -81,11 +83,11 @@ export default function AddExpense() {
   const save = async () => {
     if (busy || !form) return;
     const minor = parseMinor(amount, form.currency.exponent);
-    const e = { ...(minor ? {} : { amount: "Enter an amount greater than zero." }), ...(title.trim() ? {} : { title: "Enter what this was for." }) };
+    const e = { ...(minor ? {} : { amount: "Enter an amount greater than zero." }), ...(title.trim() ? {} : { title: "What was this for?" }) };
     setErrors(e);
     setFormError(null);
     if (!minor || Object.keys(e).length) return;
-    if (!splitWith?.length) return setFormError("Pick at least one person to split with.");
+    if (!splitWith?.length) return setFormError("Choose who's sharing this expense.");
     const custom = method === "custom" ? customShares(enteredMinor) : null;
     const customProblem = custom ? customError(minor, custom, form.currency.exponent, form.currency.code) : null;
     if (customProblem) return setFormError(customProblem);
@@ -105,7 +107,7 @@ export default function AddExpense() {
     // No connection: keep the expense on this phone with its idempotency key; it syncs once when the connection returns.
     if (!editing && !r.ok && r.retry) await queueExpense({ ...common, tripId: id, key, ...(payerId && payerId !== me?.id && { paidBy: payerId }) });
     setBusy(false);
-    if (r.ok || (!editing && !r.ok && r.retry)) { haptic.success(); toast(r.ok ? (editing ? "Expense updated" : "Expense saved") : "Saved on this phone. Will sync when you're back online."); router.back(); }
+    if (r.ok || (!editing && !r.ok && r.retry)) { haptic.success(); toast(r.ok ? (editing ? "Expense updated" : "Expense saved") : "Saved on your phone. It'll sync when you're back online."); router.back(); }
     else { haptic.warn(); setFormError(r.message); }
   };
 
@@ -180,17 +182,13 @@ export default function AddExpense() {
               <FieldLabel>Split</FieldLabel>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipScroll} contentContainerStyle={s.chips} accessibilityRole="radiogroup" accessibilityLabel="Split method">
                 {METHODS.map((m) => (
-                  <Pressable key={m.key} accessibilityRole="radio" accessibilityLabel={m.label} accessibilityState={{ selected: method === m.key }}
-                    onPress={() => { if (method !== m.key) haptic.select(); switchMethod(m.key); }} style={[s.chip, method === m.key && s.chipOn]}>
-                    <Text maxFontSizeMultiplier={1.3} style={[s.chipText, method === m.key && s.chipTextOn]}>{m.label}</Text>
-                  </Pressable>
+                  <Chip key={m.key} role="radio" label={m.label} selected={method === m.key} onPress={() => { if (method !== m.key) haptic.select(); switchMethod(m.key); }} />
                 ))}
               </ScrollView>
               {pickingSplit ? (
                 <>
                   <ParticipantPicker selected={splitWith ?? []} onChange={setSplitWith} amounts={method === "equal" ? amounts : undefined}
                     members={form.members.map((m) => ({ id: m.id, display_name: m.isMe ? `${m.name} (you)` : m.name, membership_type: m.guest ? "guest" : "registered" }))} />
-                  <TextButton label="Done" onPress={() => setPickingSplit(false)} />
                 </>
               ) : (
                 <PickRow label="Split with" value={!splitWith || splitWith.length === form.members.length ? "Everyone" : `${splitWith.length} of ${form.members.length} people`}
@@ -212,6 +210,8 @@ export default function AddExpense() {
                   exponent={0} symbol="×" remaining={shareTotal > 0 ? `${shareTotal} ${shareTotal === 1 ? "share" : "shares"} in total` : null} ok={shareTotal > 0} />
               )}
               {method === "equal" && shares && form && <Text maxFontSizeMultiplier={1.4} style={s.hint}>{shareSummary(shares, form.currency.exponent, form.currency.code)}</Text>}
+              {/* Done closes the people list; it sits after the amounts, at the bottom of the split. */}
+              {pickingSplit && <TextButton label="Done" onPress={() => setPickingSplit(false)} />}
             </View>
             {formError && <Alert variant="negative">{formError}</Alert>}
           </>
@@ -220,7 +220,7 @@ export default function AddExpense() {
       {form && (
         <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
           {/* Neutral until there is an amount and a name, then the one green action; pressing it early still explains what is missing. */}
-          <Button label={busy ? "Saving…" : editing ? "Save changes" : "Save"} onPress={save} type={liveMinor && title.trim() ? "primary" : "secondaryNeutral"} size="large" />
+          <Button label={busy ? "Saving…" : editing ? "Save changes" : "Add expense"} onPress={save} type={liveMinor && title.trim() ? "primary" : "secondaryNeutral"} size="large" />
         </View>
       )}
     </KeyboardAvoidingView>
@@ -233,31 +233,27 @@ const s = StyleSheet.create({
   close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
   heading: { ...type.sheetTitle, color: color.obsidian },
   footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },
-  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s16, minHeight: 64, paddingHorizontal: space.s16, paddingVertical: space.s12, borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderColor: color.inputBorder, backgroundColor: color.paper },
-  rowLabel: { ...type.fieldMessage, color: color.slate },
-  rowValue: { ...type.label, fontSize: 17, color: color.obsidian },
+  pickWrap: { gap: space.s8 },
+  pick: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s8, paddingHorizontal: space.s16, paddingVertical: 12, borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderColor: color.inputBorder, backgroundColor: color.paper },
+  pickValue: { ...type.fieldValue, flex: 1, color: color.obsidian },
   field: { gap: space.s8 },
   label: { ...type.label, color: color.charcoal },
   hint: { ...type.body, color: color.slate },
   inputError: { borderColor: color.alarmRed },
   error: { ...type.label, color: color.alarmRed },
-  chipScroll: { flexGrow: 0 },
+  chipScroll: { flexGrow: 0, marginBottom: space.s8 },
   chips: { gap: space.s8 },
-  chip: { minHeight: 44, paddingHorizontal: space.s16, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.buttonGrey },
-  chipOn: { backgroundColor: color.darkMaroon },
-  chipText: { ...type.buttonLarge, fontFamily: font.regular, color: color.slate },
-  chipTextOn: { color: color.brightOrange },
 });
 
-// A tappable summary row ("Paid by / You") that opens the picker for that choice.
+// A choice that opens a picker, built like every other input: the label above, then a box with the value and a chevron.
 function PickRow({ label, value, spoken, onPress }: { label: string; value: string; spoken: string; onPress: () => void }) {
   return (
-    <Pressable accessibilityRole="button" accessibilityLabel={spoken} onPress={onPress} style={s.row}>
-      <View>
-        <Text maxFontSizeMultiplier={1.4} style={s.rowLabel}>{label}</Text>
-        <Text maxFontSizeMultiplier={1.4} style={s.rowValue}>{value}</Text>
-      </View>
-      <ChevronRight size={20} color={color.brandBlack} strokeWidth={1.75} />
-    </Pressable>
+    <View style={s.pickWrap}>
+      <FieldLabel>{label}</FieldLabel>
+      <Pressable accessibilityRole="button" accessibilityLabel={spoken} onPress={onPress} style={s.pick}>
+        <Text maxFontSizeMultiplier={1.4} style={s.pickValue}>{value}</Text>
+        <ChevronRight size={20} color={color.iconInk} strokeWidth={1.75} />
+      </Pressable>
+    </View>
   );
 }

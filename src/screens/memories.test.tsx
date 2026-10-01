@@ -21,7 +21,7 @@ beforeEach(() => { jest.clearAllMocks(); mockList.mockResolvedValue({ ok: true, 
 test("7.3 the trip's memories are listed with who added them", async () => {
   await render(<Memories />);
   expect(await screen.findByText("The sunset at Baga")).toBeTruthy();
-  expect(screen.getByText(/Ben · 06-12-2026/)).toBeTruthy();
+  expect(screen.getByText(/Ben · 6 Dec/)).toBeTruthy();
 });
 
 test("7.3 adding a note saves it, clears the field and reloads the list", async () => {
@@ -36,12 +36,12 @@ test("7.3 adding a note saves it, clears the field and reloads the list", async 
 });
 
 test("7.3 a failed note keeps the text, and the retry uses the same key so it saves once", async () => {
-  mockNote.mockResolvedValueOnce({ ok: false, message: "No connection. Check your internet and try again." }).mockResolvedValueOnce({ ok: true });
+  mockNote.mockResolvedValueOnce({ ok: false, message: "You're offline. Check your connection and try again." }).mockResolvedValueOnce({ ok: true });
   await render(<Memories />);
   await screen.findByText("The sunset at Baga");
   await fireEvent.changeText(screen.getByLabelText("Note"), "Best chai ever");
   await fireEvent.press(screen.getByRole("button", { name: "Add note" }));
-  expect(await screen.findByText(/No connection/)).toBeTruthy();
+  expect(await screen.findByText(/You're offline/)).toBeTruthy();
   expect(screen.getByLabelText("Note").props.value).toBe("Best chai ever");
   await fireEvent.press(screen.getByRole("button", { name: "Add note" }));
   await waitFor(() => expect(mockNote).toHaveBeenCalledTimes(2));
@@ -84,7 +84,7 @@ test("7.3 with no memories yet it invites the first one; a load failure shows re
   mockList.mockResolvedValueOnce({ ok: true, memories: [] });
   await render(<Memories />);
   expect(await screen.findByText(/No memories yet/)).toBeTruthy();
-  mockList.mockResolvedValueOnce({ ok: false, message: "No connection. Check your internet and try again." });
+  mockList.mockResolvedValueOnce({ ok: false, message: "You're offline. Check your connection and try again." });
   await render(<Memories />);
   expect(await screen.findByRole("button", { name: "Retry" })).toBeTruthy();
 });

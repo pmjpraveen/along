@@ -17,7 +17,7 @@ export function TripSummaryCards({ summary }: { summary: TripSummary }) {
         <Text maxFontSizeMultiplier={1.4} style={s.label}>Total spent</Text>
         <Text maxFontSizeMultiplier={1.3} style={s.big}>{money(summary.total_spend_minor)}</Text>
         <Text maxFontSizeMultiplier={1.4} style={s.body}>
-          {summary.outstanding_minor === 0 ? "Everyone is settled up." : `${money(summary.outstanding_minor)} still to settle`}
+          {summary.outstanding_minor === 0 ? "Everyone's settled up." : `${money(summary.outstanding_minor)} still to settle`}
         </Text>
       </View>
     </>
@@ -25,8 +25,8 @@ export function TripSummaryCards({ summary }: { summary: TripSummary }) {
 }
 
 const s = StyleSheet.create({
-  card: { gap: space.s4, padding: space.s20, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.neutralWash },
-  big: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.forestInk, fontVariant: ["tabular-nums"] },
-  label: { ...type.fieldValue, color: color.slate },
+  card: { gap: space.s4, padding: space.s20, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
+  big: { ...type.display, fontSize: 28, lineHeight: 34, letterSpacing: -0.7, color: color.brandBlack, fontVariant: ["tabular-nums"] },
+  label: { ...type.fieldValue, color: color.charcoal },
   body: { ...type.fieldValue, color: color.charcoal },
 });

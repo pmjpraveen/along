@@ -4,11 +4,13 @@ export type TripErrors = Partial<Record<keyof TripDraft, string>>;
 const ISO = /^\d{4}-\d{2}-\d{2}$/;
 const validDate = (s: string) => ISO.test(s) && !Number.isNaN(Date.parse(s)) && new Date(s).toISOString().startsWith(s);
 
-// Dates are stored as ISO (YYYY-MM-DD) and shown as DD-MM-YYYY.
-export const formatDate = (iso: string) => (iso ? iso.split("-").reverse().join("-") : "");
+// Dates are stored as ISO (YYYY-MM-DD) and shown everywhere as "1 Oct", ranges as "1 Oct - 7 Oct".
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 // "9 Oct": the short day label used on the itinerary chips and under trip tiles.
-export const short = (iso: string) => `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]}`;
+export const short = (iso: string) => (iso ? `${Number(iso.slice(8, 10))} ${MONTHS[Number(iso.slice(5, 7)) - 1]}` : "");
+export const formatDate = short;
+// "1 Oct 2026": for dates with no trip around them, like when you joined.
+export const longDate = (iso: string) => (iso ? `${short(iso)} ${iso.slice(0, 4)}` : "");
 // "08SEP26": the compact date used in the passport's machine-readable lines.
 export const compactDate = (iso: string) => (iso ? `${iso.slice(8, 10)}${MONTHS[Number(iso.slice(5, 7)) - 1].toUpperCase()}${iso.slice(2, 4)}` : "");
 

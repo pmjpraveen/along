@@ -22,5 +22,5 @@ test("5.5 an overpayment and a non-party get specific messages", async () => {
 test("5.5 a network failure says offline", async () => {
   mockRpc.mockRejectedValue(new Error("Network request failed"));
   const r = await createSettlement(input);
-  expect(r.ok === false && r.message).toMatch(/No connection/);
+  expect(r.ok === false && r.message).toMatch(/You're offline/);
 });

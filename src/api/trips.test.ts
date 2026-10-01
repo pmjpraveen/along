@@ -1,13 +1,15 @@
-import { completeTrip, createTrip, listTrips, loadTripStatus, uploadCover } from "./trips";
+import { completeTrip, createTrip, deleteTrip, listTrips, loadTripStatus, uploadCover } from "./trips";
 
 const mockRpc = jest.fn();
 const mockUpload = jest.fn();
 const mockSigned = jest.fn();
 const mockFrom = jest.fn();
+const mockList = jest.fn();
+const mockRemove = jest.fn();
 jest.mock("./supabase", () => ({
   supabase: {
     rpc: (...a: unknown[]) => mockRpc(...a), from: (...a: unknown[]) => mockFrom(...a),
-    storage: { from: () => ({ upload: (...a: unknown[]) => mockUpload(...a), createSignedUrls: (...a: unknown[]) => mockSigned(...a) }) },
+    storage: { from: () => ({ upload: (...a: unknown[]) => mockUpload(...a), createSignedUrls: (...a: unknown[]) => mockSigned(...a), list: (...a: unknown[]) => mockList(...a), remove: (...a: unknown[]) => mockRemove(...a) }) },
   },
 }));
 const mockFetch = jest.fn();
@@ -38,7 +40,7 @@ test("7.1 completing a trip calls the server and reports owner-only rejections c
   mockRpc.mockResolvedValue({ error: { code: "42501", message: "x" } });
   expect(await completeTrip("t1")).toEqual({ ok: false, message: "Only the trip owner can complete this trip." });
   mockRpc.mockRejectedValue(new Error("Network request failed"));
-  expect(await completeTrip("t1")).toEqual({ ok: false, message: "No connection. Check your internet and try again." });
+  expect(await completeTrip("t1")).toEqual({ ok: false, message: "You're offline. Check your connection and try again." });
 });
 
 const rows = (data: unknown, error: { message: string } | null = null) => {
@@ -82,4 +84,21 @@ test("cover: a non-owner is told so, an unsupported file is refused before uploa
   mockUpload.mockClear();
   expect((await uploadCover("t1", "file:///x.gif", "image/gif")).ok).toBe(false);
   expect(mockUpload).not.toHaveBeenCalled();
+});
+
+test("deleting a trip removes its cover and memory photos, then erases the trip", async () => {
+  mockList.mockResolvedValueOnce({ data: [{ name: "1.jpg" }] }).mockResolvedValueOnce({ data: [{ name: "a.png" }, { name: "b.png" }] });
+  mockRemove.mockResolvedValue({ error: null });
+  mockRpc.mockResolvedValue({ error: null });
+  expect(await deleteTrip("t1")).toEqual({ ok: true });
+  expect(mockRemove).toHaveBeenNthCalledWith(1, ["t1/1.jpg"]);
+  expect(mockRemove).toHaveBeenNthCalledWith(2, ["t1/a.png", "t1/b.png"]);
+  expect(mockRpc).toHaveBeenCalledWith("delete_trip", { p_trip: "t1" });
+});
+
+test("a failed photo clean-up never blocks erasing the trip, and a refusal for a non-owner is explained", async () => {
+  mockList.mockRejectedValue(new Error("boom"));
+  mockRpc.mockResolvedValue({ error: { message: "x", code: "42501" } });
+  expect(await deleteTrip("t1")).toEqual({ ok: false, message: "Only the trip owner can delete the trip." });
+  expect(mockRpc).toHaveBeenCalled();
 });

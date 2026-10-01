@@ -28,6 +28,6 @@ export function Toast() {
 }
 
 const s = StyleSheet.create({
-  wrap: { position: "absolute", alignSelf: "center", paddingHorizontal: space.s20, paddingVertical: space.s12, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.forestInk },
+  wrap: { position: "absolute", alignSelf: "center", paddingHorizontal: space.s20, paddingVertical: space.s12, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.toast },
   text: { ...type.label, color: color.paper },
 });

@@ -33,7 +33,7 @@ test("6.4 notifications sit under a heading for their day, newest first", async 
   inbox([item({ id: "a", created_at: now.toISOString() }), item({ id: "b", created_at: new Date(2020, 0, 5, 9, 0).toISOString() })]);
   await render(<Notifications />);
   expect(await screen.findByLabelText("Today")).toBeTruthy();
-  expect(screen.getByLabelText("05-01-2020")).toBeTruthy();
+  expect(screen.getByLabelText("5 Jan")).toBeTruthy();
 });
 
 test("6.4 tapping an unread notification marks it read and opens the right screen of its trip", async () => {
@@ -48,11 +48,11 @@ test("6.4 tapping an unread notification marks it read and opens the right scree
 test("6.4 an empty inbox explains what will show up", async () => {
   inbox([]);
   await render(<Notifications />);
-  expect(await screen.findByText(/Nothing yet/)).toBeTruthy();
+  expect(await screen.findByText(/All quiet/)).toBeTruthy();
 });
 
 test("6.4 a load failure shows retry", async () => {
-  mockLoad.mockResolvedValueOnce({ ok: false, message: "No connection. Check your internet and try again." });
+  mockLoad.mockResolvedValueOnce({ ok: false, message: "You're offline. Check your connection and try again." });
   inbox([item({})]);
   await render(<Notifications />);
   await fireEvent.press(await screen.findByRole("button", { name: "Retry" }));

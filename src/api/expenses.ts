@@ -1,7 +1,7 @@
 import type { Share } from "../domain/split";
 import { supabase } from "./supabase";
 
-const OFFLINE = "No connection. Check your internet and try again.";
+const OFFLINE = "You're offline. Check your connection and try again.";
 const isOffline = (m: string) => /network|fetch/i.test(m);
 
 export type Currency = { code: string; exponent: number };
@@ -13,17 +13,30 @@ export type ExpenseRow = {
   category?: string; paidById?: string; addedById?: string; myShareMinor?: number;
 };
 export type ExpensesResult =
-  | { ok: true; currency: Currency; expenses: ExpenseRow[]; meId?: string | null; trip?: { name: string; destination: string }; members?: { name: string; guest: boolean }[] }
+  | { ok: true; currency: Currency; expenses: ExpenseRow[]; meId?: string | null; trip?: { name: string; destination: string; cardColor: number }; members?: { name: string; guest: boolean }[] }
   | { ok: false; message: string };
 export type CreateExpenseInput = { tripId: string; title: string; amountMinor: number; date: string; split: Share[]; key: string; paidBy?: string; method?: "equal" | "custom" | "percentage" | "shares"; values?: Record<string, number> };
 // retry: the request could not be completed for a reason that is not the data (no connection, server hiccup), so it is safe to send again.
 export type CreateExpenseResult = { ok: true } | { ok: false; message: string; retry?: boolean };
 
 async function tripCurrency(tripId: string) {
-  const { data, error } = await supabase.from("trips").select("primary_currency, name, destination_name, currencies(minor_unit_exponent)").eq("id", tripId).single();
+  const { data, error } = await supabase.from("trips").select("primary_currency, name, destination_name, card_color, currencies(minor_unit_exponent)").eq("id", tripId).single();
   if (error) return { error };
   const cur = data.currencies as unknown as { minor_unit_exponent: number };
-  return { currency: { code: data.primary_currency as string, exponent: cur.minor_unit_exponent }, trip: { name: data.name as string, destination: data.destination_name as string } };
+  return { currency: { code: data.primary_currency as string, exponent: cur.minor_unit_exponent }, trip: { name: data.name as string, destination: data.destination_name as string, cardColor: data.card_color as number } };
+}
+
+// Once a trip is completed only its owner can add expenses (the server enforces it too); everyone can still see them. True when I may add one.
+export async function loadExpenseAccess(tripId: string): Promise<boolean> {
+  try {
+    const [trip, session] = await Promise.all([supabase.from("trips").select("status").eq("id", tripId).single(), supabase.auth.getSession()]);
+    if (!trip.data || (trip.data.status !== "completed" && trip.data.status !== "archived")) return true;
+    const me = session.data.session?.user.id;
+    const { data } = await supabase.from("trip_members").select("role").eq("trip_id", tripId).eq("user_id", me ?? "").eq("status", "active").maybeSingle();
+    return data?.role === "owner";
+  } catch {
+    return true;   // can't tell: let the server decide
+  }
 }
 
 // What Add Expense needs: the trip's currency and who can be in the split (active members, guests included).

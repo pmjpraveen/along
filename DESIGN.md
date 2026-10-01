@@ -7,6 +7,41 @@
 
 Along speaks in a confident, warm voice. A deep forest green (#163300) carries text, dark cards, and icons, while a single fresh green, Bright Green (#9FE870), marks the primary action, the active tab, the current selection, and key highlights. Display type is Geist Sans Medium, tightly tracked and set large at the moments that matter: the welcome screen, a trip header, "everyone is settled". Everything else stays restrained on a near-white canvas with soft gray-green surfaces (#e8ebe6). Buttons, tags, tabs, and avatars are pill-shaped; cards and inputs take gentle corners; large cards and sheets take 28. Nothing gradients. The yellow and forest pairing inverts cleanly when a card goes dark, which creates rhythm without decoration.
 
+## Current styling — the refresh that supersedes anything below that disagrees
+
+The app moved from the green look to a neutral one. Where a section further down still says Bright Green or Forest Ink for a button, a field or a text colour, this section wins. Every value is a token in `src/theme/tokens.ts`.
+
+**Text and icons**
+- Primary text `#222222` (`color.obsidian`, `color.brandBlack`). Secondary and quieter text `#6a6a6a` (`color.charcoal`, `color.slate`); there is one grey, not two.
+- Icons on a grey tile are `#444444` (`color.iconInk`). Red stays for destructive things only (Delete trip, Delete account, errors).
+
+**Buttons** (`Button`, all with 16px smooth corners)
+- Primary: `#222222` fill, white label, 56 tall when large. Secondary and secondary-neutral: `#f2f2f2` fill, `#222222` label. Disabled: `#f2f2f2` fill, grey label. Destructive: white fill, red border and label. Tertiary: no fill, underlined `#222222` label.
+- Round icon buttons: back, bell, history and settings are 48pt white circles with a 1px outline and a `#222222` icon. Close buttons and icon tiles are `#f4f4f4` circles with a `#444444` icon (`color.softGrey`).
+
+**Inputs** (`TextField`, date, time, place, amount, and the Paid by / Split with pickers)
+- Label above, then a white box: 16px radius, 1px `#d0d0d0` border (`color.inputBorder`), 48 tall, 16pt value text. Focus is a 3px `#222222` border; errors are 3px red with a message. A picker row is the same box with the value and a chevron, never a label inside the box.
+- The big amount input is only for the main Amount. Per-person fields in a split are ordinary inputs on the same row as the person's name, with the percent sign after the number. When a split adds up, nothing is shown; only what is left or over is.
+
+**Choices**
+- Chips (`Chip`): 32pt pills. Selected `#444444` with a white label; unselected `#f4f4f4` at 85% with a `#444444` label. The touch area is taller than the pill.
+- Checkboxes and radios: chosen is a black fill with a white tick or dot; unchosen is a grey outline.
+- Calendar: the selected day or range is `#444444` with white numbers; weeks start on Sunday.
+
+**Surfaces**
+- Pages are plain white: the coloured header gradients are gone. Sheets and dialogs dim the screen with a neutral `rgba(0,0,0,0.25)` scrim (`color.scrim`).
+- Bottom sheets: content is 20pt from the edges, list rows use `SheetRows` so their icons line up with the title, and the bottom space is only the home-indicator area (capped at 34pt).
+- Avatars: `#f4f4f4` circle, `#444444` initials.
+
+**Trip cards and colours**
+- Six card colours, stored on every trip as an index 0 to 5 and given when the trip is created, in turn per owner: `#ffc091`, `#e5ebff`, `#ebe0d9`, `#d9e0ab`, `#def6ff`, `#fff27b` (`CARD_COLORS`). The owner can change it in Trip settings.
+- Home and the Completed trips cards: photo, a date pill (the card colour darkened about 10%), the trip name on a tilted `#222222` tag (wrapped lines merge into one shape, two lines at most), and the place. Completed cards add a faint arrival stamp (top right) and departure stamp (bottom left), each cut off by the card's edge.
+- Trip page: the trip's colour is a band behind the header. The navigation row stays pinned on the band, the details fold away under it as you scroll, and "Plans" tucks away so only the day chips stay pinned. Plan cards are `#f4f4f4`; a map preview sits 8pt in from the card's left, right and bottom.
+
+**Stamps:** ten shapes (rectangle, oval, circle, hexagon, cut-corner, octagon, stadium, arch, ticket, triangle) and ten frame styles (solid, dashed, bold, triple, banner, dotted, beaded, dash-dot, stencil, offset), chosen from the trip so a stamp always looks the same.
+
+**Brand:** the wordmark is `#222222` on white; the splash and icon sit on `#222222`, and the splash animation is the six tilted colour stripes.
+
 ## Tokens — Colors
 
 | Name | Value | Token | Role |

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
 import { Alert } from "./Alert";
 import { color } from "../theme/tokens";
@@ -76,4 +76,25 @@ test("a critical banner has no dismiss control: it stays until the problem is de
 test("without an action or dismiss there are no buttons", async () => {
   await render(<Alert variant="negative">Nope.</Alert>);
   expect(screen.queryByRole("button")).toBeNull();
+});
+
+test("an error alert disappears after 5 seconds, and a new message gets its own 5 seconds", async () => {
+  jest.useFakeTimers();
+  const { rerender } = await render(<Alert variant="negative">First</Alert>);
+  expect(screen.getByText("First")).toBeTruthy();
+  await act(async () => { jest.advanceTimersByTime(4000); });
+  await rerender(<Alert variant="negative">Second</Alert>);
+  await act(async () => { jest.advanceTimersByTime(4000); });
+  expect(screen.getByText("Second")).toBeTruthy();
+  await act(async () => { jest.advanceTimersByTime(1000); });
+  expect(screen.queryByText("Second")).toBeNull();
+  jest.useRealTimers();
+});
+
+test("other alerts stay", async () => {
+  jest.useFakeTimers();
+  await render(<Alert variant="neutral">Stays</Alert>);
+  await act(async () => { jest.advanceTimersByTime(10000); });
+  expect(screen.getByText("Stays")).toBeTruthy();
+  jest.useRealTimers();
 });

@@ -1,11 +1,12 @@
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
+import { Chip } from "../../../../src/components/Chip";
 import { haptic } from "../../../../src/haptics";
 import { TripMenu } from "../../../../src/components/TripMenu";
-import { ChevronLeft, MapPin, Settings, UserPlus } from "lucide-react-native";
-import { useCallback, useMemo, useRef, useState } from "react";
-import { ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { ChevronLeft, MapPin, MoreHorizontal, Users } from "lucide-react-native";
+import { useCallback, useMemo, useState } from "react";
+import { ActivityIndicator, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../../../../src/components/Pressable";
-import Animated, { FadeIn } from "react-native-reanimated";
+import Animated, { Extrapolation, FadeIn, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { useReducedMotion } from "../../../../src/hooks/useReducedMotion";
 import { motion } from "../../../../src/theme/motion";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -80,31 +81,36 @@ export default function Trip() {
   const selected = picked && days.includes(picked) ? picked : days[0] ?? "";
   const items: Item[] = grouped.find((d) => d.date === selected)?.items ?? [];
 
-  // The day bar is the scroller's second child. Once it reaches the top it sticks, and grows by the status-bar height so its chips
-  // sit below the clock instead of under it.
-  const barY = useRef(0);
-  const [stuck, setStuck] = useState(false);
-  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const now = e.nativeEvent.contentOffset.y >= barY.current - 1;
-    setStuck((was) => (was === now ? was : now));
-  };
+  // The trip's top is built in layers, so the header can fold away while the plans stay in reach:
+  //   1. the navigation row (back, add guest, options) is pinned over the status bar, on the trip's colour, and never moves;
+  //   2. the trip details (photo, dates, name, people) are the first thing in the scroller, so they scroll up under the navigation row;
+  //   3. the "Plans" label and day chips ride along with the content until they reach the navigation row, then stay there (pinned);
+  //   4. the plans scroll beneath. Scrolling back to the top unfolds the details again.
+  // The chips are drawn outside the scroller and moved by the scroll position on the UI thread, so pinning them never changes the layout.
+  const navH = top + space.s16 + 48 + space.s12;
+  // The chips pin with the "Plans" label slid up under the navigation row (which covers it), so only the chips stay visible: the label block above
+  // them (top padding, the label, the gap) is 16 + 22 + 12 = 50 tall, and the chips sit 8 below the row.
+  const pinY = navH + space.s8 - (space.s16 + 22 + space.s12);
+  const scrollY = useSharedValue(0);
+  const barY = useSharedValue(0);          // where the chips would sit in the content
+  const [barH, setBarH] = useState(0);     // how tall they are, so the content keeps a gap of that size
+  const onScroll = useAnimatedScrollHandler((e) => { scrollY.value = e.contentOffset.y; });
+  const barStyle = useAnimatedStyle(() => ({ transform: [{ translateY: Math.max(barY.value - scrollY.value, pinY) }] }));
+  const edgeStyle = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [barY.value - pinY - 12, barY.value - pinY], [0, 1], Extrapolation.CLAMP) }));
+  // With the pull-to-refresh stretch, the navigation row goes down with the content instead of covering the spinner.
+  const navStyle = useAnimatedStyle(() => ({ transform: [{ translateY: Math.max(-scrollY.value, 0) }] }));
 
   const round = (label: string, onPress: () => void, icon: React.ReactNode) => (
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={space.s4} style={s.round}>{icon}</Pressable>
   );
   const ic = { size: 22, color: color.brandBlack, strokeWidth: 1.75 } as const;
 
+  const hasPlans = !!ok && ok.items.length > 0;
   return (
     <View style={s.screen}>
-    <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" automaticallyAdjustContentInsets={false} refreshControl={pull} stickyHeaderIndices={ok && ok.items.length > 0 ? [1] : []} scrollEventThrottle={16} onScroll={onScroll}
+    <Animated.ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" automaticallyAdjustContentInsets={false} refreshControl={pull} scrollEventThrottle={16} onScroll={onScroll}
       contentContainerStyle={{ paddingBottom: bottom + space.s64 + space.s32 }}>
-      <View style={[s.head, { paddingTop: top + space.s16 }, band ? { backgroundColor: band, paddingBottom: space.s24 } : null]}>
-        <View style={s.actions}>
-          {round("Back", back, <ChevronLeft {...ic} />)}
-          <View style={s.grow} />
-          {round("Add guest", () => router.push({ pathname: "/trip/[id]/add-guest", params: { id } }), <UserPlus {...ic} />)}
-          {round("Trip options", () => setMenu(true), <Settings {...ic} />)}
-        </View>
+      <View style={[s.head, { paddingTop: navH + space.s4 }, band ? { backgroundColor: band, paddingBottom: space.s24 } : null]}>
         {state === null ? (
           <ActivityIndicator accessibilityLabel="Loading itinerary" color={color.forestInk} />
         ) : !ok ? (
@@ -127,30 +133,13 @@ export default function Trip() {
         )}
       </View>
 
-      {/* Child 1 (sticky): the "Plans" label and the day chips. */}
-      <View onLayout={(e) => { barY.current = e.nativeEvent.layout.y; }} style={[s.bar, stuck && { paddingTop: top + space.s8 }, stuck && s.barStuck]}>
-        {ok && ok.items.length > 0 && (
-          <>
-            {!stuck && <Text maxFontSizeMultiplier={1.3} style={s.plans}>Plans</Text>}
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipScroll} contentContainerStyle={s.chips} accessibilityRole="tablist" accessibilityLabel="Days">
-              {days.map((d, n) => {
-                const on = d === selected;
-                return (
-                  <Pressable key={d} accessibilityRole="tab" accessibilityLabel={`Day ${n + 1}, ${formatDate(d)}`} accessibilityState={{ selected: on }}
-                    onPress={() => { if (!on) haptic.select(); setPicked(d); }} style={[s.chip, on && s.chipOn]}>
-                    <Text maxFontSizeMultiplier={1.3} style={[s.chipText, on && s.chipTextOn]}>Day {n + 1}</Text>
-                  </Pressable>
-                );
-              })}
-            </ScrollView>
-          </>
-        )}
-      </View>
+      {/* Where the Plans label and chips sit in the content; the real ones are drawn on top of this gap. */}
+      {hasPlans && <View onLayout={(e) => { barY.value = e.nativeEvent.layout.y; }} style={{ height: barH }} />}
 
       <View style={s.body}>
         {ok && ok.items.length === 0 && (
           <View style={s.gap}>
-            <Text maxFontSizeMultiplier={1.4} style={s.text}>Nothing planned yet. Add the first thing your group will do.</Text>
+            <Text maxFontSizeMultiplier={1.4} style={s.text}>No plans yet. Add the first thing your group will do.</Text>
             <PrimaryButton label="Add a plan" onPress={() => add(ok.trip.start_date)} />
           </View>
         )}
@@ -160,7 +149,7 @@ export default function Trip() {
             <Animated.View key={selected} entering={reduced ? undefined : FadeIn.duration(motion.fadeMs)} style={s.dayList}>
             {items.length === 0 ? (
               <View style={s.gap}>
-                <Text maxFontSizeMultiplier={1.4} style={s.text}>Nothing planned for this day.</Text>
+                <Text maxFontSizeMultiplier={1.4} style={s.text}>Nothing planned for this day yet.</Text>
                 <PrimaryButton label="Add a plan" onPress={() => add(selected)} />
               </View>
             ) : (
@@ -173,7 +162,7 @@ export default function Trip() {
                   <Pressable accessibilityRole="button" accessibilityLabel={i.title} accessibilityHint="Long press to move to another day"
                     accessibilityActions={[{ name: "move", label: `Move ${i.title} to another day` }]} onAccessibilityAction={() => setMoving(i.id)}
                     onLongPress={() => setMoving(i.id)} delayLongPress={350} style={s.card}>
-                    <View style={s.head4}>
+                    <View style={[s.head4, placeOf(i) && s.head4Map]}>
                       <View style={s.titleRow}>
                       <Text maxFontSizeMultiplier={1.4} style={s.itemTitle}>{i.title}</Text>
                       <Text maxFontSizeMultiplier={1.4} style={s.kind}>{TYPE_LABEL[i.type]}</Text>
@@ -186,8 +175,8 @@ export default function Trip() {
                       </View>
                     ) : null}
                     </View>
-                    {placeOf(i) && <MapPreview place={placeOf(i)!} />}
-                    {moving === i.id && <DateField label={`New day for ${i.title}`} value={i.day_date} onChange={(day) => move(i.id, i.version, day)} />}
+                    {placeOf(i) && <View style={s.map}><MapPreview place={placeOf(i)!} /></View>}
+                    {moving === i.id && <View style={s.move}><DateField label={`New day for ${i.title}`} value={i.day_date} onChange={(day) => move(i.id, i.version, day)} /></View>}
                   </Pressable>
                 </View>
               ))
@@ -196,7 +185,32 @@ export default function Trip() {
           </>
         )}
       </View>
-    </ScrollView>
+    </Animated.ScrollView>
+
+    {/* The navigation row: pinned over the top, on the trip's colour. */}
+    <Animated.View style={[s.nav, { height: navH, paddingTop: top + space.s16, backgroundColor: band ?? color.paper }, navStyle]}>
+      {round("Back", back, <ChevronLeft {...ic} />)}
+      <View style={s.grow} />
+      {round("Guests", () => router.push({ pathname: "/trip/[id]/guests", params: { id } }), <Users {...ic} />)}
+      {round("Trip options", () => setMenu(true), <MoreHorizontal {...ic} />)}
+    </Animated.View>
+
+    {/* The "Plans" label and the day chips: they travel with the content, then pin under the navigation row. */}
+    {hasPlans && (
+      <Animated.View onLayout={(e) => setBarH(Math.round(e.nativeEvent.layout.height))} style={[s.bar, barStyle]}>
+        <Text maxFontSizeMultiplier={1.3} style={s.plans}>Plans</Text>
+        <ScrollView horizontal contentInsetAdjustmentBehavior="never" automaticallyAdjustContentInsets={false} showsHorizontalScrollIndicator={false} style={s.chipScroll} contentContainerStyle={s.chips} accessibilityRole="tablist" accessibilityLabel="Days">
+          {days.map((d, n) => {
+            const on = d === selected;
+            return (
+              <Chip key={d} role="tab" label={`Day ${n + 1}`} accessibilityLabel={`Day ${n + 1}, ${formatDate(d)}`} selected={on} onPress={() => { if (!on) haptic.select(); setPicked(d); }} />
+            );
+          })}
+        </ScrollView>
+        <Animated.View pointerEvents="none" style={[s.edge, edgeStyle]} />
+      </Animated.View>
+    )}
+
     <TripMenu tripId={id} isOwner={isOwner} visible={menu} onClose={() => setMenu(false)} />
     </View>
   );
@@ -206,7 +220,7 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   scroll: { flex: 1 },
   head: { paddingHorizontal: space.s20, gap: space.s16 },
-  actions: { flexDirection: "row", alignItems: "center", gap: space.s8 },
+  nav: { position: "absolute", top: 0, left: 0, right: 0, zIndex: 5, flexDirection: "row", alignItems: "flex-start", gap: space.s8, paddingHorizontal: space.s20 },
   grow: { flex: 1 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
   title: { alignItems: "center", gap: space.s8 },
@@ -214,24 +228,23 @@ const s = StyleSheet.create({
   datePill: { paddingHorizontal: space.s8, paddingVertical: 2, borderRadius: 6, borderCurve: "continuous" },
   dateText: { fontFamily: font.medium, fontSize: 12, lineHeight: 16, color: color.obsidian, fontVariant: ["tabular-nums"] },
   summary: { ...type.fieldValue, color: color.charcoal },
-  bar: { paddingHorizontal: space.s20, paddingTop: space.s24, paddingBottom: space.s12, backgroundColor: color.paper },
-  barStuck: { borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
+  bar: { position: "absolute", top: 0, left: 0, right: 0, zIndex: 4, paddingHorizontal: space.s20, paddingTop: space.s16, paddingBottom: space.s12, backgroundColor: color.paper },
+  edge: { position: "absolute", left: 0, right: 0, bottom: 0, height: 1, backgroundColor: color.borderNeutral },
   plans: { ...type.fieldValue, color: color.charcoal },
   // A margin, not a gap on the bar: `gap` had no effect on the bar, which is a sticky child of the ScrollView.
-  chipScroll: { flexGrow: 0, marginTop: space.s16 },
+  chipScroll: { flexGrow: 0, marginTop: space.s12 },
   chips: { gap: space.s8 },
-  chip: { minHeight: 44, paddingHorizontal: space.s20, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.buttonGrey },
-  chipOn: { backgroundColor: color.darkMaroon },
-  chipText: { ...type.buttonLarge, color: color.forestInk },
-  chipTextOn: { color: color.brightOrange },
   body: { paddingHorizontal: space.s20, paddingTop: space.s8, gap: space.s16 },
   date: { ...type.label, color: color.charcoal },
   row: { flexDirection: "row", gap: space.s12 },
   time: { width: 64, flexDirection: "row", alignItems: "flex-start", justifyContent: "space-between", paddingTop: space.s16 },
   timeText: { ...type.fieldMessage, color: color.obsidian, fontVariant: ["tabular-nums"] },
   tick: { width: 12, height: 1, marginTop: 11, backgroundColor: color.borderNeutral },
-  card: { flex: 1, gap: space.s12, padding: space.s16, borderRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.neutralWash },
-  head4: { gap: space.s4 },
+  card: { flex: 1, overflow: "hidden", borderRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.softGrey },
+  head4: { gap: space.s4, padding: space.s16 },
+  head4Map: { paddingBottom: space.s12 },   // the map sits 8 in from the card's left, right and bottom
+  map: { margin: space.s8, marginTop: 0 },
+  move: { paddingHorizontal: space.s16, paddingBottom: space.s16 },
   titleRow: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   itemTitle: { ...type.label, flex: 1, fontSize: 17, color: color.obsidian },
   kind: { ...type.fieldMessage, color: color.slate },

@@ -18,7 +18,7 @@ test("a rate limit, a server error and no connection each say something specific
   mockFetch.mockResolvedValueOnce({ ok: false, status: 500 });
   expect(await searchPlaces("Goa")).toEqual({ ok: false, message: expect.stringMatching(/Couldn't search/) });
   mockFetch.mockRejectedValueOnce(new Error("offline"));
-  expect(await searchPlaces("Goa")).toEqual({ ok: false, message: expect.stringMatching(/No connection/) });
+  expect(await searchPlaces("Goa")).toEqual({ ok: false, message: expect.stringMatching(/You're offline/) });
   mockFetch.mockRejectedValueOnce(Object.assign(new Error("x"), { name: "AbortError" }));
   expect(await searchPlaces("Goa")).toEqual({ ok: true, places: [] });
 });

@@ -70,7 +70,10 @@ export default function Memories() {
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Memories</Text>
+        <View style={s.head}>
+          <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Memories</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>Photos and notes from the trip, shared with everyone on it.</Text>
+        </View>
 
         <View style={s.add}>
           <PrimaryButton label={busy && pending ? "Uploading…" : "Add a photo"} onPress={pickPhoto} />
@@ -83,15 +86,16 @@ export default function Memories() {
             {pending && <TextButton label="Retry upload" onPress={() => upload(pending)} />}
           </View>
         )}
+        <View style={s.divider} />
         {state === null ? (
-          <ActivityIndicator accessibilityLabel="Loading memories" color={color.forestInk} />
+          <ActivityIndicator accessibilityLabel="Loading memories" color={color.brandBlack} />
         ) : !state.ok ? (
           <View style={s.gap}>
             <Alert variant="negative">{state.message}</Alert>
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : state.memories.length === 0 ? (
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>No memories yet. Add a photo or a note to keep the feeling of this trip.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>No memories yet. Add a photo or a note to hold on to this trip.</Text>
         ) : (
           state.memories.map((m) => (
             <View key={m.id} accessible style={s.memory}>
@@ -118,14 +122,16 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
-  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian },
+  head: { gap: space.s8, marginTop: space.s8 },
+  heading: { fontFamily: type.sheetTitle.fontFamily, fontSize: 32, lineHeight: 38, letterSpacing: -0.8, color: color.brandBlack },
+  divider: { height: 1, backgroundColor: color.borderNeutral, marginVertical: space.s8 },
   gap: { gap: space.s8 },
-  add: { gap: space.s16, padding: space.s16, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.neutralWash },
-  memory: { gap: space.s12, padding: space.s8, borderRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.neutralWash },
+  add: { gap: space.s12 },
+  memory: { gap: space.s12, padding: space.s8, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
   photo: { width: "100%", aspectRatio: 4 / 3, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.neutralSolid },
   text: { gap: space.s8, paddingHorizontal: space.s12, paddingTop: space.s4 },
   byline: { flexDirection: "row", alignItems: "center", gap: space.s8, paddingHorizontal: space.s12, paddingBottom: space.s12 },
   line: { ...type.fieldValue, color: color.obsidian },
-  meta: { ...type.fieldMessage, color: color.slate },
+  meta: { ...type.fieldMessage, color: color.charcoal },
   body: { ...type.fieldValue, color: color.charcoal },
 });

@@ -6,7 +6,7 @@ test("6.4 every notification type is worded in plain language", () => {
   expect(describeNotification(n("trip_invitation" as never, { actor: "Ben", trip: "Goa", action: "joined" }))).toBe("Ben joined Goa");
   expect(describeNotification(n("trip_invitation" as never, { actor: "Rahul", trip: "Goa", action: "claimed" }))).toBe("Rahul claimed their spot in Goa");
   expect(describeNotification(n("itinerary_change" as never, { actor: "Ben", trip: "Goa", title: "Beach day", action: "added" }))).toBe('Ben added "Beach day" to Goa');
-  expect(describeNotification(n("itinerary_change" as never, { actor: "Ben", title: "Beach day", action: "moved", day: "2026-12-03" }))).toBe('Ben moved "Beach day" to 03-12-2026');
+  expect(describeNotification(n("itinerary_change" as never, { actor: "Ben", title: "Beach day", action: "moved", day: "2026-12-03" }))).toBe('Ben moved "Beach day" to 3 Dec');
   expect(describeNotification(n("new_expense" as never, { actor: "Ben", title: "Dinner", amount_minor: 90000, currency: "INR", exponent: 2 }))).toBe("Ben added Dinner · ₹900.00");
   expect(describeNotification(n("balance_change" as never, { actor: "Ben", title: "Dinner", amount_minor: 90000, currency: "INR", exponent: 2, action: "added" })))
     .toBe("Ben added Dinner (₹900.00). Your balance changed.");

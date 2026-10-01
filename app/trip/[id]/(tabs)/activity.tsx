@@ -55,7 +55,7 @@ export default function History() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : state.events.length === 0 ? (
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>Nothing yet. When people join, add plans or log expenses, it shows up here.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>Nothing yet. Joins, plans and expenses will show up here as they happen.</Text>
         ) : (
           days.map((d) => (
             <View key={d.heading}>

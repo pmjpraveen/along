@@ -1,24 +1,28 @@
 import { useFocusEffect, useRouter } from "expo-router";
-import { Bell, ChevronLeft, FileText, Globe, LogOut, Shield, Trash2 } from "lucide-react-native";
+import { Bell, Camera, ChevronLeft, Coins, FileText, Globe, LogOut, Shield, Trash2 } from "lucide-react-native";
 
 const GOLD = "#e8cf8a";   // the gold used for embossing on a passport cover
-import { useCallback, useEffect, useState } from "react";
+import * as ImagePicker from "expo-image-picker";
+import { useCallback, useDeferredValue, useEffect, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadStamps, StampsResult } from "../src/api/passport";
 import { loadPreferences, setPreference } from "../src/api/notifications";
-import { deleteMyAccount, loadMyProfile, MyProfile, setMyCountry, signOut } from "../src/api/profile";
+import { Currency, deleteMyAccount, listCurrencies, loadMyProfile, MyProfile, setMyCountry, setMyCurrency, signOut, uploadAvatar } from "../src/api/profile";
 import { Alert } from "../src/components/Alert";
+import { SearchField } from "../src/components/SearchField";
 import { Avatar } from "../src/components/Avatar";
 import { BottomSheet, SheetRows } from "../src/components/BottomSheet";
 import { Dialog } from "../src/components/Dialog";
 import { ListItem } from "../src/components/ListItem";
-import { COUNTRIES, countryName, flagOf, PASSPORTS } from "../src/domain/countries";
+import { appVersionLabel } from "../src/appVersion";
+import { matches } from "../src/domain/search";
+import { COUNTRIES, countryName, currencyOf, flagOf, PASSPORTS } from "../src/domain/countries";
 import { NotificationType, TYPE_LABEL, TYPES } from "../src/domain/notifications";
 import { TextButton } from "../src/components/Buttons";
 import { PassportShine } from "../src/components/PassportShine";
-import { compactDate, formatDate } from "../src/domain/trip";
+import { compactDate, longDate } from "../src/domain/trip";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
 import { color, font, mix, radius, space, type } from "../src/theme/tokens";
 
@@ -31,10 +35,14 @@ export default function Profile() {
   const [me, setMe] = useState<MyProfile | null>(null);
   const load = useCallback(async () => { setState(await loadStamps()); }, []);
   useFocusEffect(useCallback(() => { load(); }, [load]));
-  useEffect(() => { loadMyProfile().then(setMe); }, []);
+  useEffect(() => { loadMyProfile().then(setMe); listCurrencies().then(setCurrencies); }, []);
   const pull = usePullToRefresh(load);
   const stamps = state?.ok ? state.stamps : [];
-  const [sheet, setSheet] = useState<"country" | "notifications" | null>(null);
+  const [sheet, setSheet] = useState<"country" | "currency" | "notifications" | null>(null);
+  const [currencies, setCurrencies] = useState<Currency[]>([]);
+  const [query, setQuery] = useState("");
+  const deferred = useDeferredValue(query);
+  const open = (s: "country" | "currency" | "notifications") => { setQuery(""); setSheet(s); };
   const [prefs, setPrefs] = useState<Record<NotificationType, boolean> | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -53,7 +61,30 @@ export default function Profile() {
     setSheet(null);
     setError(null);
     const r = await setMyCountry(code);
-    if (r.ok) setMe((m) => (m ? { ...m, country: code } : m)); else setError(r.message);
+    if (!r.ok) return setError(r.message);
+    setMe((m) => (m ? { ...m, country: code } : m));
+    // My country also sets my preferred currency, when the app supports its currency; it can still be changed after.
+    const cur = currencyOf(code);
+    if (!cur || cur === me?.currency) return;
+    const c = await setMyCurrency(cur);
+    if (c.ok) setMe((m) => (m ? { ...m, currency: cur } : m)); else setError(c.message);
+    if (!currencies.length) listCurrencies().then(setCurrencies);
+  };
+  const changePhoto = async () => {
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+    if (res.canceled || !res.assets[0]) return;
+    setError(null);
+    const a = res.assets[0];
+    const r = await uploadAvatar(a.uri, a.mimeType ?? "image/jpeg");
+    if (!r.ok) return setError(r.message);
+    loadMyProfile().then(setMe);
+  };
+  const openCurrency = () => { open("currency"); if (!currencies.length) listCurrencies().then(setCurrencies); };
+  const pickCurrency = async (code: string) => {
+    setSheet(null);
+    setError(null);
+    const r = await setMyCurrency(code);
+    if (r.ok) setMe((m) => (m ? { ...m, currency: code } : m)); else setError(r.message);
   };
   const logOut = async () => { setError(null); const r = await signOut(); if (!r.ok) setError(r.message); };
   const remove = async () => {
@@ -80,19 +111,23 @@ export default function Profile() {
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
 
-        <View style={s.avatar}><Avatar name={me?.name ?? ""} size={72} /></View>
-
-        <View accessible style={s.card}>
+        <View style={s.avatar}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Change profile picture" onPress={changePhoto} hitSlop={space.s8}>
+            <Avatar name={me?.name ?? ""} uri={me?.avatarUrl} size={72} />
+            <View style={s.camera}><Camera size={14} color={color.iconInk} strokeWidth={2} /></View>
+          </Pressable>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.name}>{me?.name ?? "Profile"}</Text>
-          {me && (
+        </View>
+
+        {me && (
+          <View accessible style={s.card}>
             <>
-              <View style={s.line} />
               <View style={s.row}><Text maxFontSizeMultiplier={1.4} style={s.label}>Email</Text><Text maxFontSizeMultiplier={1.4} numberOfLines={1} style={s.value}>{me.email}</Text></View>
               <View style={s.line} />
-              <View style={s.row}><Text maxFontSizeMultiplier={1.4} style={s.label}>Member since</Text><Text maxFontSizeMultiplier={1.4} style={s.value}>{formatDate(me.since)}</Text></View>
+              <View style={s.row}><Text maxFontSizeMultiplier={1.4} style={s.label}>Member since</Text><Text maxFontSizeMultiplier={1.4} style={s.value}>{longDate(me.since)}</Text></View>
             </>
-          )}
-        </View>
+          </View>
+        )}
 
         <View style={[s.card, s.passportCard]}>
           {/* The whole card is the passport cover: colour of my country's passport, a faint grain, and a gold embossed frame and title. */}
@@ -120,8 +155,8 @@ export default function Profile() {
               <View style={s.inset}>
               {/* The passport's page: two machine-readable lines, then the trip count; it runs off the bottom like a page in a cover. */}
               <View style={s.page}>
-                <Text numberOfLines={1} maxFontSizeMultiplier={1.2} style={s.mrz}>{`<<${passport?.iso3 ?? "ALONG"}<<${mrzName}<<MEMBERSINCE${compactDate(me?.since ?? "")}<<`}</Text>
-                <Text numberOfLines={1} maxFontSizeMultiplier={1.2} style={s.mrz}>{`TRIPS${String(stamps.length).padStart(3, "0")}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<`}</Text>
+                <Text numberOfLines={1} ellipsizeMode="clip" maxFontSizeMultiplier={1.2} style={s.mrz}>{`<<${passport?.iso3 ?? "ALONG"}<<${mrzName}<<MEMBERSINCE${compactDate(me?.since ?? "")}<<`}</Text>
+                <Text numberOfLines={1} ellipsizeMode="clip" maxFontSizeMultiplier={1.2} style={s.mrz}>{`TRIPS${String(stamps.length).padStart(3, "0")}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<`}</Text>
                 <Text maxFontSizeMultiplier={1.3} style={s.label}>Total trips</Text>
                 <Text maxFontSizeMultiplier={1.2} style={s.count}>{stamps.length}</Text>
               </View>
@@ -135,7 +170,9 @@ export default function Profile() {
 
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.group}>Settings</Text>
         <View style={s.list}>
-          <ListItem title="Country" subtitle={countryName(me?.country ?? null)} leading={icon(Globe)} trailing="chevron" onPress={() => setSheet("country")} />
+          <ListItem title="Country" subtitle={countryName(me?.country ?? null)} leading={icon(Globe)} trailing="chevron" onPress={() => open("country")} />
+          <View style={s.hair} />
+          <ListItem title="Preferred currency" subtitle={me?.currency ? `${currencies.find((c) => c.code === me.currency)?.name ?? me.currency} · ${me.currency}` : "Not set. New trips use INR"} leading={icon(Coins)} trailing="chevron" onPress={openCurrency} />
           <View style={s.hair} />
           <ListItem title="Notifications" subtitle="Choose what you hear about" leading={icon(Bell)} trailing="chevron" onPress={openNotifications} />
         </View>
@@ -153,11 +190,19 @@ export default function Profile() {
           <View style={s.hair} />
           <ListItem title="Delete account" subtitle="Shared expenses stay on trips" leading={icon(Trash2, true)} destructive trailing="chevron" onPress={() => setConfirmDelete(true)} />
         </View>
+        <Text accessibilityLabel={appVersionLabel()} maxFontSizeMultiplier={1.3} style={s.version}>{appVersionLabel()}</Text>
       </ScrollView>
-      <BottomSheet visible={sheet === "country"} onClose={() => setSheet(null)} title="Country">
+      <BottomSheet visible={sheet === "country"} onClose={() => setSheet(null)} title="Country" tall header={<SearchField placeholder="Search countries" value={query} onChangeText={setQuery} />}>
         <SheetRows>
-          {COUNTRIES.map((c) => (
+          {COUNTRIES.filter((c) => matches(deferred, c.name)).map((c) => (
             <ListItem key={c.code} title={c.name} leading={<Text style={s.flag}>{flagOf(c.code)}</Text>} trailing="radio" checked={c.code === me?.country} onPress={() => pickCountry(c.code)} />
+          ))}
+        </SheetRows>
+      </BottomSheet>
+      <BottomSheet visible={sheet === "currency"} onClose={() => setSheet(null)} title="Preferred currency" tall header={<SearchField placeholder="Search currencies" value={query} onChangeText={setQuery} />} body="New trips start with this currency. Trips you already have keep theirs.">
+        <SheetRows>
+          {currencies.filter((c) => matches(deferred, c.name, c.code)).map((c) => (
+            <ListItem key={c.code} title={c.name} subtitle={c.code} trailing="radio" checked={c.code === me?.currency} onPress={() => pickCurrency(c.code)} />
           ))}
         </SheetRows>
       </BottomSheet>
@@ -182,18 +227,19 @@ const s = StyleSheet.create({
   scroll: { flex: 1 },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
-  avatar: { alignItems: "center", marginVertical: space.s8 },
-  card: { padding: space.s20, gap: space.s12, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.neutralWash },
-  name: { ...type.sheetTitle, fontSize: 26, lineHeight: 32, letterSpacing: -0.4, color: color.obsidian },
+  avatar: { alignItems: "center", gap: space.s12, marginVertical: space.s8 },
+  camera: { position: "absolute", right: -2, bottom: -2, width: 28, height: 28, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper, borderWidth: 1, borderColor: color.borderNeutral, alignItems: "center", justifyContent: "center" },
+  card: { padding: space.s20, gap: space.s12, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
+  name: { ...type.sheetTitle, fontSize: 26, lineHeight: 32, letterSpacing: -0.4, color: color.obsidian, textAlign: "center" },
   line: { height: 1, backgroundColor: color.borderNeutral },
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s16, minHeight: 32 },
   label: { ...type.fieldValue, color: color.charcoal },
   value: { ...type.fieldValue, flexShrink: 1, color: color.obsidian },
   section: { ...type.fieldValue, color: color.obsidian },
-  cover: { height: 140, borderRadius: radius.card, borderCurve: "continuous", overflow: "hidden" },
+  cover: { height: 172, borderRadius: radius.card, borderCurve: "continuous", overflow: "hidden" },
   inset: { flex: 1, paddingHorizontal: space.s12, paddingTop: space.s8 },
   page: { flex: 1, paddingHorizontal: space.s16, paddingTop: space.s16, borderTopLeftRadius: radius.tile, borderTopRightRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.paper, gap: 2 },
-  mrz: { fontFamily: font.regular, fontSize: 12, lineHeight: 18, letterSpacing: 0.2, color: color.slate },
+  mrz: { fontFamily: font.regular, fontSize: 11, lineHeight: 16, letterSpacing: 0, color: color.charcoal },
   count: { ...type.display, fontSize: 56, lineHeight: 60, color: color.obsidian, fontVariant: ["tabular-nums"] },
   // The passport card is inset 8 on the left, right and bottom, so its cover sits close to the edge; the title keeps the usual text margin.
   passportCard: { paddingTop: space.s20, paddingHorizontal: space.s8, paddingBottom: space.s8, backgroundColor: "transparent", overflow: "hidden" },
@@ -203,10 +249,11 @@ const s = StyleSheet.create({
   grain: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
   grainLine: { position: "absolute", left: 0, right: 0, height: 1, backgroundColor: "rgba(255,255,255,0.05)" },
   gap: { gap: space.s8 },
-  group: { ...type.fieldValue, color: color.charcoal, marginTop: space.s8 },
+  group: { ...type.fieldValue, fontFamily: font.medium, color: color.obsidian, marginTop: space.s8 },
   list: { borderRadius: radius.sheet, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, overflow: "hidden" },
   hair: { height: 1, backgroundColor: color.borderNeutral, marginHorizontal: space.s16 },
   icon: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
   flag: { fontSize: 28, width: 40, textAlign: "center" },
   body: { ...type.fieldValue, color: color.charcoal },
+  version: { ...type.fieldMessage, color: color.charcoal, textAlign: "center", marginTop: space.s8 },
 });

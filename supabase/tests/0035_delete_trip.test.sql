@@ -32,10 +32,10 @@ set local request.jwt.claims = '{"sub":"00000000-0000-0000-0000-00000000000b"}';
 select is((select count(*) from trips where id = (select id from t)), 0::bigint, 'and neither does another member');
 select is((select count(*) from trips where id = (select id from t2)), 1::bigint, 'other trips are untouched');
 
--- nothing is erased: the trip and its expense are still in the database
+-- the trip and its expense are erased from the database
 reset role;
-select is((select count(*) from trips where id = (select id from t) and deleted_at is not null), 1::bigint, 'the trip is marked deleted, not erased');
-select is((select count(*) from expenses where trip_id = (select id from t)), 1::bigint, 'and its expense is kept');
+select is((select count(*) from trips where id = (select id from t)), 0::bigint, 'the trip is erased, not just hidden');
+select is((select count(*) from expenses where trip_id = (select id from t)), 0::bigint, 'and so is its expense');
 
 select * from finish();
 rollback;

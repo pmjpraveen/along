@@ -1,7 +1,9 @@
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { useState } from "react";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
+import { BottomSheet } from "./BottomSheet";
+import { TextButton } from "./Buttons";
 import { color, radius, space, type } from "../theme/tokens";
 
 type Props = { label: string; value: string | null; onChange: (hhmm: string | null) => void };
@@ -9,40 +11,30 @@ type Props = { label: string; value: string | null; onChange: (hhmm: string | nu
 const toHhmm = (d: Date) => `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
 const toDate = (hhmm: string) => { const d = new Date(); const [h, m] = hhmm.split(":").map(Number); d.setHours(h, m, 0, 0); return d; };
 
-// Optional native time picker. Null means "no time", which is a valid item.
+// An optional time. The field shows the time (or "Start time (optional)") and opens a bottom sheet with a wheel to choose it, a Confirm button
+// to set it and, once a time is set, a way to take it away again. Null means "no time", which is a valid plan.
 export function TimeField({ label, value, onChange }: Props) {
   const [open, setOpen] = useState(false);
-  const picker = (
-    <DateTimePicker value={value ? toDate(value) : new Date()} mode="time" display={Platform.OS === "ios" ? "compact" : "default"}
-      accessibilityLabel={label} onChange={(_, d) => { setOpen(false); if (d) onChange(toHhmm(d)); }} />
-  );
+  const [draft, setDraft] = useState<Date>(() => new Date());
+  const show = () => { setDraft(value ? toDate(value) : new Date()); setOpen(true); };
   return (
-    <View style={s.row}>
-      {value ? (
-        <>
-          {Platform.OS === "ios" ? picker : (
-            <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => setOpen(true)} style={s.box}>
-              <Text maxFontSizeMultiplier={1.4} style={s.text}>{value}</Text>
-            </Pressable>
-          )}
-          <Pressable accessibilityRole="button" accessibilityLabel="Remove time" hitSlop={space.s12} onPress={() => onChange(null)} style={s.clear}>
-            <Text maxFontSizeMultiplier={1.4} style={s.text}>Remove</Text>
-          </Pressable>
-        </>
-      ) : (
-        <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => onChange(toHhmm(new Date()))} style={s.box}>
-          <Text maxFontSizeMultiplier={1.4} style={[s.text, s.placeholder]}>Start time (optional)</Text>
-        </Pressable>
-      )}
-      {open && Platform.OS !== "ios" && picker}
-    </View>
+    <>
+      <Pressable accessibilityRole="button" accessibilityLabel={value ? `${label}, ${value}` : label} onPress={show} style={s.box}>
+        <Text maxFontSizeMultiplier={1.4} style={[s.text, !value && s.placeholder]}>{value ?? "Start time (optional)"}</Text>
+      </Pressable>
+      <BottomSheet visible={open} onClose={() => setOpen(false)} title={label} actionLabel="Confirm" onAction={() => { onChange(toHhmm(draft)); setOpen(false); }}>
+        <View style={s.wheel}>
+          <DateTimePicker value={draft} mode="time" display="spinner" accessibilityLabel={`${label} wheel`} onChange={(_, d) => { if (d) setDraft(d); }} />
+        </View>
+        {value ? <TextButton label="Remove time" onPress={() => { onChange(null); setOpen(false); }} /> : null}
+      </BottomSheet>
+    </>
   );
 }
 
 const s = StyleSheet.create({
-  row: { flexDirection: "row", alignItems: "center", gap: space.s12 },
-  box: { flex: 1, minHeight: 48, paddingHorizontal: space.s16, justifyContent: "center", borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderColor: color.inputBorder, backgroundColor: color.paper },
-  clear: { minHeight: 48, justifyContent: "center" },
+  box: { minHeight: 48, paddingHorizontal: space.s16, paddingVertical: 12, justifyContent: "center", borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderColor: color.inputBorder, backgroundColor: color.paper },
   text: { ...type.fieldValue, color: color.obsidian },
   placeholder: { color: color.pebble },
+  wheel: { alignItems: "center" },
 });

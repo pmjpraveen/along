@@ -5,11 +5,12 @@ import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-nat
 import { Pressable } from "../../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BalancesResult, loadBalances } from "../../../../src/api/balances";
-import { ExpensesResult, listExpenses } from "../../../../src/api/expenses";
+import { ExpensesResult, listExpenses, loadExpenseAccess } from "../../../../src/api/expenses";
 import { Alert } from "../../../../src/components/Alert";
 import { AvatarGroup } from "../../../../src/components/Avatar";
 import { PrimaryButton, TextButton } from "../../../../src/components/Buttons";
 import { CategoryIcon } from "../../../../src/components/CategoryIcon";
+import { CARD_COLORS } from "../../../../src/domain/trip";
 import { describeBalance } from "../../../../src/domain/balance";
 import { expenseLine } from "../../../../src/domain/expense";
 import { formatMinor, moneyParts } from "../../../../src/domain/money";
@@ -27,10 +28,12 @@ export default function Expenses() {
   const router = useRouter();
   const [state, setState] = useState<ExpensesResult | null>(null);
   const [bal, setBal] = useState<BalancesResult | null>(null);
+  const [canAdd, setCanAdd] = useState(true);
   const load = useCallback(async () => {
-    const [e, b] = await Promise.all([listExpenses(id), loadBalances(id)]);
+    const [e, b, access] = await Promise.all([listExpenses(id), loadBalances(id), loadExpenseAccess(id)]);
     setState(e);
     setBal(b);
+    setCanAdd(access);
   }, [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
   const pull = usePullToRefresh(load);
@@ -47,7 +50,7 @@ export default function Expenses() {
   const queuedRows = queued.map((q) => q.status === "failed" ? (
     <Alert key={q.key} variant="critical" title={`Couldn't sync ${q.payload.title}`} actionLabel={`Discard ${q.payload.title}`}
       onAction={() => discardQueued(q.key)}>
-      {q.error ?? "The server refused it."}
+      {q.error ?? "That didn't go through."}
     </Alert>
   ) : (
     <Card key={q.key} accessible style={s.queued}>
@@ -55,13 +58,14 @@ export default function Expenses() {
         <Text maxFontSizeMultiplier={1.4} style={s.title}>{q.payload.title}</Text>
         <Text maxFontSizeMultiplier={1.4} style={s.amount}>{state?.ok ? formatMinor(q.payload.amountMinor, state.currency.exponent, state.currency.code) : ""}</Text>
       </View>
-      <Text maxFontSizeMultiplier={1.4} style={s.sub}>Saved on this phone. Will sync when you're back online.</Text>
+      <Text maxFontSizeMultiplier={1.4} style={s.sub}>Saved on your phone. It'll sync when you're back online.</Text>
     </Card>
   ));
 
   const ok = state?.ok ? state : null;
   const total = ok ? ok.expenses.reduce((sum, e) => sum + e.amount_minor, 0) : 0;
   const parts = ok ? moneyParts(total, ok.currency.exponent, ok.currency.code) : null;
+  const tint = CARD_COLORS[ok?.trip?.cardColor ?? 2];   // the colour picked for this trip (every trip has one)
   const mine = bal?.ok ? bal.rows.find((r) => r.isMe) : undefined;
 
   return (
@@ -82,12 +86,13 @@ export default function Expenses() {
           </View>
         ) : (
           <>
-            <View style={s.summary}>
+            <View style={[s.summary, { backgroundColor: tint }]}>
+              {/* A soft gradient in the trip's own card colour, easing to a lighter tint of it at the bottom. */}
               <View style={s.strips}>
-                {Array.from({ length: 48 }, (_, i) => <View key={i} style={{ flex: 1, backgroundColor: mix(color.brightPink, "#fffcfe", i / 47) }} />)}
+                {Array.from({ length: 48 }, (_, i) => <View key={i} style={{ flex: 1, backgroundColor: mix(tint, mix(tint, "#ffffff", 0.7), i / 47) }} />)}
               </View>
               <View style={s.tripRow}>
-                <Backpack size={20} color={color.darkPurple} strokeWidth={1.75} />
+                <Backpack size={20} color={color.iconInk} strokeWidth={1.75} />
                 <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={s.tripName}>Trip to {ok.trip?.destination ?? ok.trip?.name ?? ""}</Text>
               </View>
               <View accessible accessibilityLabel={`Total expenses ${formatMinor(total, ok.currency.exponent, ok.currency.code)}`} style={s.inner}>
@@ -104,8 +109,8 @@ export default function Expenses() {
 
             {ok.expenses.length === 0 && queuedCount === 0 ? (
               <View style={s.gap}>
-                <Text maxFontSizeMultiplier={1.4} style={s.body}>No expenses yet. Add what you paid and split it in seconds.</Text>
-                <PrimaryButton label="Add an expense" onPress={add} />
+                <Text maxFontSizeMultiplier={1.4} style={s.body}>{canAdd ? "No expenses yet. Add what you paid and split it in seconds." : "No expenses were added. This trip is completed, so only the owner can add one."}</Text>
+                {canAdd && <PrimaryButton label="Add an expense" onPress={add} />}
               </View>
             ) : (
               <>
@@ -146,10 +151,10 @@ const s = StyleSheet.create({
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
   heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian, marginTop: 0 },
   gap: { gap: space.s8 },
-  summary: { borderRadius: radius.xLarge, borderCurve: "continuous", overflow: "hidden", paddingBottom: space.s8, paddingHorizontal: space.s8, ...shadow.itemLight },
   strips: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
+  summary: { borderRadius: radius.xLarge, borderCurve: "continuous", overflow: "hidden", paddingBottom: space.s8, paddingHorizontal: space.s8, ...shadow.itemLight },
   tripRow: { flexDirection: "row", alignItems: "center", gap: space.s8, paddingHorizontal: space.s16, paddingVertical: space.s16 },
-  tripName: { ...type.label, flex: 1, fontSize: 16, lineHeight: 22, color: color.darkPurple },
+  tripName: { ...type.label, flex: 1, fontSize: 16, lineHeight: 22, color: color.obsidian },
   inner: { gap: space.s8, padding: space.s16, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.paper },
   innerLabel: { ...type.fieldValue, color: color.charcoal },
   total: { ...type.display, fontSize: 40, lineHeight: 48, letterSpacing: -1.2, color: color.obsidian, fontVariant: ["tabular-nums"] },

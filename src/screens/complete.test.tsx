@@ -75,7 +75,7 @@ test("7.3 after completing, one tap goes straight to adding a photo while the tr
 
 test("7.5 the owner sees people, activities, total spend and the outstanding balance before confirming", async () => {
   await render(<Complete />);
-  expect(await screen.findByText("Goa, India · 01-12-2026 → 05-12-2026")).toBeTruthy();
+  expect(await screen.findByText("Goa, India · 1 Dec - 5 Dec")).toBeTruthy();
   expect(screen.getByText("4 people")).toBeTruthy();
   expect(screen.getByText("6 activities planned")).toBeTruthy();
   expect(screen.getByText("₹12,345.00")).toBeTruthy();
@@ -94,9 +94,9 @@ test("7.5 the summary is shown before the confirm button is offered", async () =
 });
 
 test("7.5 when the summary cannot be loaded there is no confirm button, only retry", async () => {
-  mockSummary.mockResolvedValueOnce({ ok: false, message: "No connection. Check your internet and try again." });
+  mockSummary.mockResolvedValueOnce({ ok: false, message: "You're offline. Check your connection and try again." });
   await render(<Complete />);
-  expect(await screen.findByRole("alert")).toHaveTextContent(/No connection/);
+  expect(await screen.findByRole("alert")).toHaveTextContent(/You're offline/);
   expect(screen.queryByRole("button", { name: "Complete trip" })).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Retry" }));
   expect(await ready()).toBeTruthy();
@@ -105,5 +105,5 @@ test("7.5 when the summary cannot be loaded there is no confirm button, only ret
 test("7.5 a settled trip says so before confirming", async () => {
   mockSummary.mockResolvedValue({ ok: true, summary: { ...summary, outstanding_minor: 0 } });
   await render(<Complete />);
-  expect(await screen.findByText("Everyone is settled up.")).toBeTruthy();
+  expect(await screen.findByText("Everyone's settled up.")).toBeTruthy();
 });

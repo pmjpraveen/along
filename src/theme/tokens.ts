@@ -22,10 +22,18 @@ export const product = {
   sentiment: { negative: "#cb272f", positive: "#2f5711", warning: "#ffd11a" },
 } as const;
 
+// Button fills for the hovered (pointer) and pressed (finger down) states, by button type.
+export const buttonState = {
+  primary: { hover: "#383838", pressed: "#000000" },
+  secondary: { hover: "#e9e9e9", pressed: "#dcdcdc" },
+  destructive: { hover: "#fdf2f2", pressed: "#fbe2e2" },
+  tertiary: { hover: "#f4f4f4", pressed: "#e8e8e8" },
+} as const;
+
 export const color = {
   // Named as DESIGN.md names them, each pointing at its Figma source above.
   brightGreen: core.brightGreen, forestInk: core.forestGreen,
-  brandBlack: "#222222", scrim: "rgba(0,0,0,0.25)",   // the neutral dim behind every sheet and dialog, the same as the native modal screens
+  brandBlack: "#222222", scrim: "rgba(0,0,0,0.25)", toast: "rgba(0,0,0,0.85)",   // the neutral dim behind every sheet and dialog, the same as the native modal screens
    dateFill: "#444444", cream: "#f8f4ed", inputBorder: "#d0d0d0", softGrey: "#f4f4f4", iconInk: "#444444", buttonGrey: "#f2f2f2", obsidian: product.content.primary, charcoal: product.content.secondary, slate: product.content.tertiary, pebble: product.interactive.secondary,
   paper: product.background.screen, neutralWash: product.background.neutral, borderNeutral: product.border.neutral, control: product.interactive.control,
   alarmRed: product.sentiment.negative, positive: product.sentiment.positive, warning: product.sentiment.warning,

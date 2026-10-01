@@ -7,7 +7,9 @@ const mockUpdate = jest.fn();
 const mockQueue = jest.fn();
 jest.mock("../offline/sync", () => ({ queueExpense: (...a: unknown[]) => mockQueue(...a) }));
 let mockExpenseId: string | undefined;
+let mockAccess = true;
 jest.mock("../api/expenses", () => ({
+  loadExpenseAccess: async () => mockAccess,
   updateExpense: (...a: unknown[]) => mockUpdate(...a),
   loadExpense: async () => ({ ok: true, expense: { id: "e1", version: 3, title: "Dinner", amountMinor: 90000, date: "2026-12-02", paidBy: "m2", method: "equal",
     people: [{ memberId: "m1", owedMinor: 45000, value: null }, { memberId: "m2", owedMinor: 45000, value: null }] } }),
@@ -17,13 +19,14 @@ jest.mock("../api/expenses", () => ({
 }));
 jest.mock("expo-router", () => ({ useLocalSearchParams: () => ({ id: "t1", expenseId: mockExpenseId }), useRouter: () => ({ back: mockBack }) }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
-beforeEach(() => { jest.clearAllMocks(); mockExpenseId = undefined; });
+beforeEach(() => {
+  mockAccess = true; jest.clearAllMocks(); mockExpenseId = undefined; });
 
 const fill = async (amount: string, title: string) => {
   await fireEvent.changeText(await screen.findByLabelText("Amount"), amount);
   await fireEvent.changeText(screen.getByLabelText("Title"), title);
 };
-const save = async () => fireEvent.press(screen.getByRole("button", { name: "Save" }));
+const save = async () => fireEvent.press(screen.getByRole("button", { name: "Add expense" }));
 
 test("US-05 amount + title + Save logs an expense with an equal split among everyone, payer left to the server default", async () => {
   mockCreate.mockResolvedValue({ ok: true });
@@ -43,16 +46,16 @@ test("US-05 a missing amount or title shows inline errors and saves nothing", as
   await screen.findByLabelText("Amount");
   await save();
   expect(await screen.findByText(/Enter an amount greater than zero/)).toBeTruthy();
-  expect(screen.getByText("Enter what this was for.")).toBeTruthy();
+  expect(screen.getByText("What was this for?")).toBeTruthy();
   expect(mockCreate).not.toHaveBeenCalled();
 });
 
 test("US-05 a failed save keeps the form, and the retry reuses the same idempotency key", async () => {
-  mockCreate.mockResolvedValueOnce({ ok: false, message: "No connection. Check your internet and try again." }).mockResolvedValueOnce({ ok: true });
+  mockCreate.mockResolvedValueOnce({ ok: false, message: "You're offline. Check your connection and try again." }).mockResolvedValueOnce({ ok: true });
   await render(<AddExpense />);
   await fill("250.50", "Taxi");
   await save();
-  expect(await screen.findByText(/No connection/)).toBeTruthy();
+  expect(await screen.findByText(/You're offline/)).toBeTruthy();
   expect(screen.getByLabelText("Title").props.value).toBe("Taxi");
   await save();
   await waitFor(() => expect(mockBack).toHaveBeenCalled());
@@ -104,7 +107,7 @@ test("US-07 deselecting everyone is rejected with a specific message and saves n
   await fireEvent.press(screen.getByRole("button", { name: /Change who's in/ }));
   for (const name of ["Asha (you)", "Ben", "Rahul, guest"]) await fireEvent.press(screen.getByRole("checkbox", { name }));
   await save();
-  expect(await screen.findByText(/Pick at least one person to split with/)).toBeTruthy();
+  expect(await screen.findByText(/Choose who's sharing this expense/)).toBeTruthy();
   expect(mockCreate).not.toHaveBeenCalled();
 });
 
@@ -155,7 +158,7 @@ test("5.1 custom amounts show what is left live and save with the custom method 
   expect((await screen.findAllByText(/₹100.00 still to assign/)).length).toBe(2); // live status + form error
   expect(mockCreate).not.toHaveBeenCalled();
   await fireEvent.changeText(screen.getByLabelText("Amount for Ben"), "300");
-  expect(screen.getByText("✓ Fully assigned")).toBeTruthy();
+  expect(screen.queryByText(/Fully assigned/)).toBeNull();
   await save();
   await waitFor(() => expect(mockBack).toHaveBeenCalled());
   const call = mockCreate.mock.calls[0][0];
@@ -182,7 +185,7 @@ test("5.1 switching to custom starts from the current equal split so the user on
   await fireEvent.press(screen.getByRole("radio", { name: "Custom amounts" }));
   await fireEvent.press(screen.getByRole("button", { name: /Change who's in/ }));
   expect(screen.getByLabelText("Amount for You").props.value).toBe("300.00");
-  expect(screen.getByText("✓ Fully assigned")).toBeTruthy();
+  expect(screen.queryByText(/Fully assigned/)).toBeNull();
 });
 
 test("5.2 percentages that total 100% save each calculated share and the basis points", async () => {
@@ -194,7 +197,7 @@ test("5.2 percentages that total 100% save each calculated share and the basis p
   await fireEvent.press(screen.getByRole("checkbox", { name: "Rahul, guest" }));
   await fireEvent.changeText(screen.getByLabelText("Percent for You"), "60");
   await fireEvent.changeText(screen.getByLabelText("Percent for Ben"), "40");
-  expect(screen.getByText("✓ Totals 100%")).toBeTruthy();
+  expect(screen.queryByText(/Totals 100%/)).toBeNull();
   await save();
   await waitFor(() => expect(mockBack).toHaveBeenCalled());
   const call = mockCreate.mock.calls[0][0];
@@ -225,7 +228,7 @@ test("5.2 switching to percent starts from an equal percentage split", async () 
   await fireEvent.press(screen.getByRole("button", { name: /Change who's in/ }));
   expect(screen.getByLabelText("Percent for You").props.value).toBe("33.34");
   expect(screen.getByLabelText("Percent for Ben").props.value).toBe("33.33");
-  expect(screen.getByText("✓ Totals 100%")).toBeTruthy();
+  expect(screen.queryByText(/Totals 100%/)).toBeNull();
 });
 
 test("5.3 shares calculate proportional amounts live and save with the shares as split values", async () => {
@@ -239,7 +242,7 @@ test("5.3 shares calculate proportional amounts live and save with the shares as
   await fireEvent.changeText(screen.getByLabelText("Shares for Ben"), "1");
   expect(screen.getByText("₹750.00")).toBeTruthy();
   expect(screen.getByText("₹250.00")).toBeTruthy();
-  expect(screen.getByText("✓ 4 shares in total")).toBeTruthy();
+  expect(screen.queryByText(/shares in total/)).toBeNull();
   await save();
   await waitFor(() => expect(mockBack).toHaveBeenCalled());
   const call = mockCreate.mock.calls[0][0];
@@ -304,7 +307,7 @@ test("5.7 a rejected edit keeps my changes and shows the reason", async () => {
 });
 
 test("6.2 with no connection the expense is queued with its key and the screen closes as saved", async () => {
-  mockCreate.mockResolvedValue({ ok: false, message: "No connection. Check your internet and try again.", retry: true });
+  mockCreate.mockResolvedValue({ ok: false, message: "You're offline. Check your connection and try again.", retry: true });
   await render(<AddExpense />);
   await fill("250.50", "Taxi");
   await save();
@@ -327,11 +330,18 @@ test("6.2 a real rejection is not queued: the form stays with the error", async 
 
 test("6.2 an edit made offline is not queued (only new expenses are)", async () => {
   mockExpenseId = "e1";
-  mockUpdate.mockResolvedValue({ ok: false, message: "No connection.", retry: true });
+  mockUpdate.mockResolvedValue({ ok: false, message: "You're offline.", retry: true });
   await render(<AddExpense />);
   await waitFor(() => expect(screen.getByLabelText("Amount").props.value).toBe("900.00"));
   await fireEvent.press(screen.getByRole("button", { name: "Save changes" }));
-  expect(await screen.findByText(/No connection/)).toBeTruthy();
+  expect(await screen.findByText(/You're offline/)).toBeTruthy();
   expect(mockQueue).not.toHaveBeenCalled();
   expect(mockBack).not.toHaveBeenCalled();
+});
+
+test("a member cannot start an expense on a completed trip: it says only the owner can", async () => {
+  mockAccess = false;
+  await render(<AddExpense />);
+  expect(await screen.findByText(/only the owner can add expenses/)).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Add expense" })).toBeNull();
 });

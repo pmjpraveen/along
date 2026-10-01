@@ -15,7 +15,7 @@ export type AddChoice = "item" | "guest" | "expense";
 
 // The one "+" for a trip. On iOS it is the platform's own detached tab-bar button (see add.tsx); on Android a floating button above the
 // bar. Either opens a sheet with the three things you add to a trip; choosing one closes the sheet first, then opens that form.
-export function TripAddMenu({ onChoose }: { onChoose: (c: AddChoice) => void }) {
+export function TripAddMenu({ onChoose, canAddExpense = true }: { onChoose: (c: AddChoice) => void; canAddExpense?: boolean }) {
   const { bottom } = useSafeAreaInsets();
   const open = useAddMenu((s) => s.open);
   const setOpen = useAddMenu((s) => s.set);
@@ -34,8 +34,8 @@ export function TripAddMenu({ onChoose }: { onChoose: (c: AddChoice) => void }) 
       <BottomSheet visible={open} onClose={() => setOpen(false)} onClosed={closed} title="Add to trip">
         <SheetRows>
         <ListItem title="Itinerary item" subtitle="Something your group will do" leading={icon(CalendarPlus)} trailing="chevron" onPress={() => choose("item")} />
-        <ListItem title="Guest" subtitle="A friend who isn't on the app" leading={icon(UserPlus)} trailing="chevron" onPress={() => choose("guest")} />
-        <ListItem title="Expense" subtitle="Who paid, and who shares it" leading={icon(Receipt)} trailing="chevron" onPress={() => choose("expense")} />
+        <ListItem title="Guest" subtitle="A friend who isn't on along yet" leading={icon(UserPlus)} trailing="chevron" onPress={() => choose("guest")} />
+        {canAddExpense && <ListItem title="Expense" subtitle="Who paid, and who shares it" leading={icon(Receipt)} trailing="chevron" onPress={() => choose("expense")} />}
         </SheetRows>
       </BottomSheet>
     </>

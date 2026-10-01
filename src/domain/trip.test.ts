@@ -12,7 +12,7 @@ test("US-01 impossible dates are rejected", () => {
 });
 
 test("US-01 dates display as DD-MM-YYYY and convert from a local Date", () => {
-  expect(formatDate("2026-12-05")).toBe("05-12-2026");
+  expect(formatDate("2026-12-05")).toBe("5 Dec");
   expect(formatDate("")).toBe("");
   expect(toIso(new Date(2026, 11, 5))).toBe("2026-12-05");
 });

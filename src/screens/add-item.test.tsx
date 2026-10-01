@@ -33,11 +33,11 @@ test("US-03 a blank title shows an inline error and saves nothing", async () => 
 });
 
 test("US-03 a failed save keeps the form and shows the reason", async () => {
-  mockCreate.mockResolvedValue({ ok: false, message: "No connection. Check your internet and try again." });
+  mockCreate.mockResolvedValue({ ok: false, message: "You're offline. Check your connection and try again." });
   await render(<AddItem />);
   await fireEvent.changeText(screen.getByLabelText("Plan name"), "Beach day");
   await save();
-  expect(await screen.findByText(/No connection/)).toBeTruthy();
+  expect(await screen.findByText(/You're offline/)).toBeTruthy();
   expect(screen.getByLabelText("Plan name").props.value).toBe("Beach day");
   expect(mockBack).not.toHaveBeenCalled();
 });

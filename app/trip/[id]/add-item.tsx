@@ -12,6 +12,7 @@ import { Alert } from "../../../src/components/Alert";
 import { Button } from "../../../src/components/Buttons";
 import { MapPreview } from "../../../src/components/MapPreview";
 import { PlaceSearchField } from "../../../src/components/PlaceSearchField";
+import { Chip } from "../../../src/components/Chip";
 import { FieldLabel, FieldMessage, TextField } from "../../../src/components/TextField";
 import { TimeField } from "../../../src/components/TimeField";
 import { tripDays, validateItem } from "../../../src/domain/itinerary";
@@ -75,11 +76,7 @@ export default function AddItem() {
             {numbered.map(({ d, n }) => {
               const on = d === date;
               return (
-                <Pressable key={d} accessibilityRole="tab" accessibilityLabel={`Day ${n}, ${short(d)}`} accessibilityState={{ selected: on }} onPress={() => { if (!on) haptic.select(); setDate(d); }} style={[s.chip, on && s.chipOn]}>
-                  <Text maxFontSizeMultiplier={1.3} style={[s.chipText, on && s.chipTextOn]}>
-                    {short(d)} - <Text style={[s.chipDay, on && s.chipTextOn]}>Day {n}</Text>
-                  </Text>
-                </Pressable>
+                <Chip key={d} role="tab" label={`${short(d)} - Day ${n}`} accessibilityLabel={`Day ${n}, ${short(d)}`} selected={on} onPress={() => { if (!on) haptic.select(); setDate(d); }} />
               );
             })}
           </ScrollView>
@@ -115,11 +112,6 @@ const s = StyleSheet.create({
   heading: { ...type.sheetTitle, color: color.obsidian },
   chipScroll: { flexGrow: 0 },
   chips: { gap: space.s8 },
-  chip: { minHeight: 44, paddingHorizontal: space.s16, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.buttonGrey },
-  chipOn: { backgroundColor: color.darkMaroon },
-  chipText: { ...type.buttonLarge, fontFamily: font.regular, color: color.slate },
-  chipDay: { fontFamily: font.medium, color: color.forestInk },
-  chipTextOn: { color: color.brightOrange },
   field: { gap: space.s8 },
   footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },
 });

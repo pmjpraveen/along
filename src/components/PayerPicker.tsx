@@ -36,7 +36,7 @@ const s = StyleSheet.create({
   initials: { ...type.label, color: color.iconInk },
   name: { ...type.body, flex: 1, color: color.obsidian },
   tag: { ...type.label, color: color.charcoal },
-  dot: { width: 24, height: 24, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.forestInk, alignItems: "center", justifyContent: "center" },
-  dotOn: { backgroundColor: color.brightGreen },
-  dotInner: { width: 10, height: 10, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.forestInk },
+  dot: { width: 24, height: 24, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.slate, alignItems: "center", justifyContent: "center" },
+  dotOn: { backgroundColor: color.brandBlack, borderColor: color.brandBlack },
+  dotInner: { width: 10, height: 10, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper },
 });

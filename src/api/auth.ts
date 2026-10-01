@@ -9,7 +9,7 @@ export type SignInResult =
   | { ok: false; cancelled: true }
   | { ok: false; cancelled?: false; message: string };
 
-const OFFLINE = "No connection. Check your internet and try again.";
+const OFFLINE = "You're offline. Check your connection and try again.";
 const isOffline = (e: { name?: string; message?: string }) =>
   e.name === "AuthRetryableFetchError" || /network|fetch|offline/i.test(e.message ?? "");
 const fail = (message: string): SignInResult => ({ ok: false, message });

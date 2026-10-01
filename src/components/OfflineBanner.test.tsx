@@ -14,7 +14,7 @@ beforeEach(() => { useOnline.setState({ online: true }); useQueue.setState({ ite
 
 test("6.3 the words: silent online, calm and specific offline, with the queue count", () => {
   expect(bannerText(true, 0, false)).toBeNull();
-  expect(bannerText(false, 0, false)).toBe("You're offline. Showing last synced data.");
+  expect(bannerText(false, 0, false)).toBe("You're offline. Showing what was last synced.");
   expect(bannerText(false, 1, false)).toMatch(/1 expense will sync/);
   expect(bannerText(false, 3, false)).toMatch(/3 expenses will sync/);
   expect(bannerText(true, 0, true)).toBe("All synced");
@@ -28,7 +28,7 @@ test("6.3 nothing is shown while online", async () => {
 test("6.3 going offline shows the indicator, and it stays until the connection returns", async () => {
   await render(<OfflineBanner />);
   await act(async () => { useOnline.setState({ online: false }); });
-  expect(screen.getByText(/You're offline. Showing last synced data./)).toBeTruthy();
+  expect(screen.getByText(/You're offline. Showing what was last synced./)).toBeTruthy();
   await act(async () => { jest.advanceTimersByTime(60_000); });
   expect(screen.getByText(/You're offline/)).toBeTruthy();
   await act(async () => { useOnline.setState({ online: true }); });

@@ -12,18 +12,18 @@ export async function createTrip(d: TripDraft, currency: string, idempotencyKey:
     });
     if (error) {
       const offline = /network|fetch/i.test(error.message);
-      return { ok: false, message: offline ? "No connection. Check your internet and try again." : "Couldn't create the trip. Try again." };
+      return { ok: false, message: offline ? "You're offline. Check your connection and try again." : "Couldn't create the trip. Try again." };
     }
     return { ok: true, tripId: (data as { id: string }).id };
   } catch {
-    return { ok: false, message: "No connection. Check your internet and try again." };
+    return { ok: false, message: "You're offline. Check your connection and try again." };
   }
 }
 
 export type TripStatusResult = { ok: true; status: "draft" | "published" | "completed" | "archived"; completedAt: string | null; name: string; destination: string; coverUrl: string | null; cardColor: number } | { ok: false; message: string };
 export type CompleteResult = { ok: true } | { ok: false; message: string };
 
-const OFFLINE = "No connection. Check your internet and try again.";
+const OFFLINE = "You're offline. Check your connection and try again.";
 const isOffline = (m: string) => /network|fetch/i.test(m);
 
 // cover_url is a storage path in the private 'covers' bucket (signed for display) or a plain https URL (sample data).
@@ -147,9 +147,16 @@ export async function updateTripDates(tripId: string, start: string, end: string
   }
 }
 
-// The owner removes the trip for everyone. The server only marks it deleted (its money rows are kept), so there is nothing to undo here.
+// The owner erases the trip for everyone: its cover and memory photos first (while I am still its owner, which storage checks), then the
+// trip itself with everything on it. Photo clean-up is best effort; the trip is erased either way.
 export async function deleteTrip(tripId: string): Promise<CompleteResult> {
   try {
+    for (const bucket of ["covers", "memories"]) {
+      try {
+        const { data: files } = await supabase.storage.from(bucket).list(tripId);
+        if (files?.length) await supabase.storage.from(bucket).remove(files.map((f) => `${tripId}/${f.name}`));
+      } catch { /* the trip is erased regardless */ }
+    }
     const { error } = await supabase.rpc("delete_trip", { p_trip: tripId });
     if (!error) return { ok: true };
     if (isOffline(error.message)) return { ok: false, message: OFFLINE };

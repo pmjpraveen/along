@@ -17,7 +17,7 @@ select is(preview_invite((select v from tok)) ->> 'name', 'Goa', 'US-16b a signe
 select is(preview_invite((select v from tok)) ->> 'destination', 'Goa, India', 'US-16b and the destination');
 select is((preview_invite((select v from tok)) ->> 'participant_count')::int, 2, 'US-16b and how many people are in');
 select is(array(select jsonb_object_keys(preview_invite((select v from tok))) order by 1),
-  array['destination', 'end_date', 'name', 'participant_count', 'start_date'], 'US-16b preview exposes nothing beyond name, destination, dates, count');
+  array['card_color', 'destination', 'end_date', 'invited_by', 'name', 'participant_count', 'start_date'], 'US-16b preview exposes only basic info: name, place, dates, colour, who invited, count');
 select throws_ok($$ select preview_invite('nope') $$, 'P0001', 'invite_not_found', 'US-16b unknown token rejected');
 
 reset role;

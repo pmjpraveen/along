@@ -17,6 +17,6 @@ export async function searchPlaces(query: string, signal?: AbortSignal): Promise
     return { ok: true, places };
   } catch (e) {
     if ((e as { name?: string }).name === "AbortError") return { ok: true, places: [] };
-    return { ok: false, message: "No connection. You can still type the place." };
+    return { ok: false, message: "You're offline. You can still type the place." };
   }
 }

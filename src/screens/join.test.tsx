@@ -31,7 +31,7 @@ test("US-16 a signed-out recipient keeps the invite through sign-in", async () =
 });
 
 test("US-16 an expired invite shows the reason and does not navigate", async () => {
-  mockAccept.mockResolvedValue({ ok: false, message: "This invite link has expired. Ask the organizer for a new one." });
+  mockAccept.mockResolvedValue({ ok: false, message: "This invite link has expired. Ask the trip owner for a new one." });
   await render(<Join />);
   await fireEvent.press(await screen.findByRole("button", { name: "Join trip" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(/expired/);
@@ -43,12 +43,19 @@ test("US-16b the preview shows name, destination, dates as DD-MM-YYYY and headco
   await render(<Join />);
   expect(await screen.findByText("Goa")).toBeTruthy();
   expect(screen.getByText("Goa, India")).toBeTruthy();
-  expect(screen.getByText("01-12-2026 → 05-12-2026")).toBeTruthy();
+  expect(screen.getByText("1 Dec - 5 Dec")).toBeTruthy();
   expect(screen.getByText("3 people going")).toBeTruthy();
 });
 
+test("US-16b the preview is basic info only, says who invited you, and notes that joining shows the rest", async () => {
+  mockPreview.mockResolvedValue({ ok: true, preview: { ...trip, invited_by: "Asha", card_color: 1 } });
+  await render(<Join />);
+  expect(await screen.findByText("Invited by Asha")).toBeTruthy();
+  expect(screen.getByText(/Join to see the plan, the expenses and everyone on the trip/)).toBeTruthy();
+});
+
 test("US-16b an invalid invite shows the reason with no join button", async () => {
-  mockPreview.mockResolvedValue({ ok: false, message: "This invite link has expired. Ask the organizer for a new one." });
+  mockPreview.mockResolvedValue({ ok: false, message: "This invite link has expired. Ask the trip owner for a new one." });
   await render(<Join />);
   expect(await screen.findByRole("alert")).toHaveTextContent(/expired/);
   expect(screen.queryByRole("button", { name: "Join trip" })).toBeNull();
@@ -67,7 +74,7 @@ test("US-17 a claim link asks who you are, confirms, and claims instead of joini
 
 test("US-17 a claim conflict shows the reason and does not navigate", async () => {
   mockPreview.mockResolvedValue({ ok: true, preview: { ...trip, claims_name: "Rahul" } });
-  mockClaim.mockResolvedValue({ ok: false, message: "You're already in this trip under another name. Ask the organizer to check." });
+  mockClaim.mockResolvedValue({ ok: false, message: "You're already in this trip under another name. Ask the trip owner to check." });
   await render(<Join />);
   await fireEvent.press(await screen.findByRole("button", { name: "Yes, that's me" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(/already in this trip/);

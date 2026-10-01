@@ -18,7 +18,7 @@ test("Duration shows a placeholder, and Confirm waits for a last day, then commi
 
 test("a chosen range reads as DD-MM-YYYY to DD-MM-YYYY", async () => {
   await render(<DateRangeField label="Duration" start="2026-10-01" end="2026-10-05" onChange={jest.fn()} />);
-  expect(screen.getByText("01-10-2026 → 05-10-2026")).toBeTruthy();
+  expect(screen.getByText("1 Oct - 5 Oct")).toBeTruthy();
 });
 
 test("days before today cannot be chosen", async () => {

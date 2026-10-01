@@ -39,7 +39,7 @@ test("US-01 callback without a code fails without a session", async () => {
 
 test("US-04 offline failure gives a specific connection message", async () => {
   mockOAuth.mockRejectedValue(new TypeError("Network request failed"));
-  expect(await signInWithGoogle()).toEqual({ ok: false, message: expect.stringContaining("No connection") });
+  expect(await signInWithGoogle()).toEqual({ ok: false, message: expect.stringContaining("You're offline") });
 });
 
 test("US-04 rejected code exchange returns an error, not a session", async () => {

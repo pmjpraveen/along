@@ -35,16 +35,19 @@ export default function Passport() {
       <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/profile"))} hitSlop={space.s4} style={s.round}>
         <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
       </Pressable>
-      <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Passport</Text>
+      <View style={s.head}>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Passport</Text>
+        <Text maxFontSizeMultiplier={1.4} style={s.body}>One stamp for every finished trip.</Text>
+      </View>
       {state === null ? (
-        <ActivityIndicator accessibilityLabel="Loading your stamps" color={color.forestInk} />
+        <ActivityIndicator accessibilityLabel="Loading your stamps" color={color.brandBlack} />
       ) : !state.ok ? (
         <View style={s.gap}>
           <Alert variant="negative">{state.message}</Alert>
           <TextButton label="Retry" onPress={load} />
         </View>
       ) : stamps.length === 0 ? (
-        <Text maxFontSizeMultiplier={1.4} style={s.body}>No stamps yet. Complete a trip you've been on and it lands here.</Text>
+        <Text maxFontSizeMultiplier={1.4} style={s.body}>No stamps yet. Finish a trip and you'll earn your first one.</Text>
       ) : (
         <PassportBook firstNumber={1} tint={cover} pages={pages(impressions(stamps)).map((group, n) => (
           <VisaPage key={group[0].key} cover={cover} number={n + 1}>
@@ -68,7 +71,8 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
-  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian },
+  head: { gap: space.s8, marginTop: space.s8, marginBottom: space.s8 },
+  heading: { fontFamily: type.sheetTitle.fontFamily, fontSize: 32, lineHeight: 38, letterSpacing: -0.8, color: color.brandBlack },
   gap: { gap: space.s8 },
   body: { ...type.fieldValue, color: color.charcoal },
 });

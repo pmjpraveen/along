@@ -46,7 +46,7 @@ test("a guest is the same size as everyone but has a dashed Slate ring, and is a
 
 test("selected adds a Forest Ink ring and a green check, and says so to screen readers", async () => {
   await render(<Avatar name="Ben" selected />);
-  expect(flat(screen.getByText("B").parent!)).toMatchObject({ borderWidth: 2, borderColor: color.forestInk });
+  expect(flat(screen.getByText("B").parent!)).toMatchObject({ borderWidth: 2, borderColor: color.brandBlack });
   expect(screen.getByRole("image", { name: "Ben, selected" })).toBeTruthy();
 });
 

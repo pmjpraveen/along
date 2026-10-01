@@ -34,5 +34,5 @@ test("6.4 marking read and changing a preference call the server functions", asy
 
 test("6.4 offline failures say so", async () => {
   mockRpc.mockRejectedValue(new Error("Network request failed"));
-  expect(await markRead("n1")).toEqual({ ok: false, message: "No connection. Check your internet and try again." });
+  expect(await markRead("n1")).toEqual({ ok: false, message: "You're offline. Check your connection and try again." });
 });

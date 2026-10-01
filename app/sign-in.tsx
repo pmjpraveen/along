@@ -60,7 +60,7 @@ export default function SignIn() {
           source={FRIENDS} resizeMode="contain" style={{ width: photoW, height: photoW * (2 / 3) }} />
         <View style={s.copy}>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Welcome to Along</Text>
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>Plan the trips, split the costs and keep the memories, together with your group.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>Plan together, split costs fairly and keep the memories, all in one place.</Text>
         </View>
         {error && <Alert variant="negative">{error}</Alert>}
       </View>

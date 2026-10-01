@@ -17,10 +17,10 @@ const press = async () => fireEvent.press(screen.getByRole("button", { name: "Lo
 beforeEach(() => { jest.clearAllMocks(); mockDev = false; });
 
 test("US-04 a failed sign-in shows the specific error inline and does not navigate", async () => {
-  mockSignIn.mockResolvedValue({ ok: false, message: "No connection. Check your internet and try again." });
+  mockSignIn.mockResolvedValue({ ok: false, message: "You're offline. Check your connection and try again." });
   await render(<SignIn />);
   await press();
-  expect(await screen.findByRole("alert")).toHaveTextContent(/No connection/);
+  expect(await screen.findByRole("alert")).toHaveTextContent(/You're offline/);
   expect(mockPush).not.toHaveBeenCalled();
 });
 

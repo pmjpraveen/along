@@ -24,7 +24,7 @@ export function ParticipantPicker({ members, selected, onChange, amounts }: Prop
             <Text maxFontSizeMultiplier={1.4} style={s.name}>{m.display_name}</Text>
             {guest && <Badge label="Guest" align="center" />}
             {on && amounts?.[m.id] && <Text maxFontSizeMultiplier={1.3} style={s.amount}>{amounts[m.id]}</Text>}
-            <View style={[s.box, on && s.boxOn]}>{on && <Check size={16} color={color.forestInk} strokeWidth={3} />}</View>
+            <View style={[s.box, on && s.boxOn]}>{on && <Check size={16} color={color.paper} strokeWidth={3} />}</View>
           </Pressable>
         );
       })}
@@ -40,6 +40,6 @@ const s = StyleSheet.create({
   name: { ...type.body, flex: 1, color: color.obsidian },
   amount: { ...type.label, color: color.charcoal, fontVariant: ["tabular-nums"] },
   tag: { ...type.label, color: color.charcoal },
-  box: { width: 24, height: 24, borderRadius: 6, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.forestInk, alignItems: "center", justifyContent: "center" },
-  boxOn: { backgroundColor: color.brightGreen },
+  box: { width: 24, height: 24, borderRadius: 6, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.slate, alignItems: "center", justifyContent: "center" },
+  boxOn: { backgroundColor: color.brandBlack, borderColor: color.brandBlack },
 });

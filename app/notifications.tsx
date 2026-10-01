@@ -56,7 +56,7 @@ export default function Notifications() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : state.items.length === 0 ? (
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>Nothing yet. You'll see joins, plan changes, new expenses and payments from your trips here.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>All quiet for now. Joins, plan changes, expenses and payments from your trips will show up here.</Text>
         ) : (
           days.map((d) => (
             <View key={d.heading}>

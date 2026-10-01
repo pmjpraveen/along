@@ -1,10 +1,11 @@
 import { Alert } from "../src/components/Alert";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { loadMyProfile } from "../src/api/profile";
 import { createTrip, uploadCover } from "../src/api/trips";
 import { Image as ImageIcon, X } from "lucide-react-native";
 import { Button } from "../src/components/Buttons";
@@ -14,12 +15,14 @@ import { DateRangeField } from "../src/components/DateRangeField";
 import { toIso, TripDraft, TripErrors, validateTrip } from "../src/domain/trip";
 import { color, radius, space, type } from "../src/theme/tokens";
 
-// ponytail: INR only; add a currency picker when a story asks.
+// New trips start in my preferred currency (Profile > Settings), or INR when none is set; it can be changed in Trip settings until money is added.
 export default function CreateTrip() {
   const { bottom } = useSafeAreaInsets();
   const router = useRouter();
   const key = useRef(`${Date.now()}-${Math.random().toString(36).slice(2)}`).current;
   const [draft, setDraft] = useState<TripDraft>({ name: "", destination: "", start: "", end: "" });
+  const [currency, setCurrency] = useState("INR");
+  useEffect(() => { loadMyProfile().then((m) => { if (m?.currency) setCurrency(m.currency); }); }, []);
   const [errors, setErrors] = useState<TripErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -36,7 +39,7 @@ export default function CreateTrip() {
     setFormError(null);
     if (Object.keys(e).length) return;
     setBusy(true);
-    const r = await createTrip(draft, "INR", key);
+    const r = await createTrip(draft, currency, key);
     // The cover is optional and uploaded once the trip exists (its folder is the trip id). If it fails the trip is still made,
     // and the owner can add a cover from the trip later.
     if (r.ok && cover) await uploadCover(r.tripId, cover.uri, cover.mime);

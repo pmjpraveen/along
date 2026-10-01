@@ -11,11 +11,11 @@ test("5.1 one amount field per person, reporting who changed", async () => {
   expect(onChange).toHaveBeenCalledWith("b", "30.50");
 });
 
-test("5.1 the remaining line shows what is left, and a tick when fully assigned", async () => {
+test("5.1 the remaining line shows what is left, and disappears once it is fully assigned", async () => {
   const { rerender } = await render(<CustomAmounts people={people} values={{}} onChange={jest.fn()} exponent={2} symbol="₹" remaining="₹10.00 still to assign." ok={false} />);
   expect(screen.getByText("₹10.00 still to assign.")).toBeTruthy();
   await rerender(<CustomAmounts people={people} values={{}} onChange={jest.fn()} exponent={2} symbol="₹" remaining="Fully assigned" ok />);
-  expect(screen.getByText("✓ Fully assigned")).toBeTruthy();
+  expect(screen.queryByText(/Fully assigned/)).toBeNull();
 });
 
 test("5.3 each person can show a live hint next to their name", async () => {

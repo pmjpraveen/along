@@ -29,7 +29,7 @@ test("Trip details shows the trip's name and comment, its dates and currency, an
   expect(await screen.findByDisplayValue("Goa trip")).toBeTruthy();
   expect(screen.getByDisplayValue("Fun travel")).toBeTruthy();
   expect(screen.getByDisplayValue("Goa, India")).toBeTruthy();
-  expect(screen.getByRole("button", { name: /^Trip dates, 01-12-2026 to 05-12-2026/ })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /^Trip dates, 1 Dec to 5 Dec/ })).toBeTruthy();
   expect(screen.getByRole("button", { name: /^Trip currency, INR/ })).toBeTruthy();
   expect(screen.queryByText("End trip")).toBeNull();
   expect(screen.queryByText("Delete trip")).toBeNull();

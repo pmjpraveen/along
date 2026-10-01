@@ -19,7 +19,7 @@ test("6.5 times read as Today, Yesterday, or the date", () => {
   const now = new Date(2026, 11, 5, 15, 0);
   expect(whenLabel(new Date(2026, 11, 5, 9, 5).toISOString(), now)).toBe("Today 09:05");
   expect(whenLabel(new Date(2026, 11, 4, 22, 30).toISOString(), now)).toBe("Yesterday 22:30");
-  expect(whenLabel(new Date(2026, 11, 1, 8, 0).toISOString(), now)).toBe("01-12-2026 08:00");
+  expect(whenLabel(new Date(2026, 11, 1, 8, 0).toISOString(), now)).toBe("1 Dec 08:00");
   expect(whenLabel(new Date(2026, 10, 30, 8, 0).toISOString(), new Date(2026, 11, 1, 10, 0))).toBe("Yesterday 08:00");
 });
 
@@ -41,12 +41,12 @@ test("days are headed Today, Yesterday or the date, times are 12-hour, and event
   const a = new Date(2026, 11, 5, 10, 9).toISOString(), b = new Date(2026, 11, 5, 9, 0).toISOString(), c = new Date(2026, 11, 4, 22, 30).toISOString(), d = new Date(2026, 10, 1, 8, 0).toISOString();
   expect(dayHeading(a, now)).toBe("Today");
   expect(dayHeading(c, now)).toBe("Yesterday");
-  expect(dayHeading(d, now)).toBe("01-11-2026");
+  expect(dayHeading(d, now)).toBe("1 Nov");
   expect(clock12(a)).toBe("10:09 AM");
   expect(clock12(new Date(2026, 11, 5, 0, 5).toISOString())).toBe("12:05 AM");
   expect(clock12(new Date(2026, 11, 5, 13, 30).toISOString())).toBe("01:30 PM");
   expect(groupByDayHeading([{ created_at: a }, { created_at: b }, { created_at: c }, { created_at: d }], now).map((g) => [g.heading, g.events.length]))
-    .toEqual([["Today", 2], ["Yesterday", 1], ["01-11-2026", 1]]);
+    .toEqual([["Today", 2], ["Yesterday", 1], ["1 Nov", 1]]);
 });
 
 test("an edited expense reads as edited with its new amount, and a removed one as removed", () => {

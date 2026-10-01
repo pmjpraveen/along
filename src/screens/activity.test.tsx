@@ -62,13 +62,13 @@ test("6.5 the markers from the start of the visit stay while new entries arrive 
 test("6.5 an empty feed says what will appear", async () => {
   mockLoad.mockResolvedValue({ ok: true, events: [] });
   await render(<History />);
-  expect(await screen.findByText(/Nothing yet/)).toBeTruthy();
+  expect(await screen.findByText(/Nothing yet\. Joins/)).toBeTruthy();
   expect(mockMark).not.toHaveBeenCalled();
 });
 
 test("6.5 a load failure shows retry", async () => {
-  mockLoad.mockResolvedValueOnce({ ok: false, message: "No connection. Check your internet and try again." });
+  mockLoad.mockResolvedValueOnce({ ok: false, message: "You're offline. Check your connection and try again." });
   await render(<History />);
-  expect(await screen.findByRole("alert")).toHaveTextContent(/No connection/);
+  expect(await screen.findByRole("alert")).toHaveTextContent(/You're offline/);
   expect(screen.getByRole("button", { name: "Retry" })).toBeTruthy();
 });

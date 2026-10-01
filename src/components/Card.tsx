@@ -26,7 +26,7 @@ export function Card({ children, onPress, disabled, selected, style, accessibili
 function Tick() {
   return (
     <View style={s.check}>
-      <Check size={12} color={color.forestInk} strokeWidth={3} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
+      <Check size={12} color={color.paper} strokeWidth={3} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
     </View>
   );
 }
@@ -34,6 +34,6 @@ function Tick() {
 const s = StyleSheet.create({
   card: { padding: space.s16, gap: space.s4, borderRadius: radius.card, borderCurve: "continuous", borderWidth: 2, borderColor: "transparent", backgroundColor: color.neutralWash },
   pressed: { backgroundColor: "rgba(22,51,0,0.2)" },
-  ring: { borderColor: color.forestInk },
-  check: { position: "absolute", top: space.s8, right: space.s8, width: 20, height: 20, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.brightGreen, alignItems: "center", justifyContent: "center" },
+  ring: { borderColor: color.brandBlack },
+  check: { position: "absolute", top: space.s8, right: space.s8, width: 20, height: 20, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.brandBlack, alignItems: "center", justifyContent: "center" },
 });

@@ -1,6 +1,6 @@
 import { supabase } from "./supabase";
 
-const OFFLINE = "No connection. Check your internet and try again.";
+const OFFLINE = "You're offline. Check your connection and try again.";
 const isOffline = (m: string) => /network|fetch/i.test(m);
 
 export type Memory = {

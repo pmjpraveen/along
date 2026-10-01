@@ -1,0 +1,1 @@
+{ "rewrites": [{ "source": "/join/:token", "destination": "/join/index.html" }] }

@@ -5,7 +5,8 @@ const mockLoad = jest.fn();
 const mockMove = jest.fn();
 jest.mock("../api/itinerary", () => ({ loadItinerary: (...a: unknown[]) => mockLoad(...a), moveItem: (...a: unknown[]) => mockMove(...a) }));
 jest.mock("../api/members", () => ({ listMembers: async () => ({ ok: true, members: [{ id: "m1", display_name: "Asha", membership_type: "registered", role: "owner", isMe: true }] }) }));
-jest.mock("../api/trips", () => ({ loadTripStatus: async () => ({ ok: true, status: "published", completedAt: null, name: "Goa", destination: "Goa", coverUrl: null, cardColor: 0 }) }));
+jest.mock("../api/invites", () => ({ createInviteLink: jest.fn() }));
+jest.mock("../api/trips", () => ({ loadTripSettings: jest.fn(), loadTripStatus: async () => ({ ok: true, status: "published", completedAt: null, name: "Goa", destination: "Goa", coverUrl: null, cardColor: 0 }) }));
 jest.mock("../components/DateField", () => ({
   DateField: ({ label, onChange }: { label: string; onChange: (d: string) => void }) => {
     const { Pressable, Text } = require("react-native");
@@ -95,19 +96,20 @@ test("it opens on Day 1, and a chip per trip day switches which day's items are 
   expect(screen.getByText("Sunset")).toBeTruthy();
   expect(screen.queryByText("Lunch")).toBeNull();
   await fireEvent.press(screen.getByRole("tab", { name: /Day 2/ }));
-  expect(screen.getByText("Nothing planned for this day.")).toBeTruthy();
+  expect(screen.getByText("Nothing planned for this day yet.")).toBeTruthy();
 });
 
-test("the top has Back, Add guest and a gear that opens the trip options: settings, end trip and delete trip for the owner", async () => {
+test("the top has Back, Guests and three dots that open the trip options: settings, share trip, end trip and delete trip for the owner", async () => {
   load({});
   await render(<Itinerary />);
   await screen.findByText("Lunch");
   expect(screen.getByRole("button", { name: "Back" })).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Add guest" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Guests" })).toBeTruthy();
   expect(screen.queryByText("Trip options")).toBeNull();
   await fireEvent.press(screen.getByRole("button", { name: "Trip options" }));
   expect(await screen.findByText("Trip options")).toBeTruthy();
   expect(screen.getByRole("button", { name: /^Trip settings/ })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /^Share trip/ })).toBeTruthy();
   expect(screen.getByRole("button", { name: /^End trip/ })).toBeTruthy();
   expect(screen.getByRole("button", { name: /^Delete trip/ })).toBeTruthy();
 });

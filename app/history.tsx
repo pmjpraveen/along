@@ -47,7 +47,7 @@ export default function TripHistory() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : past.length === 0 ? (
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>No finished trips yet. Once you complete one, it lands here.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>No finished trips yet. When you wrap one up, it'll live here.</Text>
         ) : (
           <View style={s.list}>
             {past.map((t) => {

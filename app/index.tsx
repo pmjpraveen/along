@@ -5,7 +5,7 @@ import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, useWindowDimens
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { unreadCount } from "../src/api/notifications";
-import { loadMyName } from "../src/api/profile";
+import { loadMyAvatar, loadMyName } from "../src/api/profile";
 import { listTrips, TripCard, TripListResult } from "../src/api/trips";
 import { Alert } from "../src/components/Alert";
 import { ProgressiveBlur } from "../src/components/ProgressiveBlur";
@@ -44,14 +44,18 @@ export default function Home() {
     unreadCount().then(setUnread);
   }, []);
   useFocusEffect(refresh);
+  const [avatar, setAvatar] = useState<string | null>(null);
+  useFocusEffect(useCallback(() => { loadMyAvatar().then(setAvatar); }, []));
   useEffect(() => { loadMyName().then(setName); }, []);
   useMyNotificationsRealtime(() => { unreadCount().then(setUnread); });
   const pull = usePullToRefresh(() => Promise.all([listTrips().then(setTrips), unreadCount().then(setUnread)]));
   if (pending) return <Redirect href={{ pathname: "/join/[token]", params: { token: pending } }} />;
 
-  const empty = trips?.ok === true && trips.trips.length === 0;
   const firstName = name?.trim().split(/\s+/)[0];
   const planning = trips?.ok ? ongoingFirst(trips.trips.filter((t) => t.phase !== "completed" && t.phase !== "archived")) : [];
+  // Nothing left to plan: either no trips at all, or every trip is finished.
+  const empty = trips?.ok === true && planning.length === 0;
+  const hasFinished = trips?.ok === true && trips.trips.length > 0;
   const tile = (width - space.s20 * 2 - GAP) / 2;   // one column of the two
 
   return (
@@ -67,7 +71,7 @@ export default function Home() {
             {unread > 0 && <View style={s.dot} />}
           </Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel="Profile and travel passport" onPress={() => router.push("/profile")} hitSlop={space.s4}>
-            <Avatar name={name ?? ""} size={40} />
+            <Avatar name={name ?? ""} uri={avatar} size={40} />
           </Pressable>
         </View>
 
@@ -90,8 +94,11 @@ export default function Home() {
           <View style={s.empty}>
             <Image accessible accessibilityRole="image" accessibilityLabel="A traveller sitting on a bag, reading a map" accessibilityIgnoresInvertColors source={NO_TRIPS} style={s.emptyImage} resizeMode="contain" />
             <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.emptyTitle}>No trips planned</Text>
-            <Text maxFontSizeMultiplier={1.4} style={s.emptyBody}>Plan new trip now with your friends</Text>
-            <View style={s.emptyAction}><Button label="Start new trip" shine={shine} onPress={() => router.push("/create-trip")} /></View>
+            <Text maxFontSizeMultiplier={1.4} style={s.emptyBody}>{hasFinished ? "All your trips are wrapped up. Start a new one, or look back at the old ones." : "Pick a place, invite your friends and start planning."}</Text>
+            <View style={s.emptyAction}>
+              <Button label="Start new trip" shine={shine} onPress={() => router.push("/create-trip")} />
+              {hasFinished && <Button label="See completed trips" type="secondary" onPress={() => router.push("/history")} />}
+            </View>
           </View>
         ) : (
           <View style={s.grid}>
@@ -154,5 +161,5 @@ const s = StyleSheet.create({
   emptyImage: { width: 150, height: 150, marginBottom: space.s4 },
   emptyTitle: { ...type.sheetTitle, fontSize: 24, lineHeight: 30, letterSpacing: -0.4, textAlign: "center", color: color.obsidian },
   emptyBody: { ...type.fieldValue, textAlign: "center", color: color.slate },
-  emptyAction: { alignSelf: "stretch", marginTop: space.s16 },
+  emptyAction: { alignSelf: "stretch", marginTop: space.s16, gap: space.s12 },
 });

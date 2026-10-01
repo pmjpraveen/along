@@ -1,4 +1,4 @@
-import { ReactNode } from "react";
+import { ReactNode, useEffect, useState } from "react";
 
 import { StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
@@ -6,6 +6,7 @@ import { CircleAlert, CircleCheck, CircleX, Info, X } from "lucide-react-native"
 import { color, radius, space, type } from "../theme/tokens";
 import { Button } from "./Buttons";
 
+const ERROR_MS = 5000;
 export type AlertVariant = "neutral" | "positive" | "negative" | "warning" | "critical";
 
 // The alert icons: a filled disc with a glyph in the variant's colours (Lucide's circle icons, filled so the disc is solid).
@@ -37,9 +38,19 @@ export function Alert({ variant = "neutral", title, children, actionLabel, onAct
   const card = critical || !!actionLabel || !!onDismiss || !!title;
   const hasAction = !!actionLabel && !!onAction;
 
+  // An error message clears itself after 5 seconds; a new message shows again for its own 5 seconds.
+  const [gone, setGone] = useState(false);
+  useEffect(() => {
+    setGone(false);
+    if (variant !== "negative") return;
+    const id = setTimeout(() => setGone(true), ERROR_MS);
+    return () => clearTimeout(id);
+  }, [variant, children]);
+  if (gone) return null;
+
   return (
     <View accessible={!hasAction && !onDismiss} accessibilityRole={urgent ? "alert" : undefined} accessibilityLiveRegion={urgent ? "assertive" : "polite"}
-      style={[s.box, card ? s.card : s.pill, critical && s.criticalBox]}>
+      style={[s.box, card ? s.card : s.pill, variant === "negative" && s.errorBox, critical && s.criticalBox]}>
       <AlertIcon variant={variant} />
       <View style={[s.content, card && s.contentCard]}>
         <View style={s.texts}>
@@ -65,6 +76,7 @@ const s = StyleSheet.create({
   box: { flexDirection: "row", gap: space.s16, padding: space.s16, backgroundColor: color.neutralWash },
   pill: { alignItems: "center", borderRadius: radius.xLarge , borderCurve: "continuous"},
   card: { alignItems: "flex-start", borderRadius: radius.small , borderCurve: "continuous"},
+  errorBox: { backgroundColor: color.cream },
   criticalBox: { backgroundColor: color.alarmRed },
   content: { flex: 1, gap: space.s8 },
   contentCard: { justifyContent: "center" },

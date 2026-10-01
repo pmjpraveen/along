@@ -35,8 +35,10 @@ export function Dialog({ visible, onClose, title, subheader, body, children, act
             </View>
           )}
           {children}
-          {actionLabel && onAction && <Button label={actionLabel} onPress={onAction} busy={actionBusy} type={actionType} size="large" />}
-          {secondaryLabel && onSecondary && <Button label={secondaryLabel} onPress={onSecondary} type="tertiary" size="large" align="center" />}
+          <View style={s.actions}>
+            {actionLabel && onAction && <Button label={actionLabel} onPress={onAction} busy={actionBusy} type={actionType} size="large" />}
+            {secondaryLabel && onSecondary && <Button label={secondaryLabel} onPress={onSecondary} type="secondary" size="large" />}
+          </View>
         </View>
       </View>
     </Modal>
@@ -46,11 +48,12 @@ export function Dialog({ visible, onClose, title, subheader, body, children, act
 const s = StyleSheet.create({
   root: { flex: 1, justifyContent: "flex-end", paddingHorizontal: space.s8 },
   scrim: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: color.scrim },
-  card: { backgroundColor: color.paper, borderRadius: radius.sheet, borderCurve: "continuous", padding: space.s24, gap: space.s16 },
+  card: { backgroundColor: color.paper, borderRadius: radius.sheet, borderCurve: "continuous", padding: space.s20, gap: space.s16 },
   head: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s12 },
-  title: { ...type.label, flex: 1, fontSize: 20, lineHeight: 28, color: color.obsidian },
-  close: { width: 32, height: 32, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.softGrey },
-  copy: { gap: space.s4 },
-  subheader: { ...type.label, color: color.obsidian },
-  body: { ...type.fieldValue, color: color.obsidian },
+  title: { ...type.sheetTitle, flex: 1, fontSize: 22, lineHeight: 28, letterSpacing: -0.3, color: color.brandBlack },
+  close: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.softGrey },
+  copy: { gap: space.s8 },
+  actions: { gap: space.s8, marginTop: space.s8 },
+  subheader: { ...type.label, color: color.brandBlack },
+  body: { ...type.fieldValue, color: color.charcoal },
 });

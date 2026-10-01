@@ -37,7 +37,7 @@ test("7.3 a failed upload records nothing, and a retry reuses the same path", as
   mockUpload.mockResolvedValueOnce({ error: { message: "Network request failed" } }).mockResolvedValueOnce({ error: null });
   mockRpc.mockResolvedValue({ error: null });
   const first = await addPhoto("t1", "file:///beach.jpg", "image/jpeg", "k2");
-  expect(first.ok === false && first.message).toMatch(/No connection/);
+  expect(first.ok === false && first.message).toMatch(/You're offline/);
   expect(mockRpc).not.toHaveBeenCalled();
   expect(await addPhoto("t1", "file:///beach.jpg", "image/jpeg", "k2")).toEqual({ ok: true });
   expect(mockUpload.mock.calls[0][0]).toBe(mockUpload.mock.calls[1][0]);

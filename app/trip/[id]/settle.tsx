@@ -65,7 +65,7 @@ export default function Settle() {
             <Text maxFontSizeMultiplier={1.4} style={s.label}>Amount</Text>
             <AmountInput label="Amount" value={text} onChange={setText} exponent={bal.currency.exponent} symbol={symbol} invalid={!!error} />
           </View>
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>This records a payment that already happened. It can't be edited afterwards.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>This records money that's already been paid. Once saved, it can't be changed.</Text>
           {error && <Alert variant="negative">{error}</Alert>}
           <PrimaryButton label={busy ? "Recording…" : "Confirm payment"} onPress={save} />
         </>

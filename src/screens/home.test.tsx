@@ -6,7 +6,7 @@ const mockList = jest.fn();
 const mockPush = jest.fn();
 jest.mock("../api/trips", () => ({ listTrips: (...a: unknown[]) => mockList(...a) }));
 jest.mock("../api/notifications", () => ({ unreadCount: async () => 0 }));
-jest.mock("../api/profile", () => ({ loadMyName: async () => "Asha" }));
+jest.mock("../api/profile", () => ({ loadMyName: async () => "Asha", loadMyAvatar: async () => null }));
 jest.mock("../api/supabase", () => ({ supabase: {} }));
 jest.mock("../hooks/useTripRealtime", () => ({ useMyNotificationsRealtime: jest.fn() }));
 jest.mock("expo-router", () => ({
@@ -47,7 +47,7 @@ test("Home with no trips shows the empty state with one Start new trip button, a
   mockList.mockResolvedValue({ ok: true, trips: [] });
   await render(<Home />);
   expect(await screen.findByText("No trips planned")).toBeTruthy();
-  expect(screen.getByText("Plan new trip now with your friends")).toBeTruthy();
+  expect(screen.getByText("Pick a place, invite your friends and start planning.")).toBeTruthy();
   expect(screen.queryByText("Planning")).toBeNull();
   expect(screen.queryByText("Invite friends")).toBeNull();
   expect(screen.getAllByRole("button", { name: "Start new trip" })).toHaveLength(1);
@@ -55,10 +55,20 @@ test("Home with no trips shows the empty state with one Start new trip button, a
   expect(mockPush).toHaveBeenCalledWith("/create-trip");
 });
 
-test("Home shows a retry when trips cannot be loaded", async () => {
-  mockList.mockResolvedValueOnce({ ok: false, message: "No connection. Check your internet and try again." });
+test("once every trip is completed Home shows the empty state again, with a way to see the completed trips", async () => {
+  mockList.mockResolvedValue({ ok: true, trips: [trip({ phase: "completed" })] });
   await render(<Home />);
-  expect(await screen.findByRole("alert")).toHaveTextContent(/No connection/);
+  expect(await screen.findByText("No trips planned")).toBeTruthy();
+  expect(screen.queryByText("Planning")).toBeNull();
+  expect(screen.queryByText("Goa with the gang")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "See completed trips" }));
+  expect(mockPush).toHaveBeenCalledWith("/history");
+});
+
+test("Home shows a retry when trips cannot be loaded", async () => {
+  mockList.mockResolvedValueOnce({ ok: false, message: "You're offline. Check your connection and try again." });
+  await render(<Home />);
+  expect(await screen.findByRole("alert")).toHaveTextContent(/You're offline/);
   mockList.mockResolvedValueOnce({ ok: true, trips: [trip({})] });
   await fireEvent.press(screen.getByRole("button", { name: "Retry" }));
   expect(await screen.findByText("Goa with the gang")).toBeTruthy();

@@ -15,7 +15,8 @@ jest.mock("../offline/sync", () => ({
   useQueue: (select: (s: { items: unknown[] }) => unknown) => select({ items: mockQueued }),
   discardQueued: (...a: unknown[]) => mockDiscard(...a),
 }));
-jest.mock("../api/expenses", () => ({ listExpenses: (...a: unknown[]) => mockList(...a) }));
+let mockAccess = true;
+jest.mock("../api/expenses", () => ({ listExpenses: (...a: unknown[]) => mockList(...a), loadExpenseAccess: async () => mockAccess }));
 jest.mock("../api/balances", () => ({ loadBalances: (...a: unknown[]) => mockBal(...a) }));
 jest.mock("expo-router", () => ({
   useGlobalSearchParams: () => ({ id: "t1" }), useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush, back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
@@ -31,7 +32,7 @@ const rows = [
 ];
 beforeEach(() => {
   jest.clearAllMocks();
-  mockQueued = [];
+  mockQueued = []; mockAccess = true;
   mockList.mockResolvedValue({ ok: true, currency: cur, expenses: [{ id: "e1", title: "Lunch", amount_minor: 100000, expense_date: "2026-12-02", paidBy: "Asha", addedBy: "Asha", canEdit: true }] });
   mockBal.mockResolvedValue({ ok: true, currency: cur, rows });
 });
@@ -69,15 +70,16 @@ test("5.4 the balances screen shows my net, then the simplified payments in plai
   expect(screen.getByText("Ben is owed ₹500.00")).toBeTruthy();
 });
 
-test("5.4 when everyone is at zero it says so", async () => {
+test("5.4 when everyone is at zero it says so, and shows no To settle up section", async () => {
   mockBal.mockResolvedValue({ ok: true, currency: cur, rows: rows.map((r) => ({ ...r, net: 0 })) });
   await render(<Balances />);
-  expect(await screen.findByText("Everyone is settled up.")).toBeTruthy();
-  expect(screen.getByText("You're settled up")).toBeTruthy();
+  expect(await screen.findByText("You're settled up")).toBeTruthy();
+  expect(screen.queryByText("To settle up")).toBeNull();
+  expect(screen.queryByText("Everyone's settled up.")).toBeNull();
 });
 
 test("4.5 a balances load failure shows retry", async () => {
-  mockBal.mockResolvedValue({ ok: false, message: "No connection. Check your internet and try again." });
+  mockBal.mockResolvedValue({ ok: false, message: "You're offline. Check your connection and try again." });
   await render(<Balances />);
   expect(await screen.findByRole("button", { name: "Retry" })).toBeTruthy();
 });
@@ -178,7 +180,7 @@ test("6.2 an expense saved offline shows in the list as waiting to sync, distinc
   await render(<Expenses />);
   expect(await screen.findByText("Taxi")).toBeTruthy();
   expect(screen.getByText("₹250.50")).toBeTruthy();
-  expect(screen.getByText(/Saved on this phone. Will sync when you're back online/)).toBeTruthy();
+  expect(screen.getByText(/Saved on your phone/)).toBeTruthy();
 });
 
 test("6.2 a queued expense on an otherwise empty trip replaces the empty state", async () => {
@@ -203,4 +205,12 @@ test("6.2 a rejected queued expense shows why and can be discarded", async () =>
   expect(screen.getByText("Couldn't save the expense. Try again.")).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Discard Taxi" }));
   expect(mockDiscard).toHaveBeenCalledWith("k1");
+});
+
+test("on a completed trip a member sees the expenses but no way to add one; the owner still does", async () => {
+  mockList.mockResolvedValue({ ok: true, currency: cur, expenses: [] });
+  mockAccess = false;
+  await render(<Expenses />);
+  expect(await screen.findByText(/only the owner can add one/)).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Add an expense" })).toBeNull();
 });

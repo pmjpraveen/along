@@ -7,7 +7,7 @@ beforeEach(() => mockRpc.mockReset());
 
 test("US-16 builds a shareable link from the returned token", async () => {
   mockRpc.mockResolvedValue({ data: "abc", error: null });
-  expect(await createInviteLink("t1")).toEqual({ ok: true, url: "along://join/abc" });
+  expect(await createInviteLink("t1")).toEqual({ ok: true, url: "along://join/abc", token: "abc" });
 });
 
 test("US-16 accepting returns the trip id", async () => {

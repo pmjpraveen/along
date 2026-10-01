@@ -1,19 +1,20 @@
 import { Alert } from "../../src/components/Alert";
-import { Card } from "../../src/components/Card";
+import { TripNameTag } from "../../src/components/TripNameTag";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
+import { ActivityIndicator, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { acceptInvite, claimGuestProfile, InvitePreview, previewInvite } from "../../src/api/invites";
 import { PrimaryButton, TextButton } from "../../src/components/Buttons";
-import { formatDate } from "../../src/domain/trip";
+import { CARD_COLORS, formatRange } from "../../src/domain/trip";
 import { useSession } from "../../src/stores/session";
-import { color, radius, space, type } from "../../src/theme/tokens";
+import { color, font, mix, radius, space, type } from "../../src/theme/tokens";
 
 // Signed-out visitors keep the token and go through sign-in; Home sends them back here. The trip preview is story 2.4.
 export default function Join() {
   const { token } = useLocalSearchParams<{ token: string }>();
   const { top, bottom } = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
   const router = useRouter();
   const status = useSession((s) => s.status);
   const [error, setError] = useState<string | null>(null);
@@ -44,6 +45,7 @@ export default function Join() {
     router.replace({ pathname: "/trip/[id]", params: { id: r.tripId } });
   };
 
+  const band = CARD_COLORS[preview?.card_color ?? 2];
   return (
     <View style={[s.screen, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <View style={s.hero}>
@@ -54,20 +56,24 @@ export default function Join() {
           </Text>
         )}
         {preview ? (
-          <Card accessible>
-            <Text maxFontSizeMultiplier={1.3} style={s.tripName}>{preview.name}</Text>
-            <Text maxFontSizeMultiplier={1.4} style={s.body}>{preview.destination}</Text>
-            <Text maxFontSizeMultiplier={1.4} style={s.body}>{formatDate(preview.start_date)} → {formatDate(preview.end_date)}</Text>
+          <View accessible style={[s.card, { backgroundColor: band }]}>
+            <View style={[s.datePill, { backgroundColor: mix(band, "#000000", 0.105) }]}>
+              <Text maxFontSizeMultiplier={1.3} style={s.dateText}>{formatRange(preview.start_date, preview.end_date)}</Text>
+            </View>
+            <TripNameTag name={preview.name} maxWidth={width - space.s20 * 2 - space.s24 * 2} tilt={-2} />
+            <Text maxFontSizeMultiplier={1.4} style={s.place}>{preview.destination}</Text>
             <Text maxFontSizeMultiplier={1.4} style={s.body}>{preview.participant_count} {preview.participant_count === 1 ? "person" : "people"} going</Text>
-          </Card>
+            {preview.invited_by ? <Text maxFontSizeMultiplier={1.4} style={s.body}>Invited by {preview.invited_by}</Text> : null}
+          </View>
         ) : previewError ? (
           <View style={s.gap}>
             <Alert variant="negative">{previewError}</Alert>
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : (
-          <ActivityIndicator accessibilityLabel="Loading invite" color={color.forestInk} />
+          <ActivityIndicator accessibilityLabel="Loading invite" color={color.brandBlack} />
         )}
+        {preview && <Text maxFontSizeMultiplier={1.4} style={s.note}>This is a preview. Join to see the plan, the expenses and everyone on the trip.</Text>}
         {error && <Alert variant="negative">{error}</Alert>}
       </View>
       {!preview ? null : status === "in" ? (
@@ -82,9 +88,13 @@ export default function Join() {
 const s = StyleSheet.create({
   screen: { flex: 1, paddingHorizontal: space.s20, backgroundColor: color.paper },
   hero: { flex: 1, gap: space.s16 },
-  heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
+  heading: { fontFamily: type.sheetTitle.fontFamily, fontSize: 32, lineHeight: 38, letterSpacing: -0.8, color: color.brandBlack },
   gap: { gap: space.s8 },
-  tripName: { ...type.display, fontSize: 28, lineHeight: 30, color: color.obsidian },
-  body: { ...type.body, color: color.charcoal },
+  card: { alignItems: "center", gap: space.s8, padding: space.s24, borderRadius: radius.sheet, borderCurve: "continuous" },
+  datePill: { paddingHorizontal: space.s8, paddingVertical: 2, borderRadius: 6, borderCurve: "continuous" },
+  dateText: { fontFamily: font.medium, fontSize: 12, lineHeight: 16, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  place: { ...type.fieldValue, color: color.brandBlack },
+  note: { ...type.fieldMessage, color: color.charcoal, textAlign: "center" },
+  body: { ...type.fieldValue, color: color.charcoal },
   error: { ...type.label, color: color.alarmRed },
 });

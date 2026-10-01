@@ -4,7 +4,7 @@ export type Member = { id: string; display_name: string; membership_type: "regis
 export type MembersResult = { ok: true; members: Member[] } | { ok: false; message: string };
 export type AddGuestResult = { ok: true } | { ok: false; message: string };
 
-const OFFLINE = "No connection. Check your internet and try again.";
+const OFFLINE = "You're offline. Check your connection and try again.";
 const isOffline = (m: string) => /network|fetch/i.test(m);
 
 export async function listMembers(tripId: string): Promise<MembersResult> {
@@ -27,6 +27,22 @@ export async function addGuest(tripId: string, name: string): Promise<AddGuestRe
     if (!error) return { ok: true };
     if (isOffline(error.message)) return { ok: false, message: OFFLINE };
     return { ok: false, message: error.code === "42501" ? "Only the trip owner can add guests." : "Couldn't add the guest. Try again." };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}
+
+export type AddMemberResult = { ok: true; name: string } | { ok: false; message: string };
+
+// Adds someone who already uses along straight to the trip by their email, no invite link needed. The owner only.
+export async function addMemberByEmail(tripId: string, email: string): Promise<AddMemberResult> {
+  try {
+    const { data, error } = await supabase.rpc("add_member_by_email", { p_trip: tripId, p_email: email });
+    if (!error) return { ok: true, name: String(data) };
+    if (isOffline(error.message)) return { ok: false, message: OFFLINE };
+    if (error.message === "user_not_found") return { ok: false, message: "No one on along uses that email. Add them as a guest and send an invite instead." };
+    if (error.message === "already_member") return { ok: false, message: "They're already on this trip." };
+    return { ok: false, message: error.code === "42501" ? "Only the trip owner can add people." : "Couldn't add them. Try again." };
   } catch {
     return { ok: false, message: OFFLINE };
   }

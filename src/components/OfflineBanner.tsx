@@ -12,7 +12,7 @@ export function bannerText(online: boolean, pending: number, justSynced: boolean
   if (!online) {
     return pending > 0
       ? `You're offline. ${pending} ${pending === 1 ? "expense" : "expenses"} will sync when you're back. Showing last synced data.`
-      : "You're offline. Showing last synced data.";
+      : "You're offline. Showing what was last synced.";
   }
   return justSynced ? "All synced" : null;
 }

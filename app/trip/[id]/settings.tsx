@@ -1,13 +1,15 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
-import { useCallback, useState } from "react";
+import { useCallback, useDeferredValue, useState } from "react";
 import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadTripSettings, setTripCardColor, setTripCurrency, SettingsResult, updateTripDates, updateTripDetails } from "../../../src/api/trips";
+import { SearchField } from "../../../src/components/SearchField";
 import { Alert } from "../../../src/components/Alert";
 import { Button, TextButton } from "../../../src/components/Buttons";
 import { RangeCalendar } from "../../../src/components/Calendar";
+import { matches } from "../../../src/domain/search";
 import { Range } from "../../../src/domain/calendar";
 import { BottomSheet, SheetRows } from "../../../src/components/BottomSheet";
 import { haptic } from "../../../src/haptics";
@@ -15,7 +17,7 @@ import { toast } from "../../../src/stores/toast";
 import { ListItem } from "../../../src/components/ListItem";
 import { PlaceSearchField } from "../../../src/components/PlaceSearchField";
 import { FieldLabel, TextField } from "../../../src/components/TextField";
-import { CARD_COLORS, formatDate } from "../../../src/domain/trip";
+import { CARD_COLORS, formatDate, formatRange } from "../../../src/domain/trip";
 import { color, radius, space, type } from "../../../src/theme/tokens";
 
 type Draft = { name: string; destination: string; description: string; cardColor: number };
@@ -30,6 +32,8 @@ export default function TripSettings() {
   const [state, setState] = useState<SettingsResult | null>(null);
   const [form, setForm] = useState<Draft | null>(null);
   const [picker, setPicker] = useState(false);
+  const [query, setQuery] = useState("");
+  const deferred = useDeferredValue(query);
   const [datesOpen, setDatesOpen] = useState(false);
   const [range, setRange] = useState<Range>({ start: "", end: "" });
   const [error, setError] = useState<string | null>(null);
@@ -131,7 +135,7 @@ export default function TripSettings() {
               <FieldLabel disabled={!editable}>Trip dates</FieldLabel>
               <Pressable accessibilityRole="button" accessibilityLabel={`Trip dates, ${formatDate(x.start)} to ${formatDate(x.end)}`} disabled={!editable}
                 onPress={() => { setRange({ start: x.start, end: x.end }); setDatesOpen(true); }} style={[s.pick, !editable && s.pickOff]}>
-                <Text maxFontSizeMultiplier={1.4} style={[s.pickValue, s.pickFlex]}>{formatDate(x.start)} → {formatDate(x.end)}</Text>
+                <Text maxFontSizeMultiplier={1.4} style={[s.pickValue, s.pickFlex]}>{formatRange(x.start, x.end)}</Text>
                 {editable && <ChevronRight size={20} color={color.brandBlack} strokeWidth={1.75} />}
               </Pressable>
             </View>
@@ -139,11 +143,11 @@ export default function TripSettings() {
             <View style={s.field}>
               <FieldLabel disabled={!canPickCurrency}>Trip currency</FieldLabel>
               <Pressable accessibilityRole="button" accessibilityLabel={`Trip currency, ${x.currency}${x.hasMoney ? ", locked once expenses are added" : ""}`} disabled={!canPickCurrency}
-                onPress={() => setPicker(true)} style={[s.pick, !canPickCurrency && s.pickOff]}>
+                onPress={() => { setQuery(""); setPicker(true); }} style={[s.pick, !canPickCurrency && s.pickOff]}>
                 <Text maxFontSizeMultiplier={1.4} style={[s.pickValue, s.pickFlex]}>{currencyName ? `${x.currency} · ${currencyName}` : x.currency}</Text>
                 {canPickCurrency && <ChevronRight size={20} color={color.brandBlack} strokeWidth={1.75} />}
               </Pressable>
-              {x.hasMoney && <Text maxFontSizeMultiplier={1.4} style={s.hint}>Locked once expenses are added, because amounts are never converted.</Text>}
+              {x.hasMoney && <Text maxFontSizeMultiplier={1.4} style={s.hint}>Locked once expenses are added, so amounts always stay in one currency.</Text>}
             </View>
 
             {editable ? (
@@ -158,9 +162,9 @@ export default function TripSettings() {
             <BottomSheet visible={datesOpen} onClose={() => setDatesOpen(false)} title="Modify dates" actionLabel="Confirm" actionType="secondaryNeutral" actionDisabled={!range.end} onAction={dates}>
               <RangeCalendar value={range} onChange={setRange} />
             </BottomSheet>
-            <BottomSheet visible={picker} onClose={() => setPicker(false)} title="Currency" body="Amounts are not converted, so this can only change before any expense is added.">
+            <BottomSheet visible={picker} onClose={() => setPicker(false)} title="Currency" tall header={<SearchField placeholder="Search currencies" value={query} onChangeText={setQuery} />} body="Amounts aren't converted, so choose this before adding any expenses.">
               <SheetRows>
-                {x.currencies.map((c) => (
+                {x.currencies.filter((c) => matches(deferred, c.name, c.code)).map((c) => (
                   <ListItem key={c.code} title={c.name} subtitle={c.code} trailing="radio" checked={c.code === x.currency} onPress={() => currency(c.code)} />
                 ))}
               </SheetRows>

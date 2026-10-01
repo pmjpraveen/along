@@ -10,6 +10,8 @@ jest.mock("../components/DateRangeField", () => {
 const mockUploadCover = jest.fn();
 const mockPick = jest.fn();
 jest.mock("expo-image-picker", () => ({ launchImageLibraryAsync: (...a: unknown[]) => mockPick(...a) }));
+const mockProfile = jest.fn();
+jest.mock("../api/profile", () => ({ loadMyProfile: (...a: unknown[]) => mockProfile(...a) }));
 jest.mock("../api/trips", () => ({ createTrip: (...a: unknown[]) => mockCreate(...a), uploadCover: (...a: unknown[]) => mockUploadCover(...a) }));
 jest.mock("expo-router", () => ({ useRouter: () => ({ replace: mockReplace, back: jest.fn() }) }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
@@ -20,7 +22,7 @@ const fill = async (name: string, start = "2099-12-01", end = "2099-12-05") => {
   await fireEvent.changeText(screen.getByLabelText("Duration"), `${start}|${end}`);
 };
 const submit = async () => fireEvent.press(screen.getByRole("button", { name: "Create trip" }));
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => { jest.clearAllMocks(); mockProfile.mockResolvedValue({ currency: null }); });
 
 test("US-01 a blank name shows an inline error and creates nothing", async () => {
   await render(<CreateTrip />);
@@ -69,4 +71,14 @@ test("cover: the cover is optional, and a failed cover upload never blocks the t
   await fireEvent.press(screen.getByRole("button", { name: "Add image" }));
   await submit();
   await waitFor(() => expect(mockReplace).toHaveBeenCalledWith({ pathname: "/trip/[id]", params: { id: "t10" } }));
+});
+
+test("a new trip starts in my preferred currency, or INR when I have none", async () => {
+  mockCreate.mockResolvedValue({ ok: true, tripId: "t1" });
+  mockProfile.mockResolvedValue({ currency: "USD" });
+  await render(<CreateTrip />);
+  await fill("Goa");
+  await submit();
+  await waitFor(() => expect(mockCreate).toHaveBeenCalled());
+  expect(mockCreate.mock.calls[0][1]).toBe("USD");
 });
