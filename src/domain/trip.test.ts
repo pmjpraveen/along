@@ -1,4 +1,4 @@
-import { compactDate, formatDate, formatRange, ongoingFirst, toIso, validateTrip } from "./trip";
+import { compactDate, formatDate, cardColorAt, CARD_COLORS, formatRange, ongoingFirst, toIso, validateTrip } from "./trip";
 
 const ok = { name: "Goa", destination: "Goa, India", start: "2026-12-01", end: "2026-12-05" };
 
@@ -49,5 +49,22 @@ describe("ongoingFirst", () => {
     const input = [t("a", "upcoming"), t("b", "draft")];
     expect(ongoingFirst(input)).toEqual(input);
     expect(input.map((x) => x.id)).toEqual(["a", "b"]);
+  });
+});
+
+describe("cardColorAt", () => {
+  test("six trips in a row show all six colours, oldest first in the design's order", () => {
+    const colours = [5, 4, 3, 2, 1, 0].map((i) => cardColorAt(i, 6));
+    expect(colours).toEqual([...CARD_COLORS]);
+    expect(new Set([0, 1, 2, 3, 4, 5].map((i) => cardColorAt(i, 6))).size).toBe(6);
+  });
+  test("a newer trip never changes the colour of an older one", () => {
+    // the oldest trip is last in a newest-first list, whatever the list length
+    expect(cardColorAt(2, 3)).toBe(cardColorAt(5, 6));
+    expect(cardColorAt(0, 1)).toBe(CARD_COLORS[0]);
+  });
+  test("after six, the colours start over", () => {
+    expect(cardColorAt(0, 7)).toBe(CARD_COLORS[0]);
+    expect(cardColorAt(6, 7)).toBe(CARD_COLORS[0]);
   });
 });

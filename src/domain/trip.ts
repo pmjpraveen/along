@@ -33,3 +33,12 @@ export function validateTrip(d: TripDraft, today?: string): TripErrors {
 export function ongoingFirst<T extends { phase: string }>(trips: T[]): T[] {
   return [...trips.filter((t) => t.phase === "active"), ...trips.filter((t) => t.phase !== "active")];
 }
+
+// The six colours a completed trip's card can take (from the design), in the design's order.
+export const CARD_COLORS = ["#ffc091", "#e5ebff", "#ebe0d9", "#d9e0ab", "#def6ff", "#fff27b"] as const;
+
+// Colours are handed out in order, oldest trip first, so any six trips in a row show all six colours. `newestFirst` is the trip's place in a
+// newest-first list of `count` trips; counting from the oldest end means a newer trip never changes the colour of an older one.
+export function cardColorAt(newestFirst: number, count: number): string {
+  return CARD_COLORS[(count - 1 - newestFirst) % CARD_COLORS.length];
+}
