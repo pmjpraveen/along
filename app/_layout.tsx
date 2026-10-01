@@ -47,6 +47,7 @@ export default function Layout() {
         </Stack.Protected>
         <Stack.Protected guard={status === "out"}>
           <Stack.Screen name="sign-in" />
+          <Stack.Screen name="sign-in-email" />
         </Stack.Protected>
         <Stack.Screen name="join/[token]" />
       </Stack>}

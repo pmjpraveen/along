@@ -1,0 +1,59 @@
+import { useRouter } from "expo-router";
+import { ChevronLeft } from "lucide-react-native";
+import { useState } from "react";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { signInWithEmail } from "../src/api/auth";
+import { Alert } from "../src/components/Alert";
+import { PrimaryButton } from "../src/components/Buttons";
+import { Pressable } from "../src/components/Pressable";
+import { TextField } from "../src/components/TextField";
+import { color, radius, space, type } from "../src/theme/tokens";
+
+// Email and password sign-in on a page of its own, for an account made in the Supabase dashboard (the App Store reviewer's). Success needs no
+// navigation: the session store flips and the route guard moves to Home.
+export default function SignInEmail() {
+  const { top, bottom } = useSafeAreaInsets();
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (busy) return;
+    if (!email.trim() || !password) return setError("Enter your email and password.");
+    setBusy(true);
+    setError(null);
+    const r = await signInWithEmail(email, password);
+    setBusy(false);
+    if (!r.ok && !r.cancelled) setError(r.message);
+  };
+
+  return (
+    <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
+      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/sign-in"))} hitSlop={space.s4} style={s.round}>
+          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
+        </Pressable>
+        <View style={s.head}>
+          <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Sign in with email</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>Use the email and password you were given.</Text>
+        </View>
+        <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" textContentType="username" autoFocus />
+        <TextField label="Password" value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none" textContentType="password" onSubmitEditing={submit} />
+        {error && <Alert variant="negative">{error}</Alert>}
+        <PrimaryButton label={busy ? "Signing in…" : "Sign in"} onPress={submit} />
+      </ScrollView>
+    </KeyboardAvoidingView>
+  );
+}
+
+const s = StyleSheet.create({
+  screen: { flex: 1, backgroundColor: color.paper },
+  content: { paddingHorizontal: space.s20, gap: space.s16 },
+  round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
+  head: { gap: space.s8, marginTop: space.s8 },
+  heading: { fontFamily: type.sheetTitle.fontFamily, fontSize: 32, lineHeight: 38, letterSpacing: -0.8, color: color.brandBlack },
+  body: { ...type.fieldValue, color: color.charcoal },
+});
