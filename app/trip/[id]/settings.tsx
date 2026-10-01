@@ -18,7 +18,7 @@ import { FieldLabel, TextField } from "../../../src/components/TextField";
 import { CARD_COLORS, formatDate } from "../../../src/domain/trip";
 import { color, radius, space, type } from "../../../src/theme/tokens";
 
-type Draft = { name: string; destination: string; description: string; cardColor: number | null };
+type Draft = { name: string; destination: string; description: string; cardColor: number };
 
 // Trip details, for the trip's owner, as one plain list of fields: the name, a comment, the card colour, the dates, the currency (until money is
 // involved) and where the trip is going. Text and colour are edited in place and saved together with the one Save button, which only

@@ -5,7 +5,7 @@ const mockLoad = jest.fn();
 const mockMove = jest.fn();
 jest.mock("../api/itinerary", () => ({ loadItinerary: (...a: unknown[]) => mockLoad(...a), moveItem: (...a: unknown[]) => mockMove(...a) }));
 jest.mock("../api/members", () => ({ listMembers: async () => ({ ok: true, members: [{ id: "m1", display_name: "Asha", membership_type: "registered", role: "owner", isMe: true }] }) }));
-jest.mock("../api/trips", () => ({ loadTripStatus: async () => ({ ok: true, status: "published", completedAt: null, name: "Goa", destination: "Goa", coverUrl: null }) }));
+jest.mock("../api/trips", () => ({ loadTripStatus: async () => ({ ok: true, status: "published", completedAt: null, name: "Goa", destination: "Goa", coverUrl: null, cardColor: 0 }) }));
 jest.mock("../components/DateField", () => ({
   DateField: ({ label, onChange }: { label: string; onChange: (d: string) => void }) => {
     const { Pressable, Text } = require("react-native");

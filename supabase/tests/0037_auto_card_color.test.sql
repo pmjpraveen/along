@@ -1,5 +1,5 @@
 begin;
-select plan(5);
+select plan(7);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000000a', 'a@example.com', '{"full_name":"Asha"}'),
@@ -18,6 +18,9 @@ select is((select c3 from t), 2::smallint, 'and the one after that the next agai
 
 select lives_ok($$ select create_trip('T4', 'X', '2026-12-01', '2026-12-05', 'INR', 'k4'); select create_trip('T5', 'X', '2026-12-01', '2026-12-05', 'INR', 'k5'); select create_trip('T6', 'X', '2026-12-01', '2026-12-05', 'INR', 'k6') $$, 'six trips can be made');
 select is((create_trip('T7', 'X', '2026-12-01', '2026-12-05', 'INR', 'k7')).card_color, 0::smallint, 'the seventh starts the colours over');
+
+select is((select card_color from trips where name = 'T7'), 0::smallint, 'every trip has a colour');
+select throws_ok($$ select set_trip_card_color((select id from trips where name = 'T1'), null) $$, '22023', null, 'a colour can be changed but never removed');
 
 select * from finish();
 rollback;

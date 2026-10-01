@@ -54,7 +54,7 @@ export default function Trip() {
   const isOwner = members.some((m) => m.isMe && m.role === "owner");
 
   const load = useCallback(async () => {
-    loadTripStatus(id).then((t) => { if (t.ok) { setCover(t.coverUrl); setBand(t.cardColor !== null && t.cardColor !== undefined ? CARD_COLORS[t.cardColor] ?? null : null); } });
+    loadTripStatus(id).then((t) => { if (t.ok) { setCover(t.coverUrl); setBand(CARD_COLORS[t.cardColor] ?? null); } });
     listMembers(id).then((r) => { if (r.ok) setMembers(r.members); });
     setState(await loadItinerary(id));
   }, [id]);

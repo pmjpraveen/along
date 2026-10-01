@@ -12,7 +12,7 @@ import { TripCover } from "../src/components/TripCover";
 import { TripNameTag } from "../src/components/TripNameTag";
 import { placement } from "../src/domain/passportPage";
 import { shapeFor } from "../src/domain/stampShape";
-import { cardColorAt, formatRange } from "../src/domain/trip";
+import { CARD_COLORS, formatRange } from "../src/domain/trip";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
 import { color, font, mix, radius, shadow, space, type } from "../src/theme/tokens";
 
@@ -50,8 +50,8 @@ export default function TripHistory() {
           <Text maxFontSizeMultiplier={1.4} style={s.body}>No finished trips yet. Once you complete one, it lands here.</Text>
         ) : (
           <View style={s.list}>
-            {past.map((t, i) => {
-              const bg = cardColorAt(i, past.length, t.cardColor);   // the trip's own colour, the same one its page shows
+            {past.map((t) => {
+              const bg = CARD_COLORS[t.cardColor];   // the trip's own colour, the same one its page shows
               return (
                 <Pressable key={t.id} accessibilityRole="button" accessibilityLabel={`${t.name}, ${t.destination_name}, ${formatRange(t.start_date, t.end_date)}`}
                   onPress={() => router.push({ pathname: "/trip/[id]/summary", params: { id: t.id } })} style={{ width: tile }}>

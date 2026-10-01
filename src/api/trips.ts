@@ -20,7 +20,7 @@ export async function createTrip(d: TripDraft, currency: string, idempotencyKey:
   }
 }
 
-export type TripStatusResult = { ok: true; status: "draft" | "published" | "completed" | "archived"; completedAt: string | null; name: string; destination: string; coverUrl: string | null; cardColor: number | null } | { ok: false; message: string };
+export type TripStatusResult = { ok: true; status: "draft" | "published" | "completed" | "archived"; completedAt: string | null; name: string; destination: string; coverUrl: string | null; cardColor: number } | { ok: false; message: string };
 export type CompleteResult = { ok: true } | { ok: false; message: string };
 
 const OFFLINE = "No connection. Check your internet and try again.";
@@ -44,7 +44,7 @@ export async function loadTripStatus(tripId: string): Promise<TripStatusResult> 
     const { data, error } = await supabase.from("trips").select("status, completed_at, name, destination_name, cover_url, card_color").eq("id", tripId).single();
     if (error || !data) return { ok: false, message: isOffline(error?.message ?? "") ? OFFLINE : "Couldn't load the trip. Try again." };
     const urls = await signCovers([data.cover_url]);
-    return { ok: true, status: data.status, completedAt: data.completed_at, name: data.name, destination: data.destination_name, coverUrl: data.cover_url ? urls.get(data.cover_url) ?? null : null, cardColor: data.card_color ?? null };
+    return { ok: true, status: data.status, completedAt: data.completed_at, name: data.name, destination: data.destination_name, coverUrl: data.cover_url ? urls.get(data.cover_url) ?? null : null, cardColor: data.card_color };
   } catch {
     return { ok: false, message: OFFLINE };
   }
@@ -72,7 +72,7 @@ export async function stampForTrip(tripId: string): Promise<{ destination: strin
   }
 }
 
-export type TripCard = { id: string; name: string; destination_name: string; start_date: string; end_date: string; coverUrl: string | null; cardColor: number | null; phase: "draft" | "upcoming" | "active" | "completed" | "archived" };
+export type TripCard = { id: string; name: string; destination_name: string; start_date: string; end_date: string; coverUrl: string | null; cardColor: number; phase: "draft" | "upcoming" | "active" | "completed" | "archived" };
 export type TripListResult = { ok: true; trips: TripCard[] } | { ok: false; message: string };
 
 // Every trip I am in, with where it stands (upcoming, active, completed) derived on the server from its dates and status.
@@ -81,7 +81,7 @@ export async function listTrips(): Promise<TripListResult> {
     const { data, error } = await supabase.from("trip_phase").select("id, name, destination_name, start_date, end_date, phase, cover_url, card_color").order("start_date", { ascending: false });
     if (error) return { ok: false, message: isOffline(error.message) ? OFFLINE : "Couldn't load your trips. Try again." };
     const urls = await signCovers((data ?? []).map((t) => t.cover_url));
-    return { ok: true, trips: (data ?? []).map(({ cover_url, card_color, ...t }) => ({ ...t, cardColor: card_color ?? null, coverUrl: cover_url ? urls.get(cover_url) ?? null : null })) as TripCard[] };
+    return { ok: true, trips: (data ?? []).map(({ cover_url, card_color, ...t }) => ({ ...t, cardColor: card_color, coverUrl: cover_url ? urls.get(cover_url) ?? null : null })) as TripCard[] };
   } catch {
     return { ok: false, message: OFFLINE };
   }
@@ -107,7 +107,7 @@ export async function uploadCover(tripId: string, uri: string, mimeType: string)
 }
 
 
-export type TripSettings = { id: string; version: number; name: string; destination: string; description: string; cardColor: number | null; start: string; end: string; currency: string; status: "draft" | "published" | "completed" | "archived"; hasMoney: boolean; isOwner: boolean; currencies: { code: string; name: string }[] };
+export type TripSettings = { id: string; version: number; name: string; destination: string; description: string; cardColor: number; start: string; end: string; currency: string; status: "draft" | "published" | "completed" | "archived"; hasMoney: boolean; isOwner: boolean; currencies: { code: string; name: string }[] };
 export type SettingsResult = { ok: true; settings: TripSettings } | { ok: false; message: string };
 
 // What Trip settings needs: the dates, the currency (and whether it can still change), and whether I own the trip.
@@ -125,7 +125,7 @@ export async function loadTripSettings(tripId: string): Promise<SettingsResult> 
     if (err || !trip.data) return { ok: false, message: isOffline(err?.message ?? "") ? OFFLINE : "Couldn't load the trip settings. Try again." };
     const me = (members.data ?? []).find((m) => m.user_id === session.data.session?.user.id);
     return { ok: true, settings: {
-      id: trip.data.id, version: trip.data.version, name: trip.data.name, destination: trip.data.destination_name, description: trip.data.description ?? "", cardColor: trip.data.card_color ?? null,
+      id: trip.data.id, version: trip.data.version, name: trip.data.name, destination: trip.data.destination_name, description: trip.data.description ?? "", cardColor: trip.data.card_color,
       start: trip.data.start_date, end: trip.data.end_date, currency: String(trip.data.primary_currency).trim(), status: trip.data.status,
       hasMoney: (exp.count ?? 0) > 0 || (sett.count ?? 0) > 0, isOwner: me?.role === "owner", currencies: (cur.data ?? []) as { code: string; name: string }[],
     } };
@@ -177,8 +177,8 @@ export async function updateTripDetails(tripId: string, version: number, d: { na
   }
 }
 
-// Pick one of the six card colours (0 to 5) for the trip's card on the Completed trips page; null goes back to the automatic order.
-export async function setTripCardColor(tripId: string, colorIndex: number | null): Promise<CompleteResult> {
+// Pick one of the six card colours (0 to 5) for the trip. Every trip already has one; this changes it.
+export async function setTripCardColor(tripId: string, colorIndex: number): Promise<CompleteResult> {
   try {
     const { error } = await supabase.rpc("set_trip_card_color", { p_trip: tripId, p_color: colorIndex });
     if (!error) return { ok: true };
