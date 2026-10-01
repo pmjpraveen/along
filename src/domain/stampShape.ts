@@ -1,10 +1,23 @@
 import { hashSeed } from "./stampWear";
 
-// Real passports mix stamp shapes: arrival and departure are seldom the same, and each border post has its own. Ours are drawn in five
-// shapes; a trip's arrival takes one of them (from its id) and its departure the next, so the two always differ.
-export const SHAPES = ["rect", "oval", "circle", "hexagon", "chamfer"] as const;
+// Real passports mix stamp shapes and printing styles: arrival and departure are seldom the same, and each border post has its own. Ours are
+// drawn in ten shapes and ten frame styles; a trip's arrival takes a shape (from its id) and its departure the next, so the two always differ,
+// and every stamp takes its own frame style from what it says (see styleFor), so a stamp always looks the same.
+export const SHAPES = ["rect", "oval", "circle", "hexagon", "chamfer", "octagon", "stadium", "arch", "ticket", "triangle"] as const;
 export type StampShape = (typeof SHAPES)[number];
 export type StampKind = "arrival" | "departure";
+
+// How the frame is printed: a thick and a thin line, a dashed ring, a heavy line with a hairline, three fine lines, a filled label band, a dotted
+// inner ring, a ring of beads, a dash-and-dot ring, a stencil of long dashes, or a slightly misregistered double strike.
+export const STYLES = ["solid", "dashed", "bold", "triple", "banner", "dotted", "beaded", "dashdot", "stencil", "offset"] as const;
+export type StampStyle = (typeof STYLES)[number];
+
+// The frame style comes from the stamp's own words, so the same stamp is always printed the same way. A circle has its label on the curve, so
+// it has no flat band to fill and falls back to the plain double line.
+export function styleFor(seed: string, shape: StampShape): StampStyle {
+  const style = STYLES[(hashSeed(seed) >>> 3) % STYLES.length];
+  return style === "banner" && shape === "circle" ? "solid" : style;
+}
 
 export function shapeFor(seed: string, kind: StampKind): StampShape {
   const i = hashSeed(seed) % SHAPES.length;

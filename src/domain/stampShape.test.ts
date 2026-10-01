@@ -1,4 +1,4 @@
-import { impressions, shapeFor, SHAPES, stampDate } from "./stampShape";
+import { impressions, shapeFor, SHAPES, STYLES, styleFor, stampDate } from "./stampShape";
 
 test("a trip's arrival and departure never share a shape, and the same trip always gets the same ones", () => {
   for (const id of ["a", "b", "goa", "ooty", "0479a6cc", "z9"]) {
@@ -23,4 +23,22 @@ test("each completed trip leaves a departure on its last day above an arrival on
   const list = impressions([{ id: "a", trip_id: "t1", destination_name: "Goa", start_date: "2026-12-01", end_date: "2026-12-05" }, { id: "b", trip_id: "t2", destination_name: "Ooty", start_date: "2026-05-07", end_date: "2026-05-09" }]);
   expect(list.map((x) => [x.destination, x.kind, x.date])).toEqual([["Goa", "departure", "2026-12-05"], ["Goa", "arrival", "2026-12-01"], ["Ooty", "departure", "2026-05-09"], ["Ooty", "arrival", "2026-05-07"]]);
   expect(new Set(list.map((x) => x.key)).size).toBe(4);
+});
+
+test("there are ten shapes and ten frame styles, and across many trips every one of them gets used", () => {
+  expect(SHAPES).toHaveLength(10);
+  expect(STYLES).toHaveLength(10);
+  const shapes = new Set<string>(); const styles = new Set<string>();
+  for (let i = 0; i < 400; i++) {
+    const shape = shapeFor(`trip-${i}`, i % 2 ? "arrival" : "departure");
+    shapes.add(shape);
+    styles.add(styleFor(`City ${i}|2026-0${(i % 9) + 1}-10|arrival`, shape));
+  }
+  expect(shapes.size).toBe(10);
+  expect(styles.size).toBe(10);
+});
+
+test("a stamp always gets the same frame style, and a circle never gets the filled band", () => {
+  expect(styleFor("Goa|2026-03-06|arrival", "oval")).toBe(styleFor("Goa|2026-03-06|arrival", "oval"));
+  for (let i = 0; i < 200; i++) expect(styleFor(`X${i}|2026-01-01|departure`, "circle")).not.toBe("banner");
 });
