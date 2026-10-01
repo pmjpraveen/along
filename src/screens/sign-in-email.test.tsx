@@ -8,15 +8,16 @@ jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({
 beforeEach(() => jest.clearAllMocks());
 
 test("it asks for both, shows a wrong password plainly, keeps what was typed, and signs in once with the right one", async () => {
-  mockEmail.mockResolvedValueOnce({ ok: false, message: "That email or password isn't right." }).mockResolvedValueOnce({ ok: true });
+  mockEmail.mockResolvedValueOnce({ ok: false, message: "That email and password don't match. Check them and try again." }).mockResolvedValueOnce({ ok: true });
   await render(<SignInEmail />);
   await fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
-  expect(await screen.findByText("Enter your email and password.")).toBeTruthy();
+  expect(await screen.findByText("Enter your email address.")).toBeTruthy();
+  expect(screen.getByText("Enter your password.")).toBeTruthy();
   expect(mockEmail).not.toHaveBeenCalled();
   await fireEvent.changeText(screen.getByLabelText("Email"), "review@example.com");
   await fireEvent.changeText(screen.getByLabelText("Password"), "wrong");
   await fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
-  expect(await screen.findByText("That email or password isn't right.")).toBeTruthy();
+  expect(await screen.findByText("That email and password don't match. Check them and try again.")).toBeTruthy();
   expect(screen.getByLabelText("Email").props.value).toBe("review@example.com");
   await fireEvent.changeText(screen.getByLabelText("Password"), "right");
   await fireEvent.press(screen.getByRole("button", { name: "Sign in" }));

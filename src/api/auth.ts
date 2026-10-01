@@ -46,7 +46,7 @@ export async function signInWithEmail(email: string, password: string): Promise<
   try {
     const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
     if (!error) return { ok: true };
-    return fail(isOffline(error) ? OFFLINE : error.status === 400 ? "That email or password isn't right." : "Couldn't sign you in. Try again.");
+    return fail(isOffline(error) ? OFFLINE : error.status === 400 ? "That email and password don't match. Check them and try again." : "Couldn't sign you in right now. Try again in a moment.");
   } catch {
     return fail(OFFLINE);
   }

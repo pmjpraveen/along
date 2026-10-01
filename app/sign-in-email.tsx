@@ -18,13 +18,17 @@ export default function SignInEmail() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const submit = async () => {
     if (busy) return;
-    if (!email.trim() || !password) return setError("Enter your email and password.");
-    setBusy(true);
     setError(null);
+    setEmailError(email.trim() ? null : "Enter your email address.");
+    setPasswordError(password ? null : "Enter your password.");
+    if (!email.trim() || !password) return;
+    setBusy(true);
     const r = await signInWithEmail(email, password);
     setBusy(false);
     if (!r.ok && !r.cancelled) setError(r.message);
@@ -38,10 +42,10 @@ export default function SignInEmail() {
         </Pressable>
         <View style={s.head}>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Sign in with email</Text>
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>Use the email and password you were given.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>Enter the email and password for your account.</Text>
         </View>
-        <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" textContentType="username" autoFocus />
-        <TextField label="Password" value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none" textContentType="password" onSubmitEditing={submit} />
+        <TextField label="Email" placeholder="you@example.com" value={email} onChangeText={(v) => { setEmail(v); setEmailError(null); }} status={emailError ? "error" : undefined} message={emailError ?? undefined} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" textContentType="username" autoFocus />
+        <TextField label="Password" value={password} onChangeText={(v) => { setPassword(v); setPasswordError(null); }} status={passwordError ? "error" : undefined} message={passwordError ?? undefined} secureTextEntry autoCapitalize="none" textContentType="password" onSubmitEditing={submit} />
         {error && <Alert variant="negative">{error}</Alert>}
         <PrimaryButton label={busy ? "Signing in…" : "Sign in"} onPress={submit} />
       </ScrollView>
