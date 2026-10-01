@@ -43,7 +43,7 @@ export default function Passport() {
         <ActivityIndicator accessibilityLabel="Loading your stamps" color={color.brandBlack} />
       ) : !state.ok ? (
         <View style={s.gap}>
-          <Alert variant="negative">{state.message}</Alert>
+          <Alert variant="negative" persist>{state.message}</Alert>
           <TextButton label="Retry" onPress={load} />
         </View>
       ) : stamps.length === 0 ? (

@@ -67,7 +67,7 @@ export default function Join() {
           </View>
         ) : previewError ? (
           <View style={s.gap}>
-            <Alert variant="negative">{previewError}</Alert>
+            <Alert variant="negative" persist>{previewError}</Alert>
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : (

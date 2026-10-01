@@ -1,17 +1,15 @@
 import { useIsFocused } from "expo-router";
 import { useEffect, useState } from "react";
 import { StyleSheet, View } from "react-native";
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming } from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming } from "react-native-reanimated";
 import { useReducedMotion } from "../hooks/useReducedMotion";
+import { EASE_SHINE, motion } from "../theme/motion";
 
 // A glint that sweeps across a surface, then rests, `sweeps` times when the screen opens, and only while it is in front (the passport cover plays it
 // three times, the Start new trip button twice). Two slanted bands of light (a wide soft one and a thin bright one)
 // travel left to right, clipped by the surface they sit on. With Reduce Motion on, the passport keeps a still highlight; with `still` off nothing
 // shows at all. Ignores touches.
-const SWEEP_MS = 1600;
-const REST_MS = 3200;
-
-export function PassportShine({ sweeps = 3, restMs = REST_MS, sweepMs = SWEEP_MS, still = true }: { sweeps?: number; restMs?: number; sweepMs?: number; still?: boolean }) {
+export function PassportShine({ sweeps = 3, restMs = motion.shine.restMs, sweepMs = motion.shine.sweepMs, still = true }: { sweeps?: number; restMs?: number; sweepMs?: number; still?: boolean }) {
   const reduced = useReducedMotion();
   const focused = useIsFocused();
   const [width, setWidth] = useState(0);
@@ -20,7 +18,7 @@ export function PassportShine({ sweeps = 3, restMs = REST_MS, sweepMs = SWEEP_MS
   useEffect(() => {
     if (reduced || width === 0 || !focused) { x.value = still ? width * 0.38 : width + 400; return; }
     x.value = -200;
-    x.value = withRepeat(withDelay(restMs, withTiming(width + 200, { duration: sweepMs, easing: Easing.inOut(Easing.quad) })), sweeps, false);
+    x.value = withRepeat(withDelay(restMs, withTiming(width + 200, { duration: sweepMs, easing: EASE_SHINE })), sweeps, false);
   }, [reduced, focused, width, x, sweeps, restMs, sweepMs, still]);
 
   const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));

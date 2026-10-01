@@ -70,7 +70,7 @@ export default function Complete() {
           <ActivityIndicator accessibilityLabel="Loading trip summary" color={color.forestInk} />
         ) : !s0 ? (
           <View style={s.gap}>
-            <Alert variant="negative">{summary.ok ? "" : summary.message}</Alert>
+            <Alert variant="negative" persist>{summary.ok ? "" : summary.message}</Alert>
             <TextButton label="Retry" onPress={load} />
             <TextButton label="Not yet" onPress={() => router.back()} />
           </View>

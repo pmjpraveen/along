@@ -47,7 +47,8 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
   // One spring drives every move and always starts from where the sheet is right now, so any move can be interrupted.
   const settle = (to: number, velocity: number, done?: () => void) => {
     if (reduceMotion) { y.value = to; done?.(); return; }
-    y.value = withSpring(to, { ...motion.sheet, velocity, overshootClamping: to !== 0 }, (finished) => { if (finished && done) scheduleOnRN(done); });
+    // Opening and closing on their own settle without bounce; only a flick (a velocity) earns the bouncier sheet spring.
+    y.value = withSpring(to, { ...(velocity === 0 ? motion.settle : motion.sheet), velocity, overshootClamping: to !== 0 }, (finished) => { if (finished && done) scheduleOnRN(done); });
   };
 
   useEffect(() => {

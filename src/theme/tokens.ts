@@ -9,16 +9,16 @@ export const core = {
 
 // Secondary colours
 export const secondary = {
-  brightOrange: "#ffc091", brightYellow: "#ffeb69", brightBlue: "#a0e1e1", brightPink: "#ffd7ef",   // secondary/bright *
-  darkPurple: "#260a2f", darkGold: "#3a341c", darkCharcoal: "#21231d", darkMaroon: "#320707",        // secondary/dark *
+  brightYellow: "#ffeb69", brightBlue: "#a0e1e1",   // secondary/bright *: the warning and neutral badge tints
+  darkGold: "#3a341c",                               // secondary/dark gold: the warning badge label
 } as const;
 
 // Product colours (semantic roles)
 export const product = {
-  content: { primary: "#222222", secondary: "#6a6a6a", tertiary: "#6a6a6a", link: "#163300" },   // primary text, then one grey for everything secondary or quieter
-  interactive: { primary: "#163300", accent: "#9fe870", secondary: "#868685", control: "#173301", contrast: "#9fe870" },
-  background: { screen: "#ffffff", elevated: "#ffffff", neutral: "rgba(22,51,0,0.08)", overlay: "rgba(22,51,0,0.08)" },   // #16330014
-  border: { neutral: "rgba(14,15,12,0.12)", overlay: "rgba(14,15,12,0.12)" },                                              // #0e0f0c1f
+  content: { primary: "#222222", secondary: "#6a6a6a", tertiary: "#6a6a6a" },   // primary text, then one grey for everything secondary or quieter
+  interactive: { secondary: "#868685" },                                         // placeholder text and disabled labels
+  background: { screen: "#ffffff", neutral: "rgba(22,51,0,0.08)" },              // #16330014
+  border: { neutral: "rgba(14,15,12,0.12)" },                                     // #0e0f0c1f
   sentiment: { negative: "#cb272f", positive: "#2f5711", warning: "#ffd11a" },
 } as const;
 
@@ -30,20 +30,20 @@ export const buttonState = {
   tertiary: { hover: "#f4f4f4", pressed: "#e8e8e8" },
 } as const;
 
+// Fills for a tappable row (list item) when hovered by a pointer and when pressed.
+export const rowState = { hover: "#f4f4f4", pressed: "#ececec" } as const;
+
 export const color = {
   // Named as DESIGN.md names them, each pointing at its Figma source above.
-  brightGreen: core.brightGreen, forestInk: core.forestGreen,
+  forestInk: core.forestGreen,
   brandBlack: "#222222", scrim: "rgba(0,0,0,0.25)", toast: "rgba(0,0,0,0.85)",   // the neutral dim behind every sheet and dialog, the same as the native modal screens
    dateFill: "#444444", cream: "#f8f4ed", inputBorder: "#d0d0d0", softGrey: "#f4f4f4", iconInk: "#444444", buttonGrey: "#f2f2f2", obsidian: product.content.primary, charcoal: product.content.secondary, slate: product.content.tertiary, pebble: product.interactive.secondary,
-  paper: product.background.screen, neutralWash: product.background.neutral, borderNeutral: product.border.neutral, control: product.interactive.control,
-  alarmRed: product.sentiment.negative, positive: product.sentiment.positive, warning: product.sentiment.warning,
-  ...secondary,
-  // The "secondary" button fill is a hard-coded hex in Figma (not a variable): a pale green.
-  secondaryFill: "#ddf7d2",
+  paper: product.background.screen, neutralWash: product.background.neutral, borderNeutral: product.border.neutral,
+  darkGold: secondary.darkGold, alarmRed: product.sentiment.negative, positive: product.sentiment.positive, warning: product.sentiment.warning,
   // Neutral wash (Forest Green at 8%) flattened onto white, for surfaces that overlap and so must not show through each other.
   neutralSolid: "#ecefeb",
-  // Not in the Figma palette; kept from DESIGN.md until the design system covers them.
-  spruce: "#054d28", linenMist: "#e2f6d5", signalBlue: "#0b4c72", fog: "#e8ebe6",
+  // Not in the Figma palette.
+  signalBlue: "#0b4c72",
 } as const;
 
 // Badge tints (Figma "badges"): each status colour at low strength behind its label.

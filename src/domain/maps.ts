@@ -61,6 +61,3 @@ function parseAppleMapsUrl(u: URL): Place | null {
 // Tapping the preview opens the user's maps app on either platform.
 export const mapsOpenUrl = (p: Place) => `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
 
-// Optional static image; needs a Maps Static API key restricted to this app. Without one the card shows text only.
-export const staticMapUrl = (p: Place, key: string | undefined) =>
-  key ? `https://maps.googleapis.com/maps/api/staticmap?center=${p.lat},${p.lng}&zoom=15&size=640x320&scale=2&markers=${p.lat},${p.lng}&key=${key}` : null;

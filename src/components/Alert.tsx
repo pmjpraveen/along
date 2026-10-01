@@ -24,6 +24,7 @@ type Props = {
   children: ReactNode;
   actionLabel?: string; onAction?: () => void; actionKind?: "button" | "link";
   onDismiss?: () => void;
+  persist?: boolean;                    // an error that stays until the problem is dealt with (a failed load that offers Retry)
 };
 
 // Alert from the design system.
@@ -32,20 +33,20 @@ type Props = {
 //     and a 24pt circular dismiss control at the top right.
 //   Critical: a red banner (radius 10) with a white icon, a semibold white title, white text and a white small button.
 // Meaning never rests on colour alone: the icon shape and the words say it.
-export function Alert({ variant = "neutral", title, children, actionLabel, onAction, actionKind = "button", onDismiss }: Props) {
+export function Alert({ variant = "neutral", title, children, actionLabel, onAction, actionKind = "button", onDismiss, persist }: Props) {
   const critical = variant === "critical";
   const urgent = variant === "negative" || variant === "warning" || critical;
   const card = critical || !!actionLabel || !!onDismiss || !!title;
   const hasAction = !!actionLabel && !!onAction;
 
-  // An error message clears itself after 5 seconds; a new message shows again for its own 5 seconds.
+  // An error message clears itself after 5 seconds (unless it is `persist`, a failed load that offers Retry); a new message shows again for its own 5 seconds.
   const [gone, setGone] = useState(false);
   useEffect(() => {
     setGone(false);
-    if (variant !== "negative") return;
+    if (variant !== "negative" || persist) return;
     const id = setTimeout(() => setGone(true), ERROR_MS);
     return () => clearTimeout(id);
-  }, [variant, children]);
+  }, [variant, children, persist]);
   if (gone) return null;
 
   return (

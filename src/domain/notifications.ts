@@ -24,6 +24,7 @@ export function describeParts(n: Pick<Notification, "type" | "payload">): Part[]
   const money = () => formatMinor(Number(p.amount_minor), Number(p.exponent ?? 2), String(p.currency ?? ""));
   switch (n.type) {
     case "trip_invitation":
+      if (p.action === "added") return [B(p.actor), T(" added you to "), B(p.trip)];
       return [B(p.actor), T(p.action === "claimed" ? " claimed their spot in " : " joined "), B(p.trip)];
     case "itinerary_change":
       return p.action === "moved" ? [B(p.actor), T(" moved "), B(`"${p.title}"`), T(" to "), B(formatDate(String(p.day)))] : [B(p.actor), T(" added "), B(`"${p.title}"`), T(" to "), B(p.trip)];

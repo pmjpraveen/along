@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ActivityIndicator, Platform, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
 import { PassportShine } from "./PassportShine";
+import { motion } from "../theme/motion";
 import { buttonState, color, radius, space, type } from "../theme/tokens";
 
 export type ButtonType = "primary" | "secondary" | "secondaryNeutral" | "destructive" | "tertiary";
@@ -42,7 +43,7 @@ export function Button({ label, onPress, type: kind = "primary", size = "large",
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         style={({ pressed, hovered }) => [...box, shine > 0 && s.clip, !inactive && (pressed || hovered) && { backgroundColor: buttonState[stateKey(kind)][pressed ? "pressed" : "hover"] }]}>
         {busy ? <ActivityIndicator color={kind === "primary" ? color.paper : color.brandBlack} /> : <Text maxFontSizeMultiplier={1.3} style={labelStyle}>{label}</Text>}
-        {shine > 0 && !inactive && <PassportShine sweeps={shine} restMs={500} sweepMs={900} still={false} />}
+        {shine > 0 && !inactive && <PassportShine sweeps={shine} restMs={motion.shine.buttonRestMs} sweepMs={motion.shine.buttonSweepMs} still={false} />}
       </Pressable>
     </View>
   );

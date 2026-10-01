@@ -43,7 +43,7 @@ export default function TripHistory() {
           <ActivityIndicator accessibilityLabel="Loading your trips" color={color.forestInk} />
         ) : !state.ok ? (
           <View style={s.gap}>
-            <Alert variant="negative">{state.message}</Alert>
+            <Alert variant="negative" persist>{state.message}</Alert>
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : past.length === 0 ? (

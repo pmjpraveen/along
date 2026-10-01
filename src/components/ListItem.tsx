@@ -2,7 +2,8 @@ import { ReactNode } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
 import { Check, ChevronRight, Pencil } from "lucide-react-native";
-import { color, radius, space, type } from "../theme/tokens";
+import { color, radius, rowState, space, type } from "../theme/tokens";
+import { haptic } from "../haptics";
 import { Button } from "./Buttons";
 
 // Figma "List item": leading visual (an Avatar), title and subtitle, and one trailing control.
@@ -34,22 +35,22 @@ export function ListItem({ title, subtitle, overline, leading, trailing = "none"
   );
   const shell = [s.row, inactive && s.inactive];
   if (trailing === "switch")
-    return <View style={shell}>{body}<Switch accessibilityLabel={title} value={checked} onValueChange={() => onPress?.()} trackColor={{ true: color.brandBlack, false: color.inputBorder }} thumbColor={color.paper} ios_backgroundColor={color.inputBorder} /></View>;
+    return <View style={shell}>{body}<Switch accessibilityLabel={title} value={checked} onValueChange={() => { haptic.select(); onPress?.(); }} trackColor={{ true: color.brandBlack, false: color.inputBorder }} thumbColor={color.paper} ios_backgroundColor={color.inputBorder} /></View>;
   if (trailing === "button")
     return <View accessible style={shell}>{body}<Button label={buttonLabel ?? "Change"} type="secondary" size="small" onPress={onPress ?? (() => {})} /></View>;
   if (trailing === "none" || !onPress) return <View accessible style={shell}>{body}</View>;
   const role = trailing === "checkbox" ? "checkbox" : trailing === "radio" ? "radio" : "button";
   return (
     <Pressable accessibilityRole={role} accessibilityLabel={subtitle ? `${title}, ${subtitle}` : title} accessibilityState={{ checked, disabled: !!disabled }}
-      dip={false} disabled={disabled} onPress={onPress} style={({ pressed, hovered }) => [shell, hovered && s.hovered, pressed && s.pressed]}>{body}</Pressable>
+      dip={false} disabled={disabled} onPress={() => { if (trailing === "radio" || trailing === "checkbox") haptic.select(); onPress(); }} style={({ pressed, hovered }) => [shell, hovered && s.hovered, pressed && s.pressed]}>{body}</Pressable>
   );
 }
 
 const s = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 48, padding: space.s16, backgroundColor: color.paper },
   inactive: { backgroundColor: color.neutralWash, borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderStyle: "dashed", borderColor: color.borderNeutral },
-  hovered: { backgroundColor: color.softGrey },
-  pressed: { backgroundColor: "#ececec" },
+  hovered: { backgroundColor: rowState.hover },
+  pressed: { backgroundColor: rowState.pressed },
   text: { flex: 1 },
   overline: { ...type.fieldMessage, color: color.charcoal },
   title: { ...type.label, color: color.obsidian },

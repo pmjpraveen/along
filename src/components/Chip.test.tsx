@@ -3,6 +3,9 @@ import { StyleSheet } from "react-native";
 import { color } from "../theme/tokens";
 import { Chip } from "./Chip";
 
+const mockSelect = jest.fn();
+jest.mock("../haptics", () => ({ haptic: { select: () => mockSelect() } }));
+
 const flat = (n: { props: { style?: unknown } }) => StyleSheet.flatten(n.props.style as never) as Record<string, unknown>;
 
 test("a chip is a 32pt pill: selected #444444 with a white label, unselected #f4f4f4 at 85% with a #444444 label", async () => {
@@ -19,4 +22,13 @@ test("pressing a chip calls it once, and a radio chip carries the radio role", a
   await render(<Chip role="radio" label="Equally" selected={false} onPress={onPress} />);
   await fireEvent.press(screen.getByRole("radio", { name: "Equally" }));
   expect(onPress).toHaveBeenCalledTimes(1);
+});
+
+test("choosing a different chip ticks under the finger once; pressing the chosen one does not", async () => {
+  mockSelect.mockClear();
+  await render(<><Chip role="tab" label="Day 1" selected onPress={jest.fn()} /><Chip role="tab" label="Day 2" selected={false} onPress={jest.fn()} /></>);
+  await fireEvent.press(screen.getByRole("tab", { name: "Day 1" }));
+  expect(mockSelect).not.toHaveBeenCalled();
+  await fireEvent.press(screen.getByRole("tab", { name: "Day 2" }));
+  expect(mockSelect).toHaveBeenCalledTimes(1);
 });

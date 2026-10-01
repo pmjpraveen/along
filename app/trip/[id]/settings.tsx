@@ -104,7 +104,7 @@ export default function TripSettings() {
           <ActivityIndicator accessibilityLabel="Loading settings" color={color.forestInk} />
         ) : !x || !form ? (
           <View style={s.gap}>
-            <Alert variant="negative">{(state as { message: string }).message}</Alert>
+            <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : (

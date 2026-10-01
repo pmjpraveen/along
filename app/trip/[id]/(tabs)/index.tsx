@@ -1,6 +1,5 @@
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
 import { Chip } from "../../../../src/components/Chip";
-import { haptic } from "../../../../src/haptics";
 import { TripMenu } from "../../../../src/components/TripMenu";
 import { ChevronLeft, MapPin, MoreHorizontal, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
@@ -115,7 +114,7 @@ export default function Trip() {
           <ActivityIndicator accessibilityLabel="Loading itinerary" color={color.forestInk} />
         ) : !ok ? (
           <View style={s.gap}>
-            <Alert variant="negative">{(state as { message: string }).message}</Alert>
+            <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : (
@@ -203,7 +202,7 @@ export default function Trip() {
           {days.map((d, n) => {
             const on = d === selected;
             return (
-              <Chip key={d} role="tab" label={`Day ${n + 1}`} accessibilityLabel={`Day ${n + 1}, ${formatDate(d)}`} selected={on} onPress={() => { if (!on) haptic.select(); setPicked(d); }} />
+              <Chip key={d} role="tab" label={`Day ${n + 1}`} accessibilityLabel={`Day ${n + 1}, ${formatDate(d)}`} selected={on} onPress={() => setPicked(d)} />
             );
           })}
         </ScrollView>

@@ -81,7 +81,7 @@ export default function Expenses() {
           <ActivityIndicator accessibilityLabel="Loading expenses" color={color.forestInk} />
         ) : !ok ? (
           <View style={s.gap}>
-            <Alert variant="negative">{(state as { message: string }).message}</Alert>
+            <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : (

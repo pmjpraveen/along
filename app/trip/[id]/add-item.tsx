@@ -76,7 +76,7 @@ export default function AddItem() {
             {numbered.map(({ d, n }) => {
               const on = d === date;
               return (
-                <Chip key={d} role="tab" label={`${short(d)} - Day ${n}`} accessibilityLabel={`Day ${n}, ${short(d)}`} selected={on} onPress={() => { if (!on) haptic.select(); setDate(d); }} />
+                <Chip key={d} role="tab" label={`${short(d)} - Day ${n}`} accessibilityLabel={`Day ${n}, ${short(d)}`} selected={on} onPress={() => setDate(d)} />
               );
             })}
           </ScrollView>

@@ -51,7 +51,7 @@ export default function Balances() {
           <ActivityIndicator accessibilityLabel="Loading balances" color={color.brandBlack} />
         ) : !state.ok ? (
           <View style={s.gap}>
-            <Alert variant="negative">{state.message}</Alert>
+            <Alert variant="negative" persist>{state.message}</Alert>
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : (

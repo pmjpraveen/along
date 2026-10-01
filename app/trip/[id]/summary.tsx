@@ -85,7 +85,7 @@ export default function Summary() {
             <ActivityIndicator accessibilityLabel="Loading trip summary" color={color.brandBlack} />
           ) : !sm ? (
             <View style={s.gap}>
-              <Alert variant="negative">{state.ok ? "" : state.message}</Alert>
+              <Alert variant="negative" persist>{state.ok ? "" : state.message}</Alert>
               <TextButton label="Retry" onPress={load} />
             </View>
           ) : (

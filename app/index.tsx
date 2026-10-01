@@ -87,7 +87,7 @@ export default function Home() {
           <ActivityIndicator accessibilityLabel="Loading your trips" color={color.forestInk} />
         ) : !trips.ok ? (
           <View style={s.gap}>
-            <Alert variant="negative">{trips.message}</Alert>
+            <Alert variant="negative" persist>{trips.message}</Alert>
             <TextButton label="Retry" onPress={refresh} />
           </View>
         ) : empty ? (

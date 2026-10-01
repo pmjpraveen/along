@@ -152,7 +152,7 @@ export default function AddExpense() {
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>{expenseId ? "Edit expense" : "Add expense"}</Text>
         {loadError ? (
           <View style={s.field}>
-            <Alert variant="negative">{loadError}</Alert>
+            <Alert variant="negative" persist>{loadError}</Alert>
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : !form ? (
@@ -182,7 +182,7 @@ export default function AddExpense() {
               <FieldLabel>Split</FieldLabel>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipScroll} contentContainerStyle={s.chips} accessibilityRole="radiogroup" accessibilityLabel="Split method">
                 {METHODS.map((m) => (
-                  <Chip key={m.key} role="radio" label={m.label} selected={method === m.key} onPress={() => { if (method !== m.key) haptic.select(); switchMethod(m.key); }} />
+                  <Chip key={m.key} role="radio" label={m.label} selected={method === m.key} onPress={() => switchMethod(m.key)} />
                 ))}
               </ScrollView>
               {pickingSplit ? (

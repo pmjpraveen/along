@@ -10,11 +10,13 @@ export const motion = {
   toastMs: 2200,      // how long a confirmation stays
   pressMs: 120,
   splash: { holdMs: 700, turnMs: 950, zoomMs: 1300 },   // the opening animation: rest, stripes swing upright, zoom all the way into the logo and straight into the app
+  shine: { sweepMs: 1600, restMs: 3200, buttonSweepMs: 900, buttonRestMs: 500 },   // the glint across the passport cover and the Start new trip button
   pressScale: 0.98,   // a touch dips the control to this size at once
 } as const;
 
 // Strong ease-out for anything entering or answering a touch; never ease-in on UI.
 export const EASE_OUT = Easing.bezier(0.23, 1, 0.32, 1);
+export const EASE_SHINE = Easing.inOut(Easing.quad);
 export const EASE_IN_OUT = Easing.bezier(0.77, 0, 0.175, 1);
 // The splash's final zoom speeds up all the way to the cut, so there is no slowing-down pause before the app appears.
 export const EASE_ZOOM_THROUGH = Easing.bezier(0.55, 0, 1, 0.45);

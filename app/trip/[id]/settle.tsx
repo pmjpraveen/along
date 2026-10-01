@@ -53,7 +53,7 @@ export default function Settle() {
         <Text accessibilityLabel="Loading" style={s.body}>Loading…</Text>
       ) : !bal.ok ? (
         <View style={s.gap}>
-          <Alert variant="negative">{bal.message}</Alert>
+          <Alert variant="negative" persist>{bal.message}</Alert>
           <TextButton label="Retry" onPress={load} />
         </View>
       ) : (

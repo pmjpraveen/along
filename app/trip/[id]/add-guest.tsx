@@ -9,6 +9,7 @@ import { Chip } from "../../../src/components/Chip";
 import { toast } from "../../../src/stores/toast";
 import { PrimaryButton } from "../../../src/components/Buttons";
 import { TextField } from "../../../src/components/TextField";
+import { useKeyboardHeight } from "../../../src/hooks/useKeyboardHeight";
 import { color, radius, space, type } from "../../../src/theme/tokens";
 
 // For friends without the app: the owner adds them by name so they can be included in the plan and expenses, and they can claim
@@ -16,6 +17,7 @@ import { color, radius, space, type } from "../../../src/theme/tokens";
 export default function AddGuest() {
   const { id } = useGlobalSearchParams<{ id: string }>();
   const { bottom } = useSafeAreaInsets();
+  const kb = useKeyboardHeight();
   const router = useRouter();
   const [mode, setMode] = useState<"guest" | "member">("guest");
   const [name, setName] = useState("");
@@ -55,7 +57,7 @@ export default function AddGuest() {
             status={error ? "error" : undefined} message={error ?? "The email they signed in to along with. They're added straight to the trip, no invite needed."} />
         )}
       </View>
-      <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
+      <View style={[s.footer, { paddingBottom: (kb || bottom) + space.s12 }]}>
         <PrimaryButton label={busy ? "Adding…" : mode === "guest" ? "Add guest" : "Add to trip"} onPress={add} />
       </View>
     </View>

@@ -44,55 +44,82 @@ The app moved from the green look to a neutral one. Where a section further down
 
 ## Tokens — Colors
 
+Every colour is a token in `src/theme/tokens.ts`; screens never hard-code a hex. Tokens that no screen used have been removed (Bright Green as a button colour, Spruce, Soft Grey, Fog, Control, the secondary fill, and the bright and dark secondary palette except the two badge tints and Dark Gold).
+
+### Text, icons and surfaces
+
 | Name | Value | Token | Role |
 |------|-------|-------|------|
-| Bright Green | `#9FE870` | `color.brightGreen` | **Primary.** Fill for the primary action, active tab and segment, current selection, and key highlights. Always carries Forest Ink content on top. On light surfaces it is a fill only, never text, icon, or thin stroke (about 1.1:1 against white). On Forest Ink it can be text |
-| Forest Ink | `#163300` | `color.forestInk` | Dominant brand dark: headings in nav, dark card backgrounds, label text on Bright Green, icon strokes, outline borders. Wherever you need weight or authority, reach for Forest Ink |
-| Spruce | `#054d28` | `color.spruce` | Secondary dark green for card surfaces and tonal depth on dark sections where Forest Ink is too heavy |
-| Linen Mist | `#e2f6d5` | `color.linenMist` | Pale green wash for tinted card backgrounds, avatar placeholders, tag fills, pressed states on light rows |
-| Signal Blue | `#0b4c72` | `color.signalBlue` | Supporting accent for decorative details and low-frequency emphasis, such as map and link moments |
-| Alarm Red | `#cb272f` | `color.alarmRed` | Errors and destructive actions only (inline validation, delete confirmation). Always with an icon and a message. Never decorative and never a money-sign color |
-| Charcoal | `#454745` | `color.charcoal` | Primary body text and dense UI. A slightly warm black that feels softer than #000 on white |
-| Obsidian | `#0e0f0c` | `color.obsidian` | Display headlines and high-contrast headings. A green-tinted black, not neutral gray |
-| Slate | `#6a6c6a` | `color.slate` | Secondary text, helper labels, subdued icons. The lightest gray that still passes AA for text |
-| Pebble | `#868685` | `color.pebble` | Placeholders, disabled content, input borders, hairline icon strokes. Not for body or secondary text |
-| Fog | `#e8ebe6` | `color.fog` | Card surfaces, dividers, panel backgrounds, segmented-control track. A green-tinted off-white |
-| Paper | `#ffffff` | `color.paper` | Screen canvas, inverted card surfaces |
-| Positive | `#2f5711` | `color.positive` | Success icon and positive notices (Figma sentiment/positive). Always with an icon or words |
-| Warning | `#ffd11a` | `color.warning` | Warning icon and cautionary notices (Figma sentiment/warning). Obsidian glyph on top, never as text |
-| Neutral Wash | `rgba(22,51,0,0.08)` | `color.neutralWash` | Neutral background for alerts, cards and tracks: Forest Ink at 8% (Figma background/neutral) |
-| Border Neutral | `rgba(14,15,12,0.12)` | `color.borderNeutral` | Hairline borders on cards, inputs and chips: Obsidian at 12% (Figma border/neutral) |
-| Control | `#173301` | `color.control` | Interactive control fill on dark (Figma interactive/control) |
-| Bright Orange / Yellow / Blue / Pink | `#ffc091` `#ffeb69` `#a0e1e1` `#ffd7ef` | `color.brightOrange` `brightYellow` `brightBlue` `brightPink` | Secondary palette for tinted moments (tags, avatar placeholders). Never text on light |
-| Dark Purple / Gold / Charcoal / Maroon | `#260a2f` `#3a341c` `#21231d` `#320707` | `color.darkPurple` `darkGold` `darkCharcoal` `darkMaroon` | Secondary dark surfaces for rare emphasis |
+| Brand Black | `#222222` | `color.brandBlack`, `color.obsidian` | Primary text, headings, primary buttons, the wordmark, focus borders, chosen checkboxes and radios, switch track when on |
+| Charcoal | `#6a6a6a` | `color.charcoal`, `color.slate` | Secondary text and anything quieter. One grey, not two |
+| Icon Ink | `#444444` | `color.iconInk`, `color.dateFill` | Icons on grey tiles and initials in avatars, the selected chip and the selected calendar day |
+| Pebble | `#868685` | `color.pebble` | Placeholders and disabled labels. Not for body text |
+| Paper | `#ffffff` | `color.paper` | Screen canvas, inputs, sheets, dialogs |
+| Soft Grey | `#f4f4f4` | `color.softGrey` | Icon tiles, close buttons, avatars, plan cards, the unselected chip (at 85%), summary cards |
+| Button Grey | `#f2f2f2` | `color.buttonGrey` | Secondary and disabled button fill |
+| Input Border | `#d0d0d0` | `color.inputBorder` | 1px border of input fields and the switch track when off |
+| Border Neutral | `rgba(14,15,12,0.12)` | `color.borderNeutral` | Hairlines: lists, dividers, round outline buttons |
+| Neutral Wash | `rgba(22,51,0,0.08)` | `color.neutralWash` | Neutral alert and card backgrounds, tracks (flattened: `color.neutralSolid` `#ecefeb` where surfaces overlap) |
+| Cream | `#f8f4ed` | `color.cream` | Background of error messages (the negative alert) |
+| Scrim | `rgba(0,0,0,0.25)` | `color.scrim` | The neutral dim behind every sheet and dialog |
+| Toast | `rgba(0,0,0,0.85)` | `color.toast` | Toast background, with white text |
+| Forest Ink | `#163300` | `color.forestInk` | Legacy brand dark, now only in a few details; new work uses Brand Black |
+| Signal Blue | `#0b4c72` | `color.signalBlue` | Supporting accent for links and map moments |
+
+### Status
+
+| Name | Value | Token | Role |
+|------|-------|-------|------|
+| Alarm Red | `#cb272f` | `color.alarmRed` | Errors and destructive actions only, always with an icon and words. Never decorative, never a money-sign colour |
+| Positive | `#2f5711` | `color.positive` | Success icon and notices |
+| Warning | `#ffd11a` | `color.warning` | Warning icon; the glyph on it is dark |
+| Dark Gold | `#3a341c` | `color.darkGold` | Label text on the warning badge |
+
+Badge tints (`tint.*`): error is red at 12%, success is Bright Green at 30%, warning is Bright Yellow `#ffeb69` at 40%, neutral is Bright Blue `#a0e1e1` at 22%.
+
+### Interaction fills
+
+| Token | Hover | Pressed |
+|-------|-------|---------|
+| `buttonState.primary` | `#383838` | `#000000` |
+| `buttonState.secondary` (and secondary-neutral) | `#e9e9e9` | `#dcdcdc` |
+| `buttonState.destructive` | `#fdf2f2` | `#fbe2e2` |
+| `buttonState.tertiary` | `#f4f4f4` | `#e8e8e8` |
+| `rowState` (list rows) | `#f4f4f4` | `#ececec` |
+
+Hover only shows with a pointer (iPad, Android with a mouse, web); a finger only ever presses. A pressed button also dips a little, a pressed row only fills.
+
+### Trip card colours
+
+Six, stored on every trip as an index 0 to 5 (`CARD_COLORS` in `src/domain/trip.ts`): `#ffc091`, `#e5ebff`, `#ebe0d9`, `#d9e0ab`, `#def6ff`, `#fff27b`. A date pill uses the card colour darkened by about 10% (`mix(card, "#000000", 0.105)`), and gradients are drawn as thin strips with `mix(a, b, t)`.
 
 ### Figma colour variables (source of truth)
-Imported from the Wise UI Kit "colours" page. `src/theme/tokens.ts` exports them as `core`, `secondary` and `product`, and `src/theme/tokens.test.ts` fails if any value drifts from Figma.
+Imported from the Wise UI Kit "colours" page. `src/theme/tokens.ts` exports what the app uses as `core`, `secondary` and `product`, and `src/theme/tokens.test.ts` fails if any value drifts.
 
 | Group | Figma variable | Value |
 |-------|----------------|-------|
-| Core | `core/bright green` | `#9fe870` |
-| Core | `core/forest green` | `#163300` |
-| Secondary | `secondary/bright orange` `bright yellow` `bright blue` `bright pink` | `#ffc091` `#ffeb69` `#a0e1e1` `#ffd7ef` |
-| Secondary | `secondary/dark purple` `dark gold` `dark charcoal` `dark maroon` | `#260a2f` `#3a341c` `#21231d` `#320707` |
-| Product content | `primary` `secondary` `tertiary` `link` | `#0e0f0c` `#454745` `#6a6c6a` `#163300` |
-| Product interactive | `primary` `accent` `secondary` `control` `contrast` | `#163300` `#9fe870` `#868685` `#173301` `#9fe870` |
-| Product background | `screen` `elevated` `neutral` `overlay` | `#ffffff` `#ffffff` `#16330014` `#16330014` |
-| Product border | `neutral` `overlay` | `#0e0f0c1f` `#0e0f0c1f` |
+| Core | `core/bright green` `core/forest green` | `#9fe870` `#163300` |
+| Secondary | `secondary/bright yellow` `bright blue` `dark gold` | `#ffeb69` `#a0e1e1` `#3a341c` |
+| Product content | `primary` `secondary` `tertiary` | `#222222` `#6a6a6a` `#6a6a6a` |
+| Product interactive | `secondary` | `#868685` |
+| Product background | `screen` `neutral` | `#ffffff` `#16330014` |
+| Product border | `neutral` | `#0e0f0c1f` |
 | Product sentiment | `negative` `positive` `warning` | `#cb272f` `#2f5711` `#ffd11a` |
 
 ### Contrast (approximate)
 
 | Pair | Ratio | Use |
 |------|-------|-----|
-| Forest Ink on Bright Green | 9.5:1 | Primary button label, active tab text |
-| Charcoal on Bright Green | 6.4:1 | Acceptable alternative label |
-| Bright Green on Forest Ink | 9.5:1 | Headlines and numbers on dark cards |
-| Charcoal on Paper | 9.4:1 | Body text |
-| Slate on Paper | 5.4:1 | Secondary text (passes AA) |
+| Brand Black on Paper | 15.9:1 | Body text and headings |
+| White on Brand Black | 15.9:1 | Primary button label, toast |
+| Charcoal on Paper | 5.4:1 | Secondary text (passes AA) |
+| Charcoal on Soft Grey | 4.9:1 | Secondary text on cards (passes AA) |
+| Icon Ink on Soft Grey | 8.9:1 | Icons and initials on tiles |
+| White on Icon Ink | 9.7:1 | Selected chip and calendar day |
 | Alarm Red on Paper | 5.4:1 | Error text |
-| Pebble on Paper | 3.6:1 | Placeholders, borders, disabled only |
-| Bright Green on Paper | 1.5:1 | Never as text, icon, or stroke |
+| Alarm Red on Cream | 4.9:1 | Error message on its background |
+| Pebble on Paper | 3.6:1 | Placeholders and disabled only |
+| Input Border on Paper | 1.5:1 | A hairline, never carrying meaning on its own |
 
 ## Tokens — Typography
 
@@ -262,7 +289,7 @@ Paper background, hairline top border, 64 tall plus the bottom inset. Two items,
 ### Segmented Tab Control
 **Role:** Section switcher inside a trip (Overview, Itinerary, Expenses, People). Single active state in Bright Green.
 
-Pill track in Fog, four equal segments, about 40 tall. Active segment: Bright Green fill, Forest Ink Medium label, 1px Forest Ink border. Inactive: transparent with Charcoal label.
+Pill track in Soft Grey, four equal segments, about 40 tall. Active segment: Bright Green fill, Forest Ink Medium label, 1px Forest Ink border. Inactive: transparent with Charcoal label.
 
 ### Display Headline
 **Role:** The brand's voice, used on the welcome screen, trip header, and celebration moments.
@@ -277,7 +304,7 @@ Pill track in Fog, four equal segments, about 40 tall. Active segment: Bright Gr
 ### Participant Avatar Item
 **Role:** One person in a grid or row, used in the participant picker and the People screen.
 
-56 circular avatar (photo, or initials in Medium 18 Forest Ink on Linen Mist), name below in `labelSm`, one line, truncated. Guests use a dashed 1.5px Slate ring and a Guest tag, and are never second-class in size or spacing. Selected: 2px Forest Ink ring plus a 20 Bright Green check badge with a 1px Forest Ink border. Grid of four columns with 16 gaps.
+56 circular avatar (photo, or initials in Medium 18 Forest Ink on Soft Grey), name below in `labelSm`, one line, truncated. Guests use a dashed 1.5px Slate ring and a Guest tag, and are never second-class in size or spacing. Selected: 2px Forest Ink ring plus a 20 Bright Green check badge with a 1px Forest Ink border. Grid of four columns with 16 gaps.
 
 ### Trip Summary Card (dark)
 **Role:** Inverted surface for emphasis: balances hero, trip overview, completion.
@@ -287,12 +314,12 @@ Forest Ink background, 28 radius, 24 padding. Headline in Bright Green, body in 
 ### List Row (expense, itinerary item)
 **Role:** The repeating unit of the Expenses and Itinerary screens.
 
-16 vertical and 20 horizontal padding, Fog hairline separators. Expense: 40 circular category icon on Linen Mist, title in `label`, subtitle in `caption` Slate ("Paid by Rahul, 4 people"), amount right-aligned in `amount` with tabular numerals. Itinerary item: time in `labelSm` Slate, title in `label`, location line in `caption`, optional 56 map preview in a 12-radius mask.
+16 vertical and 20 horizontal padding, hairline separators. Expense: 40 circular category icon on Soft Grey, title in `label`, subtitle in `caption` Slate ("Paid by Rahul, 4 people"), amount right-aligned in `amount` with tabular numerals. Itinerary item: time in `labelSm` Slate, title in `label`, location line in `caption`, optional 56 map preview in a 12-radius mask.
 
 ### Currency Selector Pill
 **Role:** Currency picker with a "Change" action, on a form or inside a dark card.
 
-Paper pill, 8 vertical padding. Left: 24 circular chip on Linen Mist with the currency symbol, then the code in Medium 16 Charcoal. Right: small outlined "Change" pill with `hitSlop`.
+Paper pill, 8 vertical padding. Left: 24 circular chip on Soft Grey with the currency symbol, then the code in Medium 16 Charcoal. Right: small outlined "Change" pill with `hitSlop`.
 
 ### Amount Input
 **Role:** Fast expense entry: the amount is the hero of the screen.
@@ -312,7 +339,7 @@ Floating Bright Green pill, 56 tall, plus icon and `label` text in Forest Ink, 1
 ### Badge / Tag
 **Role:** Small status and category labels.
 
-9999 radius, 6 vertical and 12 horizontal padding, `micro` type. Linen Mist fill with Forest Ink text, or Forest Ink fill with Bright Green text. Guest tag: Paper fill, 1px dashed Slate border, Slate text. Badges carry no icon: the word carries the meaning (`src/components/Badge.tsx`: tinted pill, 12 horizontal padding, Medium 14).
+9999 radius, 6 vertical and 12 horizontal padding, `micro` type. Soft Grey fill with Forest Ink text, or Forest Ink fill with Bright Green text. Guest tag: Paper fill, 1px dashed Slate border, Slate text. Badges carry no icon: the word carries the meaning (`src/components/Badge.tsx`: tinted pill, 12 horizontal padding, Medium 14).
 
 ### Bottom Sheet
 **Role:** Participant picker, split configuration, and other focused tasks.
@@ -323,14 +350,17 @@ Paper, 28 top radius, 24 padding, a 36 by 4 Pebble grabber, and a Forest Ink scr
 
 | State | Treatment |
 |-------|-----------|
-| Pressed | Opacity 0.8 on buttons and rows; rows may also fill Linen Mist. No hover on mobile |
-| Disabled | Fog fill, Pebble label, no border; still meets the touch target |
-| Focused (input) | Border Pebble to Forest Ink, same 1.5px width |
-| Selected | 2px Forest Ink ring plus a Bright Green check; never color alone |
-| Loading (button) | Label replaced by a small Forest Ink spinner, width unchanged |
-| Error | Alarm Red border or text, with an icon and a specific message |
+| Pressed | Buttons darken a step (`buttonState`) and dip to 0.98 in 120 ms; rows fill (`rowState.pressed`) and do not shrink. With Reduce Motion on there is no dip |
+| Hover | Only with a pointer (iPad, Android mouse, web): the same fills, one step lighter (`buttonState`, `rowState.hover`) |
+| Disabled | Button Grey fill, Pebble label, no border; still meets the touch target; no pressed or hover fill |
+| Focused (input) | 3px Brand Black border, no layout shift |
+| Selected | Chip `#444444` with a white label; radio and checkbox black fill with a white dot or tick; never colour alone |
+| Loading (button) | Label replaced by a small spinner, width unchanged |
+| Error | Alarm Red text and icon on a Cream background (the message clears itself after 5 seconds), or a 3px red input border with the message under it |
 
-Motion follows the animation rules in CLAUDE.md.
+**Haptics** tick once under the finger for a different chip, a radio, a checkbox or a switch; success and warning tick on save, delete and failure. Never on scroll, never the only feedback.
+
+**Motion**: all durations, springs and easings live in `src/theme/motion.ts`. A sheet opens and closes with a settle (no bounce); only a flick earns the bouncier spring. Toasts fade in 150 ms, hold 2.2 s and fade out. The glint on the Start new trip button plays twice, the passport cover's three times, and only while the screen is in front. Animate only transform and opacity, never tween money, and honour Reduce Motion everywhere (crossfade or instant change instead of movement). The rest follows the animation rules in CLAUDE.md.
 
 ## Do's and Don'ts
 
@@ -361,11 +391,11 @@ Motion follows the animation rules in CLAUDE.md.
 
 | Level | Name | Value | Purpose |
 |-------|------|-------|---------|
-| 0 | Paper | `#ffffff` | Screen canvas, the default background |
-| 1 | Fog | `#e8ebe6` | Cards, panels, segmented-control track, separators |
-| 2 | Linen Mist | `#e2f6d5` | Tinted highlights: avatar placeholders, tag fills, pressed rows |
-| 3 | Bright Green | `#9FE870` | Active surface: primary button, active tab, selection |
-| 4 | Forest Ink | `#163300` | Inverted surface: dark cards, high-contrast blocks |
+| 0 | Paper | `#ffffff` | Screen canvas, inputs, sheets, the default background |
+| 1 | Soft Grey | `#f4f4f4` | Cards, tiles, plan cards, summary cards |
+| 2 | Button Grey | `#f2f2f2` | Secondary button fill |
+| 3 | Brand Black | `#222222` | Primary button, name tags, toast (at 85%) |
+| 4 | Trip colour | one of the six card colours | The band behind a trip's header, its card on Home and History |
 
 ## Elevation
 
@@ -382,30 +412,28 @@ The group's own photography is the hero: cover photos and memories fill headers 
 
 ## Layout
 
-One centered column on a 20 screen padding with 32 between sections. Welcome pattern: a large Medium headline top-left, a photo or illustration breaking the lower edge, a full-width primary pill pinned above the bottom inset with a text link beneath it. Section rhythm alternates Paper, a Fog or Linen Mist band, and a Forest Ink card. Navigation is the two-tab bottom bar globally and the segmented control inside a trip. The Quick Add pill floats bottom-right on trip screens. Lists are full-bleed rows with hairline separators; forms are single-column with one field per row.
+One centered column on a 20 screen padding with 32 between sections. Welcome pattern: a large Medium headline top-left, a photo or illustration breaking the lower edge, a full-width primary pill pinned above the bottom inset with a text link beneath it. Section rhythm alternates Paper, a Fog or Soft Grey band, and a Forest Ink card. Navigation is the two-tab bottom bar globally and the segmented control inside a trip. The Quick Add pill floats bottom-right on trip screens. Lists are full-bleed rows with hairline separators; forms are single-column with one field per row.
 
 ## Agent Prompt Guide
 
 Quick Color Reference
-- text: `color.charcoal` for body, `color.obsidian` for display, `color.slate` for secondary
-- background: `color.paper` canvas, `color.fog` cards and tracks
-- border: `color.pebble` for hairlines and inputs, `color.forestInk` for emphasis and outlines
-- primary action: `color.brightGreen` fill with `color.forestInk` label (1px Forest Ink border on light surfaces)
-- dark surface: `color.forestInk`, with `color.brightGreen` headlines
+- text: `color.brandBlack` for primary text and headings, `color.charcoal` for secondary
+- background: `color.paper` canvas, `color.softGrey` cards and tiles
+- border: `color.inputBorder` for inputs, `color.borderNeutral` for hairlines, `color.brandBlack` for focus
+- primary action: `color.brandBlack` fill with a white label
+- error: `color.cream` background, `color.alarmRed` icon, `color.brandBlack` text
 
 Example Component Prompts
 
-1. Primary button: a `Pressable`, height 52, `borderRadius` 9999, `paddingHorizontal` 24, `backgroundColor` `color.brightGreen`, label in `type.label` and `color.forestInk`. On Paper or Fog add `borderWidth` 1 and `borderColor` `color.forestInk`. Pressed opacity 0.8. Full-width variant is 56 tall and pinned above the bottom safe-area inset.
+1. Primary button: the shared `Button`, 56 tall, 16 radius with continuous corners, `color.brandBlack` fill and a white `type.buttonLarge` label. Pressed and hover fills come from `buttonState.primary`.
 
-2. Segmented control: Fog pill track, four equal segments about 40 tall, `borderRadius` 9999. Active segment `color.brightGreen` fill, `color.forestInk` `type.label` text, 1px Forest Ink border; inactive transparent with `color.charcoal` text.
+2. Chip: the shared `Chip`, 32 tall pill; selected `color.iconInk` with a white label, unselected `color.softGrey` at 85% with an `iconInk` label.
 
-3. Participant avatar item: 56 circular avatar (photo, or initials in Medium 18 on `color.linenMist`), name below in `type.labelSm`, one line. Guest: dashed 1.5px `color.slate` ring plus a Guest tag. Selected: 2px `color.forestInk` ring and a 20 Bright Green check badge with a 1px Forest Ink border. Four-column grid, 16 gaps.
+3. Participant avatar item: a circular avatar (photo, or initials in `color.iconInk` on `color.softGrey`), name below in `type.fieldMessage`, one line. Guest: dashed 1.5px `color.slate` ring plus a Guest tag.
 
-4. Trip summary card: `color.forestInk` background, `borderRadius` 28, padding 24. Headline in `type.title` and `color.brightGreen`, body in `type.body` and `color.paper`. Inset Paper card with `borderRadius` 16 and padding 16 holds the amount in `type.amount`. An outlined pill sits below.
+4. Trip header: the trip's card colour as a band, the cover photo with a white ring, a date pill, the name on a tilted `color.brandBlack` tag, the place, then the avatars. The back button stays pinned on the band.
 
-5. Amount input: centered `type.amountXl` numerals in `color.forestInk`, currency symbol in `color.slate` Medium 24, numeric keypad, `fontVariant: ['tabular-nums']`, formatted by the currency's minor-unit exponent.
-
-6. List row (expense): 40 circular icon on `color.linenMist`, title `type.label`, subtitle `type.caption` in `color.slate`, amount right-aligned in `type.amount`. Padding 16 by 20, `color.fog` hairline separator.
+5. List row: 40 circular icon tile (`color.softGrey`, `color.iconInk` glyph), title `type.label`, subtitle `type.fieldMessage` in `color.charcoal`, a chevron. Pressed fills with `rowState.pressed`; the row does not shrink.
 
 ## Similar Brands
 
@@ -422,23 +450,14 @@ Keep every value in one module, `src/theme/tokens.ts`, and import from it. No ha
 
 ```ts
 export const color = {
-  brightGreen: '#9FE870',
-  forestInk: '#163300',
-  spruce: '#054d28',
-  linenMist: '#e2f6d5',
-  signalBlue: '#0b4c72',
-  alarmRed: '#cb272f',
-  charcoal: '#454745',
-  obsidian: '#0e0f0c',
-  slate: '#6a6c6a',
-  pebble: '#868685',
-  fog: '#e8ebe6',
-  paper: '#ffffff',
-  positive: '#2f5711',
-  warning: '#ffd11a',
-  neutralWash: 'rgba(22, 51, 0, 0.08)',
-  borderNeutral: 'rgba(14, 15, 12, 0.12)',
-  scrim: 'rgba(22, 51, 0, 0.4)',
+  brandBlack: '#222222', obsidian: '#222222',
+  charcoal: '#6a6a6a', slate: '#6a6a6a',
+  iconInk: '#444444', dateFill: '#444444',
+  pebble: '#868685', paper: '#ffffff',
+  softGrey: '#f4f4f4', buttonGrey: '#f2f2f2', inputBorder: '#d0d0d0',
+  cream: '#f8f4ed', alarmRed: '#cb272f', positive: '#2f5711', warning: '#ffd11a',
+  neutralWash: 'rgba(22, 51, 0, 0.08)', borderNeutral: 'rgba(14, 15, 12, 0.12)',
+  scrim: 'rgba(0, 0, 0, 0.25)', toast: 'rgba(0, 0, 0, 0.85)',
 } as const;
 
 // One family name per weight; never combine with fontWeight.

@@ -2,7 +2,7 @@ import { Alert } from "../src/components/Alert";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadMyProfile } from "../src/api/profile";
@@ -13,11 +13,13 @@ import { PlaceSearchField } from "../src/components/PlaceSearchField";
 import { FieldLabel, FieldMessage, TextField } from "../src/components/TextField";
 import { DateRangeField } from "../src/components/DateRangeField";
 import { toIso, TripDraft, TripErrors, validateTrip } from "../src/domain/trip";
+import { useKeyboardHeight } from "../src/hooks/useKeyboardHeight";
 import { color, radius, space, type } from "../src/theme/tokens";
 
 // New trips start in my preferred currency (Profile > Settings), or INR when none is set; it can be changed in Trip settings until money is added.
 export default function CreateTrip() {
   const { bottom } = useSafeAreaInsets();
+  const kb = useKeyboardHeight();
   const router = useRouter();
   const key = useRef(`${Date.now()}-${Math.random().toString(36).slice(2)}`).current;
   const [draft, setDraft] = useState<TripDraft>({ name: "", destination: "", start: "", end: "" });
@@ -81,7 +83,7 @@ export default function CreateTrip() {
         </View>
         {formError && <Alert variant="negative">{formError}</Alert>}
       </ScrollView>
-      <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
+      <View style={[s.footer, { paddingBottom: (kb || bottom) + space.s12 }]}>
         <Button label={busy ? "Creating…" : "Create trip"} onPress={submit} />
       </View>
     </View>

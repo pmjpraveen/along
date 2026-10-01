@@ -6,17 +6,14 @@ test("core colours match Figma", () => {
 });
 
 test("secondary colours match Figma", () => {
-  expect(secondary).toEqual({
-    brightOrange: "#ffc091", brightYellow: "#ffeb69", brightBlue: "#a0e1e1", brightPink: "#ffd7ef",
-    darkPurple: "#260a2f", darkGold: "#3a341c", darkCharcoal: "#21231d", darkMaroon: "#320707",
-  });
+  expect(secondary).toEqual({ brightYellow: "#ffeb69", brightBlue: "#a0e1e1", darkGold: "#3a341c" });
 });
 
 test("product colours match Figma, including the two 8% and 12% tints", () => {
-  expect(product.content).toEqual({ primary: "#222222", secondary: "#6a6a6a", tertiary: "#6a6a6a", link: "#163300" });
-  expect(product.interactive).toEqual({ primary: "#163300", accent: "#9fe870", secondary: "#868685", control: "#173301", contrast: "#9fe870" });
-  expect(product.background).toEqual({ screen: "#ffffff", elevated: "#ffffff", neutral: "rgba(22,51,0,0.08)", overlay: "rgba(22,51,0,0.08)" });
-  expect(product.border).toEqual({ neutral: "rgba(14,15,12,0.12)", overlay: "rgba(14,15,12,0.12)" });
+  expect(product.content).toEqual({ primary: "#222222", secondary: "#6a6a6a", tertiary: "#6a6a6a" });
+  expect(product.interactive).toEqual({ secondary: "#868685" });
+  expect(product.background).toEqual({ screen: "#ffffff", neutral: "rgba(22,51,0,0.08)" });
+  expect(product.border).toEqual({ neutral: "rgba(14,15,12,0.12)" });
   expect(product.sentiment).toEqual({ negative: "#cb272f", positive: "#2f5711", warning: "#ffd11a" });
 });
 
@@ -30,7 +27,6 @@ test("the 8-digit hex the Figma file reports converts to the rgba the app uses",
 });
 
 test("the flat colours screens use each point at their Figma source", () => {
-  expect(color.brightGreen).toBe(core.brightGreen);
   expect(color.forestInk).toBe(core.forestGreen);
   expect(color.obsidian).toBe(product.content.primary);
   expect(color.charcoal).toBe(product.content.secondary);
@@ -38,8 +34,6 @@ test("the flat colours screens use each point at their Figma source", () => {
   expect(color.pebble).toBe(product.interactive.secondary);
   expect(color.alarmRed).toBe(product.sentiment.negative);
   expect(color.neutralWash).toBe(product.background.neutral);
-  expect(color.brightOrange).toBe(secondary.brightOrange);
-  expect(color.darkMaroon).toBe(secondary.darkMaroon);
 });
 
 test("the accent is never used as a body-text colour: it only has the contrast for fills next to Forest Ink", () => {
@@ -48,6 +42,6 @@ test("the accent is never used as a body-text colour: it only has the contrast f
     return 0.2126 * r + 0.7152 * g + 0.0722 * b;
   };
   const ratio = (a: string, b: string) => (Math.max(lum(a), lum(b)) + 0.05) / (Math.min(lum(a), lum(b)) + 0.05);
-  expect(ratio(color.forestInk, color.brightGreen)).toBeGreaterThan(7);
-  expect(ratio(color.brightGreen, color.paper)).toBeLessThan(3);
+  expect(ratio(color.forestInk, core.brightGreen)).toBeGreaterThan(7);
+  expect(ratio(core.brightGreen, color.paper)).toBeLessThan(3);
 });

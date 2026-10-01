@@ -91,7 +91,7 @@ export default function Memories() {
           <ActivityIndicator accessibilityLabel="Loading memories" color={color.brandBlack} />
         ) : !state.ok ? (
           <View style={s.gap}>
-            <Alert variant="negative">{state.message}</Alert>
+            <Alert variant="negative" persist>{state.message}</Alert>
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : state.memories.length === 0 ? (

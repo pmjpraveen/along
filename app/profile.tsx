@@ -146,7 +146,7 @@ export default function Profile() {
             <ActivityIndicator accessibilityLabel="Loading your passport" color={color.forestInk} />
           ) : !state.ok ? (
             <View style={s.gap}>
-              <Alert variant="negative">{state.message}</Alert>
+              <Alert variant="negative" persist>{state.message}</Alert>
               <TextButton label="Retry" onPress={load} />
             </View>
           ) : (

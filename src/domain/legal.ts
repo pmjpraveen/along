@@ -2,7 +2,7 @@
 // writes site/privacy and site/terms from it). This is a working draft to be reviewed by a lawyer before launch.
 export type LegalDoc = { title: string; updated: string; intro: string; sections: { heading: string; body: string[] }[] };
 
-const UPDATED = "2026-10-01";
+const UPDATED = "2026-10-02";
 
 export const PRIVACY: LegalDoc = {
   title: "Privacy policy", updated: UPDATED,
@@ -14,7 +14,7 @@ export const PRIVACY: LegalDoc = {
       "Trips you create or join: the name, place, dates, comment, currency and cover photo of a trip, who is on it and in what role, and the invite links made for it.",
       "What you add to a trip: itinerary plans (title, day, time, place, notes), expenses (what, how much, who paid, who shares it), recorded payments between people, and memories (photos and notes).",
       "Guests: when a trip owner adds a friend who is not on along, the name the owner typed. If that friend later joins from an invite link, the guest spot becomes theirs.",
-      "Notifications: a record of the updates sent to you, and, if you turn on push notifications, a token that identifies your phone to Apple or Google so they can deliver them.",
+      "Notifications: a record of the updates sent to you (for example, that someone added you to a trip), and, if you turn on push notifications, a token that identifies your phone to Apple or Google so they can deliver them.",
     ] },
     { heading: "What we do not keep", body: [
       "We do not collect your phone contacts, your precise location, or your payment card or bank details. along records who paid and who owes; it never handles real money.",
@@ -26,6 +26,7 @@ export const PRIVACY: LegalDoc = {
     { heading: "Who can see it", body: [
       "Only the people on a trip can see that trip: its plans, expenses, payments, memories and who is on it. Other people who have not joined cannot, even with the trip's name. Anyone who opens an invite link can see the trip's name, place, dates and how many people are going before they join, so only share links with people you want on the trip.",
       "Other people on your trips can see your name, your profile picture and what you add. Nobody else sees your email, country or preferences.",
+      "A trip owner who already knows your email can add you straight to a trip. We never show anyone your email or tell them anything about your account: the owner only learns whether that email belongs to someone on along. You are told when someone adds you, and you can leave a trip at any time.",
     ] },
     { heading: "Services that help us run along", body: [
       "Supabase hosts our database, sign-in, file storage and server functions. Your data is stored there.",
@@ -76,7 +77,7 @@ export const TERMS: LegalDoc = {
     { heading: "Trips, owners and guests", body: [
       "The person who creates a trip is its owner. An owner can change the trip's details, invite people, add guests, end the trip and delete it. Members can add plans and expenses and see everything on the trip.",
       "A guest is a friend an owner adds by name before they join. The owner is responsible for adding guests who are happy to be included. A guest can later claim their spot from an invite link.",
-      "Invite links let anyone who has them join the trip until they expire or are turned off. Share them only with people you want on the trip.",
+      "Invite links let anyone who has them join the trip until they expire or are turned off. Share them only with people you want on the trip. An owner can also add someone who already uses along by typing the email they signed in with; only add people who expect it.",
     ] },
     { heading: "Your content", body: [
       "What you add, such as plans, expenses, notes and photos, stays yours. By adding it you let along store it and show it to the people on that trip so the app can work. You promise you have the right to add it, and that it is not unlawful or harmful.",
