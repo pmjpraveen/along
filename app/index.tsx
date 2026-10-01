@@ -63,7 +63,7 @@ export default function Home() {
             <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.name}>{firstName || "traveller"}</Text>
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"} onPress={() => router.push("/notifications")} style={s.round}>
-            <Bell size={20} color={color.forestInk} strokeWidth={1.75} />
+            <Bell size={20} color={color.brandBlack} strokeWidth={1.75} />
             {unread > 0 && <View style={s.dot} />}
           </Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel="Profile and travel passport" onPress={() => router.push("/profile")} hitSlop={space.s4}>
@@ -74,7 +74,7 @@ export default function Home() {
         {!empty && (        <View style={s.sectionRow}>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Planning</Text>
           <Pressable accessibilityRole="button" accessibilityLabel="Trip history" onPress={() => router.push("/history")} style={s.roundSmall} hitSlop={space.s8}>
-            <History size={18} color={color.forestInk} strokeWidth={1.75} />
+            <History size={18} color={color.brandBlack} strokeWidth={1.75} />
           </Pressable>
         </View>
         )}
@@ -91,7 +91,7 @@ export default function Home() {
             <Image accessible accessibilityRole="image" accessibilityLabel="A traveller sitting on a bag, reading a map" accessibilityIgnoresInvertColors source={NO_TRIPS} style={s.emptyImage} resizeMode="contain" />
             <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.emptyTitle}>No trips planned</Text>
             <Text maxFontSizeMultiplier={1.4} style={s.emptyBody}>Plan new trip now with your friends</Text>
-            <View style={s.emptyAction}><Button label="Start new trip" type="dark" shine={shine} onPress={() => router.push("/create-trip")} /></View>
+            <View style={s.emptyAction}><Button label="Start new trip" shine={shine} onPress={() => router.push("/create-trip")} /></View>
           </View>
         ) : (
           <View style={s.grid}>
@@ -119,7 +119,7 @@ export default function Home() {
       {/* The bar floats over the list; a blur that thins out toward the top lets it melt into the page. */}
       <View pointerEvents="box-none" style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
         <ProgressiveBlur edge="bottom" />
-        <Button label="Start new trip" type="dark" shine={shine} onPress={() => router.push("/create-trip")} />
+        <Button label="Start new trip" shine={shine} onPress={() => router.push("/create-trip")} />
       </View>
       </>
       )}

@@ -4,7 +4,6 @@ import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { loadTripSummary, SummaryResult } from "../../../src/api/passport";
 import { Alert } from "../../../src/components/Alert";
 import { Badge } from "../../../src/components/Badge";
@@ -27,24 +26,14 @@ export default function Summary() {
 
   const go = (screen: "memories" | "balances" | "expenses") =>
     router.push({ pathname: `/trip/[id]/${screen}` as "/trip/[id]/memories", params: { id } });
-  const icon = (I: typeof Receipt) => <View style={s.icon}><I size={20} color={color.forestInk} strokeWidth={1.75} /></View>;
+  const icon = (I: typeof Receipt) => <View style={s.icon}><I size={20} color={color.iconInk} strokeWidth={1.75} /></View>;
   const done = state?.ok && (state.summary.status === "completed" || state.summary.status === "archived");
 
   return (
     <View style={s.screen}>
-      {/* A soft green glow behind the header, for a trip that has been completed. */}
-      <Svg style={s.glow} width="100%" height={260} pointerEvents="none">
-        <Defs>
-          <RadialGradient id="done" cx="50%" cy="0%" rx="90%" ry="85%" fx="50%" fy="0%">
-            <Stop offset="0" stopColor={color.brightGreen} stopOpacity={0.4} />
-            <Stop offset="1" stopColor={color.brightGreen} stopOpacity={0} />
-          </RadialGradient>
-        </Defs>
-        <Rect width="100%" height="100%" fill="url(#done)" />
-      </Svg>
       <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.forestInk} strokeWidth={1.75} />
+          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
         {state === null ? (
           <ActivityIndicator accessibilityLabel="Loading trip summary" color={color.forestInk} />
@@ -78,7 +67,6 @@ export default function Summary() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   scroll: { flex: 1 },
-  glow: { position: "absolute", top: 0, left: 0, right: 0 },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
   head: { gap: space.s8, alignItems: "flex-start" },
@@ -87,5 +75,5 @@ const s = StyleSheet.create({
   body: { ...type.fieldValue, color: color.charcoal },
   list: { borderRadius: radius.sheet, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, overflow: "hidden" },
   hair: { height: 1, backgroundColor: color.borderNeutral, marginHorizontal: space.s16 },
-  icon: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.neutralSolid, alignItems: "center", justifyContent: "center" },
+  icon: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
 });

@@ -21,7 +21,7 @@ export function DateRangeField({ label, start, end, onChange, invalid, today = t
       <Pressable accessibilityRole="button" accessibilityLabel={has ? `${label}, ${formatDate(start)} to ${formatDate(end)}` : label}
         onPress={() => { setDraft({ start, end }); setOpen(true); }} style={[s.box, invalid && s.invalid]}>
         <Text maxFontSizeMultiplier={1.4} style={[s.text, !has && s.placeholder]}>{has ? `${formatDate(start)} → ${formatDate(end)}` : "Select date"}</Text>
-        <ChevronRight size={20} color={color.forestInk} strokeWidth={2} />
+        <ChevronRight size={20} color={color.brandBlack} strokeWidth={2} />
       </Pressable>
       <BottomSheet visible={open} onClose={() => setOpen(false)} title={label} actionLabel="Confirm" actionType="secondaryNeutral" actionDisabled={!draft.end}
         onAction={() => { onChange(draft); setOpen(false); }}>
@@ -32,7 +32,7 @@ export function DateRangeField({ label, start, end, onChange, invalid, today = t
 }
 
 const s = StyleSheet.create({
-  box: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s8, paddingHorizontal: space.s16, paddingVertical: 12, borderRadius: radius.small, borderCurve: "continuous", borderWidth: 1, borderColor: color.pebble, backgroundColor: color.paper },
+  box: { minHeight: 48, flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s8, paddingHorizontal: space.s16, paddingVertical: 12, borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderColor: color.inputBorder, backgroundColor: color.paper },
   invalid: { borderWidth: 3, borderColor: color.alarmRed, paddingHorizontal: 14, paddingVertical: 10 },
   text: { ...type.fieldValue, flex: 1, color: color.obsidian },
   placeholder: { color: color.pebble },

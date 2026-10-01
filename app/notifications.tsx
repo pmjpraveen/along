@@ -4,7 +4,6 @@ import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { InboxResult, loadInbox, markRead } from "../src/api/notifications";
 import { Alert } from "../src/components/Alert";
 import { TextButton } from "../src/components/Buttons";
@@ -42,20 +41,10 @@ export default function Notifications() {
   const days = state?.ok ? groupByDayHeading(state.items, new Date()) : [];
   return (
     <View style={s.screen}>
-      {/* A soft blue glow behind the header. */}
-      <Svg style={s.glow} width="100%" height={260} pointerEvents="none">
-        <Defs>
-          <RadialGradient id="sky" cx="50%" cy="0%" rx="90%" ry="85%" fx="50%" fy="0%">
-            <Stop offset="0" stopColor={color.brightBlue} stopOpacity={0.55} />
-            <Stop offset="1" stopColor={color.brightBlue} stopOpacity={0} />
-          </RadialGradient>
-        </Defs>
-        <Rect width="100%" height="100%" fill="url(#sky)" />
-      </Svg>
       <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull}
         contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.forestInk} strokeWidth={1.75} />
+          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Notifications</Text>
 
@@ -90,7 +79,6 @@ export default function Notifications() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   scroll: { flex: 1 },
-  glow: { position: "absolute", top: 0, left: 0, right: 0 },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
   heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian },

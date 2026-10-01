@@ -21,11 +21,11 @@ test("the header is 28/32 medium Obsidian and the body 16/24", async () => {
   expect(flat(screen.getByText("Body"))).toMatchObject({ fontSize: 16, lineHeight: 24 });
 });
 
-test("the close button is a 44pt circle on the neutral wash with a generous touch area, and closes the sheet", async () => {
+test("the close button is a 44pt circle on light grey with a generous touch area, and closes the sheet", async () => {
   const onClose = jest.fn();
   await render(<BottomSheet visible onClose={onClose} title="Header" />);
   const close = screen.getByRole("button", { name: "Close" });
-  expect(flat(close)).toMatchObject({ width: 44, height: 44, borderRadius: 9999, backgroundColor: color.neutralWash });
+  expect(flat(close)).toMatchObject({ width: 44, height: 44, borderRadius: 9999, backgroundColor: color.softGrey });
   expect((close.props.hitSlop as number) * 2 + 44).toBeGreaterThanOrEqual(48);
   await fireEvent.press(close);
   expect(onClose).toHaveBeenCalledTimes(1);
@@ -50,7 +50,7 @@ test("a footer action is one primary button that fires once, and shows busy", as
   const { rerender } = await render(<BottomSheet visible onClose={jest.fn()} title="Header" actionLabel="Save" onAction={onAction} />);
   await fireEvent.press(screen.getByRole("button", { name: "Save" }));
   expect(onAction).toHaveBeenCalledTimes(1);
-  expect(flat(screen.getByRole("button", { name: "Save" })).backgroundColor).toBe(color.brightGreen);
+  expect(flat(screen.getByRole("button", { name: "Save" })).backgroundColor).toBe(color.brandBlack);
   await rerender(<BottomSheet visible onClose={jest.fn()} title="Header" actionLabel="Save" onAction={onAction} actionBusy />);
   await fireEvent.press(screen.getByRole("button", { name: "Save" }));
   expect(onAction).toHaveBeenCalledTimes(1);

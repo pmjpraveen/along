@@ -33,7 +33,7 @@ export default function Passport() {
   return (
     <ScrollView style={s.screen} contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
       <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/profile"))} hitSlop={space.s4} style={s.round}>
-        <ChevronLeft size={22} color={color.forestInk} strokeWidth={1.75} />
+        <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
       </Pressable>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Passport</Text>
       {state === null ? (

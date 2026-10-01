@@ -16,13 +16,16 @@ type Props = {
 // hands the place, with its coordinates, to the screen. Typing freely still works: search never blocks saving, and a pasted map link is
 // read by the screen, not searched.
 export function PlaceSearchField({ label, placeholder, value, onChangeText, onPick, onEndEditing, message, status, autoCapitalize = "none" }: Props) {
-  const [chosen, setChosen] = useState<string | null>(null);
-  const searching = chosen !== value;   // once a place is chosen, stop searching until the text is edited again
+  // The list is hidden while the field holds a value it opened with or a place that was picked (whatever text the screen then puts in the
+  // field), and comes back only when the person types again.
+  const [settled, setSettled] = useState(true);
+  const searching = !settled;
   const { places, busy, error } = usePlaceSearch(value, searching);
-  const pick = (p: FoundPlace) => { setChosen(p.title); onPick(p); };
+  const pick = (p: FoundPlace) => { setSettled(true); onPick(p); };
+  const type = (t: string) => { setSettled(false); onChangeText(t); };
   return (
     <View style={s.wrap}>
-      <TextField label={label} placeholder={placeholder} value={value} onChangeText={onChangeText} onEndEditing={onEndEditing}
+      <TextField label={label} placeholder={placeholder} value={value} onChangeText={type} onEndEditing={onEndEditing}
         autoCapitalize={autoCapitalize} autoCorrect={false} status={status} message={message} />
       {searching && busy && <ActivityIndicator accessibilityLabel="Searching places" color={color.forestInk} style={s.busy} />}
       {searching && error && <FieldMessage status="warning">{error}</FieldMessage>}

@@ -26,7 +26,7 @@ export function ListItem({ title, subtitle, overline, leading, trailing = "none"
         {message ? <Text maxFontSizeMultiplier={1.4} style={s.message}>{message}</Text> : null}
       </View>
       {value ? <Text maxFontSizeMultiplier={1.4} style={[s.title, disabled && s.muted]}>{value}</Text> : null}
-      {trailing === "chevron" && <ChevronRight size={20} color={color.forestInk} strokeWidth={2} />}
+      {trailing === "chevron" && <ChevronRight size={20} color={color.brandBlack} strokeWidth={2} />}
       {trailing === "edit" && <Pencil size={18} color={color.forestInk} strokeWidth={2} />}
       {trailing === "checkbox" && <View style={[s.box, checked && s.on]}>{checked && <Check size={14} color={color.forestInk} strokeWidth={2.5} />}</View>}
       {trailing === "radio" && <View style={[s.radio, checked && s.on]}>{checked && <View style={s.dot} />}</View>}

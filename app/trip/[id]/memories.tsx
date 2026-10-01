@@ -4,7 +4,6 @@ import { Avatar } from "../../../src/components/Avatar";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
-import Svg, { Defs, RadialGradient, Rect, Stop } from "react-native-svg";
 import { useCallback, useRef, useState } from "react";
 import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
@@ -67,19 +66,9 @@ export default function Memories() {
 
   return (
     <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      {/* A soft orange glow behind the header. */}
-      <Svg style={s.glow} width="100%" height={260} pointerEvents="none">
-        <Defs>
-          <RadialGradient id="ember" cx="50%" cy="0%" rx="90%" ry="85%" fx="50%" fy="0%">
-            <Stop offset="0" stopColor={color.brightOrange} stopOpacity={0.45} />
-            <Stop offset="1" stopColor={color.brightOrange} stopOpacity={0} />
-          </RadialGradient>
-        </Defs>
-        <Rect width="100%" height="100%" fill="url(#ember)" />
-      </Svg>
       <ScrollView keyboardShouldPersistTaps="handled" contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.forestInk} strokeWidth={1.75} />
+          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Memories</Text>
 
@@ -127,7 +116,6 @@ export default function Memories() {
 
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
-  glow: { position: "absolute", top: 0, left: 0, right: 0 },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
   heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian },

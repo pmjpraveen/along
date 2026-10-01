@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
 import { color, radius, space, type } from "../theme/tokens";
 
@@ -12,12 +13,14 @@ export function sanitizeAmount(text: string, exponent: number): string {
 }
 
 export function AmountInput({ label, value, onChange, exponent, symbol, invalid }: Props) {
+  const [focused, setFocused] = useState(false);
   return (
-    <View style={[s.box, invalid && s.invalid]}>
+    <View style={[s.box, focused && !invalid && s.focused, invalid && s.invalid]}>
       <Text maxFontSizeMultiplier={1.3} style={s.symbol}>{symbol}</Text>
       <View style={s.field}>
         <TextInput accessibilityLabel={label} value={value} onChangeText={(t) => onChange(sanitizeAmount(t, exponent))}
-          keyboardType={exponent === 0 ? "number-pad" : "decimal-pad"} maxFontSizeMultiplier={1.3} style={s.input} />
+          keyboardType={exponent === 0 ? "number-pad" : "decimal-pad"} maxFontSizeMultiplier={1.3} style={s.input}
+          onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
         {/* iOS draws a native placeholder lower than the cursor and typed digits, so the placeholder is drawn here, centred like them. */}
         {value === "" && (
           <View pointerEvents="none" style={s.placeholderBox} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
@@ -30,7 +33,8 @@ export function AmountInput({ label, value, onChange, exponent, symbol, invalid 
 }
 
 const s = StyleSheet.create({
-  box: { flexDirection: "row", alignItems: "center", gap: space.s8, minHeight: 64, paddingHorizontal: space.s16, borderRadius: radius.small, borderCurve: "continuous", borderWidth: 1, borderColor: color.pebble, backgroundColor: color.paper },
+  box: { flexDirection: "row", alignItems: "center", gap: space.s8, minHeight: 64, paddingHorizontal: space.s16, borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderColor: color.inputBorder, backgroundColor: color.paper },
+  focused: { borderWidth: 3, borderColor: color.brandBlack, paddingHorizontal: 14 },
   invalid: { borderWidth: 3, borderColor: color.alarmRed, paddingHorizontal: 14 },
   // Display face at input sizes, with normal tracking and no fixed line height (the display values are meant for 56pt and squash digits here).
   symbol: { fontFamily: type.display.fontFamily, fontSize: 24, color: color.charcoal },

@@ -145,7 +145,7 @@ export default function AddExpense() {
     <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}>
         <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
-          <X size={22} color={color.forestInk} strokeWidth={2} />
+          <X size={22} color={color.iconInk} strokeWidth={2} />
         </Pressable>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>{expenseId ? "Edit expense" : "Add expense"}</Text>
         {loadError ? (
@@ -230,21 +230,20 @@ export default function AddExpense() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { paddingHorizontal: space.s20, paddingTop: space.s20, paddingBottom: space.s24, gap: space.s20 },
-  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.neutralWash, alignItems: "center", justifyContent: "center" },
+  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
   heading: { ...type.sheetTitle, color: color.obsidian },
   footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },
-  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s16, minHeight: 64, paddingHorizontal: space.s16, paddingVertical: space.s12, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.neutralWash },
+  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s16, minHeight: 64, paddingHorizontal: space.s16, paddingVertical: space.s12, borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderColor: color.inputBorder, backgroundColor: color.paper },
   rowLabel: { ...type.fieldMessage, color: color.slate },
   rowValue: { ...type.label, fontSize: 17, color: color.obsidian },
   field: { gap: space.s8 },
   label: { ...type.label, color: color.charcoal },
   hint: { ...type.body, color: color.slate },
-  input: { minHeight: 48, paddingHorizontal: space.s16, borderRadius: radius.input, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.borderNeutral, ...type.body, color: color.obsidian },
   inputError: { borderColor: color.alarmRed },
   error: { ...type.label, color: color.alarmRed },
   chipScroll: { flexGrow: 0 },
   chips: { gap: space.s8 },
-  chip: { minHeight: 44, paddingHorizontal: space.s16, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
+  chip: { minHeight: 44, paddingHorizontal: space.s16, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.buttonGrey },
   chipOn: { backgroundColor: color.darkMaroon },
   chipText: { ...type.buttonLarge, fontFamily: font.regular, color: color.slate },
   chipTextOn: { color: color.brightOrange },
@@ -258,7 +257,7 @@ function PickRow({ label, value, spoken, onPress }: { label: string; value: stri
         <Text maxFontSizeMultiplier={1.4} style={s.rowLabel}>{label}</Text>
         <Text maxFontSizeMultiplier={1.4} style={s.rowValue}>{value}</Text>
       </View>
-      <ChevronRight size={20} color={color.forestInk} strokeWidth={1.75} />
+      <ChevronRight size={20} color={color.brandBlack} strokeWidth={1.75} />
     </Pressable>
   );
 }

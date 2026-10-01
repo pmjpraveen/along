@@ -1,15 +1,17 @@
-// Pure calendar maths for the date picker. Weeks start on Monday, as in the design system's calendar. Months are 0-11.
-export const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"] as const;
+// Pure calendar maths for the date picker. Weeks start on Sunday. Months are 0-11.
+export const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+// Sunday and Saturday are the first and last columns, so those two are the weekend.
+export const isWeekendColumn = (c: number) => c === 0 || c === 6;
 export const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"] as const;
-const LONG_DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const LONG_DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 export type Ym = { year: number; month: number };
 
 const pad = (n: number) => String(n).padStart(2, "0");
 export const isoOf = (y: number, m: number, d: number) => `${y}-${pad(m + 1)}-${pad(d)}`;
 export const daysInMonth = ({ year, month }: Ym) => new Date(year, month + 1, 0).getDate();
-// 0 = Monday ... 6 = Sunday
-export const weekdayOf = (y: number, m: number, d: number) => (new Date(y, m, d).getDay() + 6) % 7;
+// 0 = Sunday ... 6 = Saturday
+export const weekdayOf = (y: number, m: number, d: number) => new Date(y, m, d).getDay();
 
 export function parseIso(iso: string): { year: number; month: number; day: number } | null {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso);

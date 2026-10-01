@@ -43,7 +43,7 @@ export default function Complete() {
   return (
     <ScrollView style={s.screen} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
       <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
-        <ChevronLeft size={22} color={color.forestInk} strokeWidth={1.75} />
+        <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
       </Pressable>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>{done ? "Trip completed" : "Complete this trip?"}</Text>
       {done ? (

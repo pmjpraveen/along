@@ -58,10 +58,10 @@ test("cover: stored covers are signed for display and plain https covers are use
   expect(mockSigned).toHaveBeenCalledWith(["t1/c.jpg"], 3600);
 });
 
-test("cover: a trip's status carries its destination and signed cover for the header", async () => {
-  mockFrom.mockReturnValue(rows({ status: "published", completed_at: null, name: "Goa", destination_name: "Goa, India", cover_url: "t1/c.jpg" }));
+test("cover: a trip's status carries its destination, signed cover and chosen card colour for the header", async () => {
+  mockFrom.mockReturnValue(rows({ status: "published", completed_at: null, name: "Goa", destination_name: "Goa, India", cover_url: "t1/c.jpg", card_color: 2 }));
   mockSigned.mockResolvedValue({ data: [{ path: "t1/c.jpg", signedUrl: "https://signed/c" }] });
-  expect(await loadTripStatus("t1")).toEqual({ ok: true, status: "published", completedAt: null, name: "Goa", destination: "Goa, India", coverUrl: "https://signed/c" });
+  expect(await loadTripStatus("t1")).toEqual({ ok: true, status: "published", completedAt: null, name: "Goa", destination: "Goa, India", coverUrl: "https://signed/c", cardColor: 2 });
 });
 
 test("cover: a photo is uploaded into the trip's folder, then made the cover", async () => {

@@ -34,7 +34,7 @@ test("with an action it becomes the card: radius 10, 14/22 Charcoal text, and a 
   expect(flat(screen.getByText("Some items fall outside the trip dates.").parent!.parent!.parent!)).toMatchObject({ borderRadius: 10 });
   expect(flat(screen.getByText("Some items fall outside the trip dates."))).toMatchObject({ fontSize: 14, lineHeight: 22, color: color.charcoal });
   const btn = screen.getByRole("button", { name: "Review dates" });
-  expect(flat(btn)).toMatchObject({ backgroundColor: color.neutralWash, minHeight: 30 });
+  expect(flat(btn)).toMatchObject({ backgroundColor: color.buttonGrey, minHeight: 30 });
   await fireEvent.press(btn);
   expect(onAction).toHaveBeenCalledTimes(1);
 });

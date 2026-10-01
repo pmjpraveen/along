@@ -28,6 +28,31 @@ test("suggestions appear after a pause in typing, and choosing one fills the fie
   expect(mockSearch).toHaveBeenCalledTimes(1);
 });
 
+test("once a place is chosen the list stays hidden even when the screen fills the field with different text, and returns when you type again", async () => {
+  mockSearch.mockResolvedValue({ ok: true, places: [goa, { ...goa, id: "2", title: "Goa Velha", subtitle: "India" }] });
+  function Longer() {
+    const [v, setV] = useState("");
+    return <PlaceSearchField label="Location" placeholder="Search" value={v} onChangeText={setV} onPick={(p) => setV(`${p.title}, ${p.subtitle}`)} />;
+  }
+  await render(<Longer />);
+  await type("Goa");
+  await fireEvent.press(await screen.findByRole("button", { name: "Goa, India" }));
+  expect(screen.getByLabelText("Location").props.value).toBe("Goa, India");
+  expect(screen.queryByLabelText("Place suggestions")).toBeNull();
+  await act(async () => { jest.advanceTimersByTime(3000); });
+  expect(screen.queryByLabelText("Place suggestions")).toBeNull();
+  expect(mockSearch).toHaveBeenCalledTimes(1);
+  await type("Goa Vel");
+  expect(await screen.findByLabelText("Place suggestions")).toBeTruthy();
+});
+
+test("a field that opens with a value does not search or show a list until it is edited", async () => {
+  await render(<PlaceSearchField label="Location" placeholder="Search" value="Kullu, India" onChangeText={jest.fn()} onPick={jest.fn()} />);
+  await act(async () => { jest.advanceTimersByTime(3000); });
+  expect(mockSearch).not.toHaveBeenCalled();
+  expect(screen.queryByLabelText("Place suggestions")).toBeNull();
+});
+
 test("nothing is searched for short text or a pasted link, and a failed search says so without blocking typing", async () => {
   await render(<Harness onPick={jest.fn()} />);
   await type("Go");

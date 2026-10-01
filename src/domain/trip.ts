@@ -39,6 +39,7 @@ export const CARD_COLORS = ["#ffc091", "#e5ebff", "#ebe0d9", "#d9e0ab", "#def6ff
 
 // Colours are handed out in order, oldest trip first, so any six trips in a row show all six colours. `newestFirst` is the trip's place in a
 // newest-first list of `count` trips; counting from the oldest end means a newer trip never changes the colour of an older one.
-export function cardColorAt(newestFirst: number, count: number): string {
+export function cardColorAt(newestFirst: number, count: number, chosen?: number | null): string {
+  if (chosen !== null && chosen !== undefined && chosen >= 0 && chosen < CARD_COLORS.length) return CARD_COLORS[chosen];   // the owner picked one
   return CARD_COLORS[(count - 1 - newestFirst) % CARD_COLORS.length];
 }

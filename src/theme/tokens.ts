@@ -15,7 +15,7 @@ export const secondary = {
 
 // Product colours (semantic roles)
 export const product = {
-  content: { primary: "#0e0f0c", secondary: "#454745", tertiary: "#6a6c6a", link: "#163300" },
+  content: { primary: "#222222", secondary: "#6a6a6a", tertiary: "#6a6a6a", link: "#163300" },   // primary text, then one grey for everything secondary or quieter
   interactive: { primary: "#163300", accent: "#9fe870", secondary: "#868685", control: "#173301", contrast: "#9fe870" },
   background: { screen: "#ffffff", elevated: "#ffffff", neutral: "rgba(22,51,0,0.08)", overlay: "rgba(22,51,0,0.08)" },   // #16330014
   border: { neutral: "rgba(14,15,12,0.12)", overlay: "rgba(14,15,12,0.12)" },                                              // #0e0f0c1f
@@ -25,7 +25,8 @@ export const product = {
 export const color = {
   // Named as DESIGN.md names them, each pointing at its Figma source above.
   brightGreen: core.brightGreen, forestInk: core.forestGreen,
-  brandBlack: "#222222", obsidian: product.content.primary, charcoal: product.content.secondary, slate: product.content.tertiary, pebble: product.interactive.secondary,
+  brandBlack: "#222222", scrim: "rgba(0,0,0,0.25)",   // the neutral dim behind every sheet and dialog, the same as the native modal screens
+   dateFill: "#444444", cream: "#f8f4ed", inputBorder: "#d0d0d0", softGrey: "#f4f4f4", iconInk: "#444444", buttonGrey: "#f2f2f2", obsidian: product.content.primary, charcoal: product.content.secondary, slate: product.content.tertiary, pebble: product.interactive.secondary,
   paper: product.background.screen, neutralWash: product.background.neutral, borderNeutral: product.border.neutral, control: product.interactive.control,
   alarmRed: product.sentiment.negative, positive: product.sentiment.positive, warning: product.sentiment.warning,
   ...secondary,

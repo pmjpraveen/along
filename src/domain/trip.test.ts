@@ -63,6 +63,12 @@ describe("cardColorAt", () => {
     expect(cardColorAt(2, 3)).toBe(cardColorAt(5, 6));
     expect(cardColorAt(0, 1)).toBe(CARD_COLORS[0]);
   });
+  test("a colour the owner picked wins over the automatic order, and an out-of-range pick is ignored", () => {
+    expect(cardColorAt(0, 6, 3)).toBe(CARD_COLORS[3]);
+    expect(cardColorAt(0, 6, 0)).toBe(CARD_COLORS[0]);
+    expect(cardColorAt(0, 6, null)).toBe(cardColorAt(0, 6));
+    expect(cardColorAt(2, 6, 9)).toBe(cardColorAt(2, 6));
+  });
   test("after six, the colours start over", () => {
     expect(cardColorAt(0, 7)).toBe(CARD_COLORS[0]);
     expect(cardColorAt(6, 7)).toBe(CARD_COLORS[0]);

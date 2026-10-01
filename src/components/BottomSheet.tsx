@@ -11,6 +11,12 @@ import { color, radius, space, type } from "../theme/tokens";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { Button, ButtonType } from "./Buttons";
 
+// List rows put their own 16pt of padding inside, so inside a sheet they are pulled out by the same 16pt: their icons and text then line up with
+// the close button and the title (all 20pt from the edge) and the pressed highlight still reaches the sheet's sides.
+export function SheetRows({ children }: { children: ReactNode }) {
+  return <View style={s.rows}>{children}</View>;
+}
+
 type Props = {
   visible: boolean;
   onClose: () => void;
@@ -23,9 +29,12 @@ type Props = {
 
 // The design system's bottom sheet (Figma "bottom sheet"): a white container with rounded top corners, a close button at the
 // top left (44pt circle on the neutral wash), a header and optional body, content, and a footer with one primary button above
-// a hairline. It slides up over a Forest Ink scrim; tapping the scrim, the close button, or the system back gesture closes it.
+// a hairline. It slides up over a neutral grey scrim; tapping the scrim, the close button, or the system back gesture closes it.
 export function BottomSheet({ visible, onClose, onClosed, title, body, children, actionLabel, onAction, actionBusy, actionDisabled, actionType = "primary" }: Props) {
-  const { bottom } = useSafeAreaInsets();
+  // A sheet only has to clear the home indicator. Over a screen with a native tab bar the app-wide bottom inset also counts the tab bar (83pt on an
+  // iPhone), which would leave a big empty band under the last row, and no iPhone's home indicator needs more than 34pt.
+  const insetBottom = useSafeAreaInsets().bottom;
+  const bottom = Platform.OS === "ios" ? Math.min(insetBottom, 34) : insetBottom;
   const reduceMotion = useReducedMotion();   // with Reduce Motion the sheet fades in and out instead of moving
   const { height: screenH } = useWindowDimensions();
   const y = useSharedValue(screenH);         // sheet offset from its resting place; screenH = fully off screen
@@ -72,11 +81,11 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
           <Pressable accessibilityRole="button" accessibilityLabel={`Close ${title}`} onPress={dismiss} style={s.scrim} />
         </Animated.View>
         <Animated.View onLayout={(e) => { sheetH.value = e.nativeEvent.layout.height; }}
-          style={[s.sheet, { paddingBottom: actionLabel ? 0 : bottom + space.s16 }, sheetStyle]}>
+          style={[s.sheet, { paddingBottom: actionLabel ? 0 : bottom }, sheetStyle]}>
           <GestureDetector gesture={drag}>
             <View>
               <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={dismiss} hitSlop={space.s8} style={s.close}>
-                <X size={20} color={color.forestInk} strokeWidth={2} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
+                <X size={20} color={color.iconInk} strokeWidth={2} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
               </Pressable>
             </View>
           </GestureDetector>
@@ -99,10 +108,11 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
 const s = StyleSheet.create({
   root: { flex: 1, justifyContent: "flex-end" },
   scrimFill: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
-  scrim: { flex: 1, backgroundColor: "rgba(22,51,0,0.4)" },
+  scrim: { flex: 1, backgroundColor: color.scrim },
   sheet: { maxHeight: "90%", backgroundColor: color.paper, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, borderCurve: "continuous", overflow: "hidden" },
-  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash, marginLeft: space.s20, marginTop: space.s20 },
-  content: { paddingHorizontal: space.s24, paddingTop: space.s16, paddingBottom: space.s16, gap: space.s8 },
+  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.softGrey, marginLeft: space.s20, marginTop: space.s20 },
+  content: { paddingHorizontal: space.s20, paddingTop: space.s16, paddingBottom: 0, gap: space.s8 },
+  rows: { marginHorizontal: -space.s16 },
   title: { ...type.sheetTitle, color: color.obsidian },
   body: { ...type.fieldValue, color: color.obsidian },
   footer: { paddingHorizontal: space.s20, paddingTop: space.s16, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },

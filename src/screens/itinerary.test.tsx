@@ -98,11 +98,16 @@ test("it opens on Day 1, and a chip per trip day switches which day's items are 
   expect(screen.getByText("Nothing planned for this day.")).toBeTruthy();
 });
 
-test("the top has Back, Add guest and Trip settings, and Add guest and settings open their screens", async () => {
+test("the top has Back, Add guest and a gear that opens the trip options: settings, end trip and delete trip for the owner", async () => {
   load({});
   await render(<Itinerary />);
   await screen.findByText("Lunch");
   expect(screen.getByRole("button", { name: "Back" })).toBeTruthy();
   expect(screen.getByRole("button", { name: "Add guest" })).toBeTruthy();
-  expect(screen.getByRole("button", { name: "Trip settings" })).toBeTruthy();
+  expect(screen.queryByText("Trip options")).toBeNull();
+  await fireEvent.press(screen.getByRole("button", { name: "Trip options" }));
+  expect(await screen.findByText("Trip options")).toBeTruthy();
+  expect(screen.getByRole("button", { name: /^Trip settings/ })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /^End trip/ })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /^Delete trip/ })).toBeTruthy();
 });

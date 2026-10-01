@@ -10,6 +10,9 @@ test("it opens on the selected month, titled the way the design system does", as
   expect(screen.getByText("November 2022")).toBeTruthy();
   // the week row is decorative for screen readers (each day already announces its weekday), so look at hidden elements too
   expect(screen.getByText("Mon", { includeHiddenElements: true })).toBeTruthy();
+  // the week row starts on Sunday and ends on Saturday
+  const headers = screen.getAllByText(/^(Sun|Mon|Tue|Wed|Thu|Fri|Sat)$/, { includeHiddenElements: true }).map((n) => n.props.children);
+  expect(headers).toEqual(["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
   expect(screen.getByText("Sun", { includeHiddenElements: true })).toBeTruthy();
 });
 
@@ -21,12 +24,12 @@ test("every day of the month is there once, and tapping one reports its ISO date
   expect(onSelect).toHaveBeenCalledWith("2022-11-23");
 });
 
-test("the selected day is a Forest Ink circle with a Bright Green number; weekdays and weekends differ in weight and colour", async () => {
+test("the selected day is a dark grey circle with a white number; weekdays and weekends differ in weight and colour", async () => {
   await render(<Calendar value="2022-11-18" onSelect={jest.fn()} />);
   const sel = screen.getByRole("button", { name: "Friday 18 November 2022" });
-  expect(flat(sel).backgroundColor).toBe(color.forestInk);
+  expect(flat(sel).backgroundColor).toBe(color.dateFill);
   expect(sel).toBeSelected();
-  expect(flat(screen.getByText("18")).color).toBe(color.brightGreen);
+  expect(flat(screen.getByText("18")).color).toBe(color.paper);
   expect(flat(screen.getByText("16")).color).toBe(color.obsidian);      // a Wednesday
   expect(flat(screen.getByText("19")).color).toBe(color.charcoal);      // a Saturday
 });

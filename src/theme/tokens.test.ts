@@ -13,7 +13,7 @@ test("secondary colours match Figma", () => {
 });
 
 test("product colours match Figma, including the two 8% and 12% tints", () => {
-  expect(product.content).toEqual({ primary: "#0e0f0c", secondary: "#454745", tertiary: "#6a6c6a", link: "#163300" });
+  expect(product.content).toEqual({ primary: "#222222", secondary: "#6a6a6a", tertiary: "#6a6a6a", link: "#163300" });
   expect(product.interactive).toEqual({ primary: "#163300", accent: "#9fe870", secondary: "#868685", control: "#173301", contrast: "#9fe870" });
   expect(product.background).toEqual({ screen: "#ffffff", elevated: "#ffffff", neutral: "rgba(22,51,0,0.08)", overlay: "rgba(22,51,0,0.08)" });
   expect(product.border).toEqual({ neutral: "rgba(14,15,12,0.12)", overlay: "rgba(14,15,12,0.12)" });

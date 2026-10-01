@@ -11,7 +11,7 @@ import { loadPreferences, setPreference } from "../src/api/notifications";
 import { deleteMyAccount, loadMyProfile, MyProfile, setMyCountry, signOut } from "../src/api/profile";
 import { Alert } from "../src/components/Alert";
 import { Avatar } from "../src/components/Avatar";
-import { BottomSheet } from "../src/components/BottomSheet";
+import { BottomSheet, SheetRows } from "../src/components/BottomSheet";
 import { Dialog } from "../src/components/Dialog";
 import { ListItem } from "../src/components/ListItem";
 import { COUNTRIES, countryName, flagOf, PASSPORTS } from "../src/domain/countries";
@@ -65,7 +65,7 @@ export default function Profile() {
     setConfirmDelete(false);
     if (!r.ok) setError(r.message);
   };
-  const icon = (I: typeof Globe, danger?: boolean) => <View style={s.icon}><I size={20} color={danger ? color.alarmRed : color.forestInk} strokeWidth={1.75} /></View>;
+  const icon = (I: typeof Globe, danger?: boolean) => <View style={s.icon}><I size={20} color={danger ? color.alarmRed : color.iconInk} strokeWidth={1.75} /></View>;
   // The cover takes its colour from the passport of my country (teal until one is chosen).
   const passport = me?.country ? PASSPORTS[me.country] : undefined;
   const cover = passport?.cover ?? "#1f6f78";
@@ -77,7 +77,7 @@ export default function Profile() {
     <View style={s.screen}>
       <ScrollView style={s.scroll} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.forestInk} strokeWidth={1.75} />
+          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
 
         <View style={s.avatar}><Avatar name={me?.name ?? ""} size={72} /></View>
@@ -155,14 +155,20 @@ export default function Profile() {
         </View>
       </ScrollView>
       <BottomSheet visible={sheet === "country"} onClose={() => setSheet(null)} title="Country">
-        {COUNTRIES.map((c) => (
-          <ListItem key={c.code} title={c.name} leading={<Text style={s.flag}>{flagOf(c.code)}</Text>} trailing="radio" checked={c.code === me?.country} onPress={() => pickCountry(c.code)} />
-        ))}
+        <SheetRows>
+          {COUNTRIES.map((c) => (
+            <ListItem key={c.code} title={c.name} leading={<Text style={s.flag}>{flagOf(c.code)}</Text>} trailing="radio" checked={c.code === me?.country} onPress={() => pickCountry(c.code)} />
+          ))}
+        </SheetRows>
       </BottomSheet>
       <BottomSheet visible={sheet === "notifications"} onClose={() => setSheet(null)} title="Notifications" body="Choose what you want to hear about.">
-        {prefs === null ? <ActivityIndicator accessibilityLabel="Loading your choices" color={color.forestInk} /> : TYPES.map((tp) => (
-          <ListItem key={tp} title={TYPE_LABEL[tp]} trailing="switch" checked={prefs[tp]} onPress={() => toggle(tp, !prefs[tp])} />
-        ))}
+        {prefs === null ? <ActivityIndicator accessibilityLabel="Loading your choices" color={color.forestInk} /> : (
+          <SheetRows>
+            {TYPES.map((tp) => (
+              <ListItem key={tp} title={TYPE_LABEL[tp]} trailing="switch" checked={prefs[tp]} onPress={() => toggle(tp, !prefs[tp])} />
+            ))}
+          </SheetRows>
+        )}
       </BottomSheet>
       <Dialog visible={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete your account?" subheader="This can't be undone"
         body="Your name will show as Deleted user, and you'll be signed out for good. Expenses and payments you shared stay on the trip so everyone else's balances remain correct."
@@ -200,7 +206,7 @@ const s = StyleSheet.create({
   group: { ...type.fieldValue, color: color.charcoal, marginTop: space.s8 },
   list: { borderRadius: radius.sheet, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, overflow: "hidden" },
   hair: { height: 1, backgroundColor: color.borderNeutral, marginHorizontal: space.s16 },
-  icon: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.neutralSolid, alignItems: "center", justifyContent: "center" },
+  icon: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
   flag: { fontSize: 28, width: 40, textAlign: "center" },
   body: { ...type.fieldValue, color: color.charcoal },
 });

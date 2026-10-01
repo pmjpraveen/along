@@ -7,7 +7,7 @@ import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createTrip, uploadCover } from "../src/api/trips";
 import { Image as ImageIcon, X } from "lucide-react-native";
-import { PrimaryButton } from "../src/components/Buttons";
+import { Button } from "../src/components/Buttons";
 import { PlaceSearchField } from "../src/components/PlaceSearchField";
 import { FieldLabel, FieldMessage, TextField } from "../src/components/TextField";
 import { DateRangeField } from "../src/components/DateRangeField";
@@ -49,7 +49,7 @@ export default function CreateTrip() {
     <View style={s.screen}>
       <ScrollView keyboardShouldPersistTaps="handled" automaticallyAdjustKeyboardInsets contentContainerStyle={[s.content, { paddingTop: space.s20 }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
-          <X size={22} color={color.forestInk} strokeWidth={2} />
+          <X size={22} color={color.iconInk} strokeWidth={2} />
         </Pressable>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Start new trip</Text>
 
@@ -79,7 +79,7 @@ export default function CreateTrip() {
         {formError && <Alert variant="negative">{formError}</Alert>}
       </ScrollView>
       <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
-        <PrimaryButton label={busy ? "Creating…" : "Create trip"} onPress={submit} />
+        <Button label={busy ? "Creating…" : "Create trip"} onPress={submit} />
       </View>
     </View>
   );
@@ -88,12 +88,12 @@ export default function CreateTrip() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { paddingHorizontal: space.s20, paddingBottom: space.s24, gap: space.s20 },
-  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.neutralWash, alignItems: "center", justifyContent: "center" },
-  heading: { ...type.sheetTitle, color: color.obsidian, marginBottom: space.s4 },
-  cover: { minHeight: 154, borderRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.neutralWash, alignItems: "center", justifyContent: "center", gap: space.s12, overflow: "hidden" },
+  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
+  heading: { ...type.sheetTitle, color: color.brandBlack, marginBottom: space.s4 },
+  cover: { minHeight: 154, borderRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.cream, alignItems: "center", justifyContent: "center", gap: space.s12, overflow: "hidden" },
   thumb: { width: 104, height: 104, borderRadius: radius.card, borderCurve: "continuous", overflow: "hidden", backgroundColor: color.neutralWash },
   thumbImage: { width: "100%", height: "100%" },
-  coverIcon: { width: 56, height: 56, borderRadius: radius.input, borderCurve: "continuous", backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
+  coverIcon: { width: 56, height: 56, borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
   coverText: { ...type.label, color: color.obsidian },
   field: { gap: space.s8 },
   footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },

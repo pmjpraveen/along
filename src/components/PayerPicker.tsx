@@ -31,9 +31,9 @@ export function PayerPicker({ members, selected, onChange }: Props) {
 
 const s = StyleSheet.create({
   row: { flexDirection: "row", alignItems: "center", gap: space.s12, minHeight: 56 },
-  avatar: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash, borderWidth: 1.5, borderColor: color.borderNeutral },
+  avatar: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.softGrey, borderWidth: 1.5, borderColor: color.borderNeutral },
   guestRing: { borderStyle: "dashed", borderColor: color.slate },
-  initials: { ...type.label, color: color.forestInk },
+  initials: { ...type.label, color: color.iconInk },
   name: { ...type.body, flex: 1, color: color.obsidian },
   tag: { ...type.label, color: color.charcoal },
   dot: { width: 24, height: 24, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.forestInk, alignItems: "center", justifyContent: "center" },

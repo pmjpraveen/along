@@ -36,7 +36,7 @@ export default function TripHistory() {
     <View style={s.screen}>
       <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.forestInk} strokeWidth={1.75} />
+          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Completed trips</Text>
         {state === null ? (
@@ -51,7 +51,7 @@ export default function TripHistory() {
         ) : (
           <View style={s.list}>
             {past.map((t, i) => {
-              const bg = cardColorAt(i, past.length);
+              const bg = cardColorAt(i, past.length, t.cardColor);   // the trip's own colour, the same one its page shows
               return (
                 <Pressable key={t.id} accessibilityRole="button" accessibilityLabel={`${t.name}, ${t.destination_name}, ${formatRange(t.start_date, t.end_date)}`}
                   onPress={() => router.push({ pathname: "/trip/[id]/summary", params: { id: t.id } })} style={{ width: tile }}>

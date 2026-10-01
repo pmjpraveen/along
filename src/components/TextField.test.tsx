@@ -11,14 +11,14 @@ test("the field is labelled for screen readers and shows its label above it", as
   expect(screen.getByText("Trip name")).toBeTruthy();
 });
 
-test("resting: white field, 1px Pebble border, radius 10, Obsidian text, Pebble placeholder", async () => {
+test("resting: white field, 1px light grey border, radius 16, Obsidian text, Pebble placeholder", async () => {
   await render(<TextField label="Name" value="" onChangeText={jest.fn()} placeholder="Goa" />);
   const st = flat(screen.getByLabelText("Name"));
-  expect(st).toMatchObject({ backgroundColor: color.paper, borderRadius: 10, borderWidth: 1, borderColor: color.pebble, color: color.obsidian });
+  expect(st).toMatchObject({ backgroundColor: color.paper, borderRadius: 16, borderWidth: 1, borderColor: color.inputBorder, color: color.obsidian });
   expect(screen.getByLabelText("Name").props.placeholderTextColor).toBe(color.pebble);
 });
 
-test("focus thickens the border to 3px in the Control colour without changing the box size, and blur restores it", async () => {
+test("focus thickens the border to 3px in the brand black without changing the box size, and blur restores it", async () => {
   await render(<TextField label="Name" value="" onChangeText={jest.fn()} />);
   const field = () => flat(screen.getByLabelText("Name"));
   // Height is fixed, and horizontally the thicker border is paid for with less padding, so nothing moves.
@@ -26,10 +26,10 @@ test("focus thickens the border to 3px in the Control colour without changing th
   const before = width(field());
   expect(field()).toMatchObject({ height: 48 });
   await fireEvent(screen.getByLabelText("Name"), "focus");
-  expect(field()).toMatchObject({ borderWidth: 3, borderColor: color.control, height: 48 });
+  expect(field()).toMatchObject({ borderWidth: 3, borderColor: color.brandBlack, height: 48 });
   expect(width(field())).toBe(before);
   await fireEvent(screen.getByLabelText("Name"), "blur");
-  expect(field()).toMatchObject({ borderWidth: 1, borderColor: color.pebble });
+  expect(field()).toMatchObject({ borderWidth: 1, borderColor: color.inputBorder });
 });
 
 test("an error turns the border red and 3px, and shows an announced message with an icon and red text", async () => {
@@ -41,7 +41,7 @@ test("an error turns the border red and 3px, and shows an announced message with
 
 test("a positive or warning message keeps the normal border and is a quiet notice, not an alert", async () => {
   const { rerender } = await render(<TextField label="Name" value="x" onChangeText={jest.fn()} status="positive" message="Looks good." />);
-  expect(flat(screen.getByLabelText("Name")).borderColor).toBe(color.pebble);
+  expect(flat(screen.getByLabelText("Name")).borderColor).toBe(color.inputBorder);
   expect(screen.getByText("Looks good.")).toBeTruthy();
   expect(screen.queryByRole("alert")).toBeNull();
   await rerender(<TextField label="Name" value="x" onChangeText={jest.fn()} status="warning" message="That name is long." />);

@@ -25,7 +25,7 @@ export function DateField({ label, value, onChange, invalid, min }: Props) {
 }
 
 const s = StyleSheet.create({
-  box: { minHeight: 48, paddingHorizontal: space.s16, paddingVertical: 12, justifyContent: "center", borderRadius: radius.small, borderCurve: "continuous", borderWidth: 1, borderColor: color.pebble, backgroundColor: color.paper },
+  box: { minHeight: 48, paddingHorizontal: space.s16, paddingVertical: 12, justifyContent: "center", borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderColor: color.inputBorder, backgroundColor: color.paper },
   invalid: { borderWidth: 3, borderColor: color.alarmRed, paddingHorizontal: 14, paddingVertical: 10 },
   text: { ...type.fieldValue, color: color.obsidian },
   placeholder: { color: color.pebble },

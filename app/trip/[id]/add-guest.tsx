@@ -34,7 +34,7 @@ export default function AddGuest() {
     <View style={s.screen}>
       <View style={s.content}>
         <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
-          <X size={22} color={color.forestInk} strokeWidth={2} />
+          <X size={22} color={color.iconInk} strokeWidth={2} />
         </Pressable>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Add a guest</Text>
         <TextField label="Guest name" placeholder="Rahul" value={name} onChangeText={setName} autoCapitalize="words" maxLength={60} autoFocus
@@ -50,7 +50,7 @@ export default function AddGuest() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { flex: 1, paddingHorizontal: space.s20, paddingTop: space.s20, gap: space.s20 },
-  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.neutralWash, alignItems: "center", justifyContent: "center" },
+  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
   heading: { ...type.sheetTitle, color: color.obsidian },
   footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },
 });

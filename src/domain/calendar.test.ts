@@ -1,10 +1,10 @@
-import { addMonths, dayLabel, daysInMonth, isoOf, monthGrid, monthsFrom, monthTitle, nextRange, parseIso, rangeRole, weekdayOf } from "./calendar";
+import { addMonths, dayLabel, daysInMonth, isoOf, monthGrid, monthsFrom, monthTitle, nextRange, parseIso, rangeRole, weekdayOf, isWeekendColumn, WEEKDAYS } from "./calendar";
 
-test("the Figma example month: November 2022 starts on a Tuesday and has 30 days over five rows", () => {
+test("November 2022 starts on a Tuesday and has 30 days over five rows", () => {
   const grid = monthGrid({ year: 2022, month: 10 });
   expect(grid).toHaveLength(5);
-  expect(grid[0]).toEqual([null, 1, 2, 3, 4, 5, 6]);
-  expect(grid[4]).toEqual([28, 29, 30, null, null, null, null]);
+  expect(grid[0]).toEqual([null, null, 1, 2, 3, 4, 5]);   // weeks start on Sunday, so a Tuesday is the third column
+  expect(grid[4]).toEqual([27, 28, 29, 30, null, null, null]);
   expect(monthTitle({ year: 2022, month: 10 })).toBe("November 2022");
 });
 
@@ -72,4 +72,12 @@ test("rangeRole marks start, middle, end, and single days, and nothing outside",
 
 test("monthsFrom lists consecutive months across a year end", () => {
   expect(monthsFrom({ year: 2026, month: 10 }, 3)).toEqual([{ year: 2026, month: 10 }, { year: 2026, month: 11 }, { year: 2027, month: 0 }]);
+});
+
+test("the week starts on Sunday: 1 Oct 2026 is a Thursday, so it sits in the fifth column, and Sunday and Saturday are the weekend", () => {
+  expect(WEEKDAYS[0]).toBe("Sun");
+  expect(monthGrid({ year: 2026, month: 9 })[0]).toEqual([null, null, null, null, 1, 2, 3]);
+  expect(monthGrid({ year: 2026, month: 10 })[0]).toEqual([1, 2, 3, 4, 5, 6, 7]);   // 1 Nov 2026 is a Sunday
+  expect([0, 1, 2, 3, 4, 5, 6].filter(isWeekendColumn)).toEqual([0, 6]);
+  expect(dayLabel(2026, 9, 1)).toBe("Thursday 1 October 2026");
 });

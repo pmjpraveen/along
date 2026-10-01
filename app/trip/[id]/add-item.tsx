@@ -66,7 +66,7 @@ export default function AddItem() {
     <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
       <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={s.content}>
         <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
-          <X size={22} color={color.forestInk} strokeWidth={2} />
+          <X size={22} color={color.iconInk} strokeWidth={2} />
         </Pressable>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Plan details</Text>
 
@@ -111,11 +111,11 @@ export default function AddItem() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { paddingHorizontal: space.s20, paddingTop: space.s20, paddingBottom: space.s24, gap: space.s20 },
-  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.neutralWash, alignItems: "center", justifyContent: "center" },
+  close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
   heading: { ...type.sheetTitle, color: color.obsidian },
   chipScroll: { flexGrow: 0 },
   chips: { gap: space.s8 },
-  chip: { minHeight: 44, paddingHorizontal: space.s16, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
+  chip: { minHeight: 44, paddingHorizontal: space.s16, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.buttonGrey },
   chipOn: { backgroundColor: color.darkMaroon },
   chipText: { ...type.buttonLarge, fontFamily: font.regular, color: color.slate },
   chipDay: { fontFamily: font.medium, color: color.forestInk },

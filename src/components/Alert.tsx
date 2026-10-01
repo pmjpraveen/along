@@ -54,7 +54,7 @@ export function Alert({ variant = "neutral", title, children, actionLabel, onAct
       </View>
       {onDismiss && !critical && (
         <Pressable accessibilityRole="button" accessibilityLabel="Dismiss" onPress={onDismiss} hitSlop={12} style={s.dismiss}>
-          <X size={14} color={color.forestInk} strokeWidth={2.5} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
+          <X size={14} color={color.iconInk} strokeWidth={2.5} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
         </Pressable>
       )}
     </View>
@@ -73,5 +73,5 @@ const s = StyleSheet.create({
   cardText: { ...type.fieldMessage, color: color.charcoal },
   title: { ...type.buttonLarge, color: color.obsidian },
   onRed: { color: color.paper },
-  dismiss: { width: 24, height: 24, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralWash },
+  dismiss: { width: 24, height: 24, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.softGrey },
 });

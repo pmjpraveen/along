@@ -18,7 +18,7 @@ type Props = {
   notification?: boolean;           // a red dot at the top right
 };
 
-// The design system's avatar (Figma "avatar"): a circle with initials on the neutral wash (Forest Ink, medium weight), a
+// The design system's avatar (Figma "avatar"): a circle with initials on light grey (#444444, medium weight), a
 // photo, or an icon. Seven sizes, 16 to 72. Guests keep the same size and spacing as everyone, with a dashed ring.
 export function Avatar({ name = "", uri, size = 40, icon, guest = false, selected = false, badge, notification = false }: Props) {
   const label = [name, guest ? "guest" : null, selected ? "selected" : null, notification ? "has a notification" : null].filter(Boolean).join(", ");
@@ -72,14 +72,14 @@ export function AvatarGroup({ people, size = 40, max = 3 }: { people: Person[]; 
 }
 
 const s = StyleSheet.create({
-  circle: { borderRadius: radius.pill, borderCurve: "continuous", overflow: "hidden", alignItems: "center", justifyContent: "center", backgroundColor: color.neutralSolid },
+  circle: { borderRadius: radius.pill, borderCurve: "continuous", overflow: "hidden", alignItems: "center", justifyContent: "center", backgroundColor: color.softGrey },
   iconCircle: { backgroundColor: color.paper, borderWidth: 1, borderColor: color.borderNeutral },
   guest: { borderWidth: 1.5, borderStyle: "dashed", borderColor: color.slate },
   selected: { borderWidth: 2, borderColor: color.forestInk },
-  initials: { fontFamily: font.medium, color: color.forestInk },
+  initials: { fontFamily: font.medium, color: color.iconInk },
   chip: { position: "absolute", right: -2, bottom: -2, alignItems: "center", justifyContent: "center", backgroundColor: color.brightGreen, borderWidth: 2, borderColor: color.paper },
   check: { backgroundColor: color.positive },
-  chipText: { fontFamily: font.medium, color: color.forestInk },
+  chipText: { fontFamily: font.medium, color: color.iconInk },
   dot: { position: "absolute", top: -1, right: -1, backgroundColor: color.alarmRed, borderWidth: 2, borderColor: color.paper },
   group: { flexDirection: "row", alignItems: "center" },
   ring: { borderWidth: 2, borderColor: color.paper },

@@ -5,7 +5,7 @@ import { Platform, StyleSheet, View } from "react-native";
 import { Pressable } from "./Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { color, radius } from "../theme/tokens";
-import { BottomSheet } from "./BottomSheet";
+import { BottomSheet, SheetRows } from "./BottomSheet";
 import { ListItem } from "./ListItem";
 
 // Open state lives in a store so the iOS native "+" tab (a separate screen) can open the sheet that the layout renders.
@@ -23,25 +23,27 @@ export function TripAddMenu({ onChoose }: { onChoose: (c: AddChoice) => void }) 
   const chosen = useRef<AddChoice | null>(null);
   const choose = (c: AddChoice) => { chosen.current = c; setOpen(false); };
   const closed = () => { const c = chosen.current; chosen.current = null; if (c) onChoose(c); };
-  const icon = (I: typeof Plus) => <View style={s.icon}><I size={22} color={color.forestInk} strokeWidth={1.75} /></View>;
+  const icon = (I: typeof Plus) => <View style={s.icon}><I size={22} color={color.iconInk} strokeWidth={1.75} /></View>;
   return (
     <>
       {Platform.OS !== "ios" && (
         <Pressable accessibilityRole="button" accessibilityLabel="Add to trip" onPress={() => setOpen(true)} style={({ pressed }) => [s.plus, { bottom: bottom + 84 }, pressed && s.pressed]}>
-          <Plus size={28} color={color.forestInk} strokeWidth={2.5} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
+          <Plus size={28} color={color.paper} strokeWidth={2.5} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
         </Pressable>
       )}
       <BottomSheet visible={open} onClose={() => setOpen(false)} onClosed={closed} title="Add to trip">
+        <SheetRows>
         <ListItem title="Itinerary item" subtitle="Something your group will do" leading={icon(CalendarPlus)} trailing="chevron" onPress={() => choose("item")} />
         <ListItem title="Guest" subtitle="A friend who isn't on the app" leading={icon(UserPlus)} trailing="chevron" onPress={() => choose("guest")} />
         <ListItem title="Expense" subtitle="Who paid, and who shares it" leading={icon(Receipt)} trailing="chevron" onPress={() => choose("expense")} />
+        </SheetRows>
       </BottomSheet>
     </>
   );
 }
 
 const s = StyleSheet.create({
-  plus: { position: "absolute", right: 20, width: 56, height: 56, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.brightGreen, alignItems: "center", justifyContent: "center" },
-  pressed: { backgroundColor: color.secondaryFill },
-  icon: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.neutralWash, alignItems: "center", justifyContent: "center" },
+  plus: { position: "absolute", right: 20, width: 56, height: 56, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.brandBlack, alignItems: "center", justifyContent: "center" },
+  pressed: { opacity: 0.8 },
+  icon: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
 });
