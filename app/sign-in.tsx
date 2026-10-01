@@ -40,10 +40,11 @@ export default function SignIn() {
     <View style={[s.screen, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <View style={s.hero}>
         <Image accessible accessibilityRole="image" accessibilityLabel="A group of friends with their luggage, ready to travel" accessibilityIgnoresInvertColors source={FRIENDS} resizeMode="cover" style={[s.friends, { height: photoH }]} />
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Sign in</Text>
-        <Text maxFontSizeMultiplier={1.4} style={s.body}>Continue with your Google account to start.</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Welcome to along</Text>
+        <Text maxFontSizeMultiplier={1.4} style={s.body}>Plan the days, split the costs and keep the memories, together with your group. Sign in with Google to start.</Text>
         {error && <Alert variant="negative">{error}</Alert>}
       </View>
+      <Text maxFontSizeMultiplier={1.4} style={s.privacy}>We only use your name and email to set up your account. We never post anything.</Text>
       <PrimaryButton label="Continue with Google" busy={busy} onPress={onPress} />
       <Text maxFontSizeMultiplier={1.4} style={s.legal}>
         By continuing you agree to the{" "}
@@ -67,6 +68,7 @@ const s = StyleSheet.create({
   hero: { flex: 1, gap: space.s16 },
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   body: { ...type.body, color: color.charcoal },
+  privacy: { ...type.fieldMessage, textAlign: "center", color: color.slate, marginBottom: space.s12 },
   legal: { ...type.fieldMessage, textAlign: "center", color: color.slate, marginTop: space.s12 },
   link: { color: color.forestInk, textDecorationLine: "underline" },
   dev: { gap: space.s8, marginTop: space.s16 },

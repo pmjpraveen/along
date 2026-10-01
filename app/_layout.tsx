@@ -2,7 +2,8 @@ import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { View } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
+import { AnimatedSplash } from "../src/components/AnimatedSplash";
 import { OfflineBanner } from "../src/components/OfflineBanner";
 import { Toast } from "../src/components/Toast";
 import { StatusBarScrim } from "../src/components/StatusBarScrim";
@@ -22,17 +23,16 @@ export default function Layout() {
     "GeistSans-Medium": require("../assets/fonts/GeistSans-Medium.ttf"),
   });
   const ready = status !== "loading" && (fontsLoaded || !!fontError);
-  useEffect(() => {
-    if (ready) SplashScreen.hideAsync();
-  }, [ready]);
+  const [splashDone, setSplashDone] = useState(false);
+  const hideNative = useCallback(() => { SplashScreen.hideAsync(); }, []);   // the animated splash's first frame is identical, so swap at once
+  const endSplash = useCallback(() => setSplashDone(true), []);
   // The offline queue only runs while signed in, so a queued expense is never sent (or rejected) without a session.
   useEffect(() => { if (status === "in") startSync(); }, [status]);
-  if (!ready) return null;
 
   return (
     <View style={{ flex: 1 }}>
       {/* Order matters: the first available screen is where the app starts, so the invite link screen must not come first. */}
-      <Stack screenOptions={{ headerShown: false }}>
+      {ready && <Stack screenOptions={{ headerShown: false }}>
         <Stack.Protected guard={status === "in"}>
           <Stack.Screen name="index" />
           <Stack.Screen name="notifications" />
@@ -50,10 +50,11 @@ export default function Layout() {
           <Stack.Screen name="sign-in" />
         </Stack.Protected>
         <Stack.Screen name="join/[token]" />
-      </Stack>
+      </Stack>}
       <StatusBarScrim />
       <OfflineBanner />
       <Toast />
+      {!splashDone && <AnimatedSplash ready={ready} onShown={hideNative} onDone={endSplash} />}
     </View>
   );
 }
