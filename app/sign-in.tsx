@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image, Linking, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { signInWithGoogle } from "../src/api/auth";
 import { Alert } from "../src/components/Alert";
@@ -13,6 +13,8 @@ const FRIENDS = require("../assets/illustrations/friends.jpg");
 // Any error keeps the user on this screen with a specific inline message and a retry.
 export default function SignIn() {
   const { top, bottom } = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const photoH = Math.round(((width - space.s20 * 2) * 3) / 4);   // an explicit height: the photo is tall, so it is cropped to a calm 4:3 card
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
@@ -37,12 +39,18 @@ export default function SignIn() {
   return (
     <View style={[s.screen, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <View style={s.hero}>
-        <Image accessible accessibilityRole="image" accessibilityLabel="A group of friends with their luggage, ready to travel" accessibilityIgnoresInvertColors source={FRIENDS} style={s.friends} />
+        <Image accessible accessibilityRole="image" accessibilityLabel="A group of friends with their luggage, ready to travel" accessibilityIgnoresInvertColors source={FRIENDS} resizeMode="cover" style={[s.friends, { height: photoH }]} />
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Sign in</Text>
         <Text maxFontSizeMultiplier={1.4} style={s.body}>Continue with your Google account to start.</Text>
         {error && <Alert variant="negative">{error}</Alert>}
       </View>
       <PrimaryButton label="Continue with Google" busy={busy} onPress={onPress} />
+      <Text maxFontSizeMultiplier={1.4} style={s.legal}>
+        By continuing you agree to the{" "}
+        <Text accessibilityRole="link" onPress={() => Linking.openURL("https://getalong.xyz/terms")} style={s.link}>Terms of use</Text>
+        {" "}and the{" "}
+        <Text accessibilityRole="link" onPress={() => Linking.openURL("https://getalong.xyz/privacy")} style={s.link}>Privacy policy</Text>.
+      </Text>
       {devLoginEnabled() && (
         <View style={s.dev}>
           <Text maxFontSizeMultiplier={1.3} style={s.devLabel}>Development only: sign in as a test person</Text>
@@ -55,19 +63,12 @@ export default function SignIn() {
 
 const s = StyleSheet.create({
   screen: { flex: 1, paddingHorizontal: space.s20, backgroundColor: color.paper },
-  friends: { width: "100%", aspectRatio: 3 / 2, borderRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.neutralWash },
+  friends: { width: "100%", borderRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.neutralWash },
   hero: { flex: 1, gap: space.s16 },
   heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
   body: { ...type.body, color: color.charcoal },
-  error: { flexDirection: "row", gap: space.s8, padding: space.s12, borderRadius: radius.input, borderCurve: "continuous", borderWidth: 1.5, borderColor: color.alarmRed },
-  errorIcon: { color: color.alarmRed, fontSize: 16, lineHeight: 20 },
-  errorText: { ...type.label, flex: 1, color: color.alarmRed },
-  button: {
-    minHeight: 56, paddingHorizontal: space.s24, alignItems: "center", justifyContent: "center",
-    borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.brightGreen, borderWidth: 1, borderColor: color.forestInk,
-  },
-  pressed: { opacity: 0.8 },
+  legal: { ...type.fieldMessage, textAlign: "center", color: color.slate, marginTop: space.s12 },
+  link: { color: color.forestInk, textDecorationLine: "underline" },
   dev: { gap: space.s8, marginTop: space.s16 },
   devLabel: { ...type.label, color: color.charcoal },
-  label: { ...type.label, color: color.forestInk },
 });
