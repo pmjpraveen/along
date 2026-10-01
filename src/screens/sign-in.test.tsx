@@ -13,7 +13,7 @@ jest.mock("../api/devAuth", () => ({
 jest.mock("expo-router", () => ({ useRouter: () => ({ push: mockPush, replace: mockPush }) }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 
-const press = async () => fireEvent.press(screen.getByRole("button", { name: "Continue with Google" }));
+const press = async () => fireEvent.press(screen.getByRole("button", { name: "Login with Google" }));
 beforeEach(() => { jest.clearAllMocks(); mockDev = false; });
 
 test("US-04 a failed sign-in shows the specific error inline and does not navigate", async () => {
@@ -45,7 +45,7 @@ test("US-04 dismissing the Google picker shows no error", async () => {
 test("dev sign-in buttons are not shown unless dev login is on", async () => {
   await render(<SignIn />);
   expect(screen.queryByRole("button", { name: /Sign in as/ })).toBeNull();
-  expect(screen.getByRole("button", { name: "Continue with Google" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Login with Google" })).toBeTruthy();
 });
 
 test("with dev login on, a test person can be picked, and a failure shows what to do", async () => {

@@ -1,23 +1,26 @@
 import { useState } from "react";
 import { ActivityIndicator, Platform, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
+import { PassportShine } from "./PassportShine";
 import { color, radius, space, type } from "../theme/tokens";
 
-export type ButtonType = "primary" | "secondary" | "secondaryNeutral" | "destructive" | "tertiary";
+export type ButtonType = "primary" | "secondary" | "secondaryNeutral" | "destructive" | "tertiary" | "dark";
 export type ButtonSize = "large" | "medium" | "small";
 
 type Props = {
   label: string; onPress: () => void; type?: ButtonType; size?: ButtonSize; disabled?: boolean; busy?: boolean;
   accessibilityHint?: string; align?: "start" | "center";
+  shine?: number;   // a glint sweeps across the button this many times when it appears (0 or unset: none)
 };
 
 // The design system's button (Figma "buttons" page): five types x three sizes x active/disabled, all pills.
 //   primary          Bright Green fill, Forest Ink label       secondary  pale green fill, Forest Ink label
 //   secondaryNeutral Forest Ink at 8% fill, Forest Ink label   destructive white fill, red 1px border and label
 //   tertiary         no fill, underlined Forest Ink label
+//   dark             #222222 fill, white label, 16px smooth corners, 56 tall (the sign-in and empty-state call to action)
 // Disabled: fills fall back to the neutral wash with a Pebble label; tertiary goes to the faint border colour.
 // Sizes: large 52 (fills the width), medium 44, small 30. Small and medium keep a 44/48 touch area through hit slop.
-export function Button({ label, onPress, type: kind = "primary", size = "large", disabled = false, busy = false, accessibilityHint, align = "start" }: Props) {
+export function Button({ label, onPress, type: kind = "primary", size = "large", disabled = false, busy = false, accessibilityHint, align = "start", shine = 0 }: Props) {
   const [focused, setFocused] = useState(false);
   const inactive = disabled || busy;
   const box = [
@@ -27,19 +30,20 @@ export function Button({ label, onPress, type: kind = "primary", size = "large",
   const hugs = size !== "large";
   const labelStyle = [
     size === "small" ? type_.small : type_.large,
-    { color: disabled ? (kind === "tertiary" ? color.borderNeutral : color.pebble) : kind === "destructive" ? color.alarmRed : color.forestInk },
+    { color: disabled ? (kind === "tertiary" ? color.borderNeutral : color.pebble) : kind === "destructive" ? color.alarmRed : kind === "dark" ? color.paper : color.forestInk },
     kind === "tertiary" && s.underline,
   ];
   const slop = size === "small" ? { top: 7, bottom: 7, left: 8, right: 8 } : size === "medium" && Platform.OS === "android" ? { top: 2, bottom: 2 } : undefined;
   return (
     // Small and medium buttons hug their label; large ones fill the width. The ring is an overlay, so focus never moves the layout.
     <View style={hugs ? { alignSelf: align === "center" ? "center" : "flex-start" } : undefined}>
-      {focused && <View testID="focus-ring" pointerEvents="none" style={s.ring} />}
+      {focused && <View testID="focus-ring" pointerEvents="none" style={[s.ring, kind === "dark" && { borderRadius: radius.card + 4 }]} />}
       <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityHint={accessibilityHint}
         accessibilityState={{ disabled, busy }} disabled={inactive} onPress={onPress} hitSlop={slop}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
-        style={({ pressed }) => [...box, pressed && !inactive && s.pressed]}>
+        style={({ pressed }) => [...box, shine > 0 && s.clip, pressed && !inactive && s.pressed]}>
         {busy ? <ActivityIndicator color={color.forestInk} /> : <Text maxFontSizeMultiplier={1.3} style={labelStyle}>{label}</Text>}
+        {shine > 0 && !inactive && <PassportShine sweeps={shine} restMs={500} sweepMs={900} still={false} />}
       </Pressable>
     </View>
   );
@@ -58,6 +62,7 @@ const s = StyleSheet.create({
   // Figma "focus button": a 2px Forest Ink ring 2px outside the button.
   ring: { position: "absolute", top: -4, left: -4, right: -4, bottom: -4, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 2, borderColor: color.forestInk },
   pressed: { opacity: 0.8 },
+  clip: { overflow: "hidden" },
   underline: { textDecorationLine: "underline" },
 });
 
@@ -73,6 +78,7 @@ const typeBox = StyleSheet.create({
   secondaryNeutral: { backgroundColor: color.neutralWash },
   destructive: { backgroundColor: color.paper, borderColor: color.alarmRed },
   tertiary: { backgroundColor: "transparent", paddingHorizontal: 2, paddingVertical: 4 },
+  dark: { backgroundColor: color.brandBlack, borderRadius: radius.card, minHeight: 56 },
 });
 
 const disabledBox = StyleSheet.create({
@@ -81,4 +87,5 @@ const disabledBox = StyleSheet.create({
   secondaryNeutral: { backgroundColor: color.neutralWash },
   destructive: { backgroundColor: color.paper, borderColor: color.borderNeutral },
   tertiary: {},
+  dark: { backgroundColor: color.neutralWash },
 });

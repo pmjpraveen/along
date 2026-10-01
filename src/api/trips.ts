@@ -146,6 +146,20 @@ export async function updateTripDates(tripId: string, start: string, end: string
   }
 }
 
+// The owner removes the trip for everyone. The server only marks it deleted (its money rows are kept), so there is nothing to undo here.
+export async function deleteTrip(tripId: string): Promise<CompleteResult> {
+  try {
+    const { error } = await supabase.rpc("delete_trip", { p_trip: tripId });
+    if (!error) return { ok: true };
+    if (isOffline(error.message)) return { ok: false, message: OFFLINE };
+    if (error.code === "42501") return { ok: false, message: "Only the trip owner can delete the trip." };
+    if (error.code === "P0002") return { ok: false, message: "This trip has already been deleted." };
+    return { ok: false, message: "Couldn't delete the trip. Try again." };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}
+
 export async function setTripCurrency(tripId: string, code: string): Promise<CompleteResult> {
   try {
     const { error } = await supabase.rpc("set_trip_currency", { p_trip: tripId, p_currency: code });

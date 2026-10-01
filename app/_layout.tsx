@@ -46,7 +46,6 @@ export default function Layout() {
           <Stack.Screen name="create-trip" options={{ presentation: "modal" }} />
         </Stack.Protected>
         <Stack.Protected guard={status === "out"}>
-          <Stack.Screen name="welcome" />
           <Stack.Screen name="sign-in" />
         </Stack.Protected>
         <Stack.Screen name="join/[token]" />

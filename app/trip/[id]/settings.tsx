@@ -1,20 +1,23 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { CalendarDays, ChevronLeft, Coins, Flag } from "lucide-react-native";
+import { CalendarDays, ChevronLeft, Coins, Flag, Trash2 } from "lucide-react-native";
 import { useCallback, useState } from "react";
 import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { loadTripSettings, setTripCurrency, SettingsResult, updateTripDates } from "../../../src/api/trips";
+import { deleteTrip, loadTripSettings, setTripCurrency, SettingsResult, updateTripDates } from "../../../src/api/trips";
 import { Alert } from "../../../src/components/Alert";
 import { TextButton } from "../../../src/components/Buttons";
 import { RangeCalendar } from "../../../src/components/Calendar";
 import { Range } from "../../../src/domain/calendar";
 import { BottomSheet } from "../../../src/components/BottomSheet";
+import { Dialog } from "../../../src/components/Dialog";
+import { haptic } from "../../../src/haptics";
+import { toast } from "../../../src/stores/toast";
 import { ListItem } from "../../../src/components/ListItem";
 import { formatDate } from "../../../src/domain/trip";
 import { color, radius, space, type } from "../../../src/theme/tokens";
 
-// Trip settings: three things, all for the trip's owner: change the dates, change the currency (until money is involved), end the trip.
+// Trip settings, all for the trip's owner: change the dates, change the currency (until money is involved), end the trip, or delete it.
 export default function TripSettings() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
@@ -24,6 +27,8 @@ export default function TripSettings() {
   const [datesOpen, setDatesOpen] = useState(false);
   const [draft, setDraft] = useState<Range>({ start: "", end: "" });
   const [error, setError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const load = useCallback(async () => setState(await loadTripSettings(id)), [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
@@ -44,6 +49,17 @@ export default function TripSettings() {
     const res = await setTripCurrency(id, code);
     if (!res.ok) setError(res.message);
     await load();
+  };
+  const remove = async () => {
+    if (deleting) return;
+    setDeleting(true);
+    const res = await deleteTrip(id);
+    setDeleting(false);
+    setConfirmDelete(false);
+    if (!res.ok) { setError(res.message); return; }
+    haptic.success();
+    toast("Trip deleted");
+    router.replace("/");
   };
   const icon = (I: typeof Flag) => <View style={s.icon}><I size={22} color={color.forestInk} strokeWidth={1.75} /></View>;
 
@@ -78,6 +94,17 @@ export default function TripSettings() {
               trailing={editable ? "chevron" : "none"} disabled={!editable} onPress={editable ? () => router.push({ pathname: "/trip/[id]/complete", params: { id } }) : undefined} />
           </View>
 
+          {x.isOwner && (
+            <View style={s.list}>
+              <ListItem title="Delete trip" subtitle="Removes it for everyone on the trip" leading={<View style={s.icon}><Trash2 size={22} color={color.alarmRed} strokeWidth={1.75} /></View>}
+                trailing="chevron" onPress={() => setConfirmDelete(true)} />
+            </View>
+          )}
+
+          <Dialog visible={confirmDelete} onClose={() => setConfirmDelete(false)} title="Delete this trip?" subheader="This can't be undone"
+            body="The trip, its plans and its expenses will disappear for everyone on it."
+            actionLabel={deleting ? "Deleting…" : "Delete trip"} actionType="destructive" onAction={remove} actionBusy={deleting}
+            secondaryLabel="Keep the trip" onSecondary={() => setConfirmDelete(false)} />
           <BottomSheet visible={datesOpen} onClose={() => setDatesOpen(false)} title="Modify dates" actionLabel="Confirm" actionType="secondaryNeutral" actionDisabled={!draft.end} onAction={dates}>
             <RangeCalendar value={draft} onChange={setDraft} />
           </BottomSheet>

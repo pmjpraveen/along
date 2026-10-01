@@ -25,7 +25,7 @@ export const product = {
 export const color = {
   // Named as DESIGN.md names them, each pointing at its Figma source above.
   brightGreen: core.brightGreen, forestInk: core.forestGreen,
-  obsidian: product.content.primary, charcoal: product.content.secondary, slate: product.content.tertiary, pebble: product.interactive.secondary,
+  brandBlack: "#222222", obsidian: product.content.primary, charcoal: product.content.secondary, slate: product.content.tertiary, pebble: product.interactive.secondary,
   paper: product.background.screen, neutralWash: product.background.neutral, borderNeutral: product.border.neutral, control: product.interactive.control,
   alarmRed: product.sentiment.negative, positive: product.sentiment.positive, warning: product.sentiment.warning,
   ...secondary,

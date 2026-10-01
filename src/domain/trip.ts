@@ -28,3 +28,8 @@ export function validateTrip(d: TripDraft, today?: string): TripErrors {
   else if (!e.start && d.end < d.start) e.end = "End date can't be before the start date.";
   return e;
 }
+
+// Trips that are happening now come first; every other trip keeps the order it already had.
+export function ongoingFirst<T extends { phase: string }>(trips: T[]): T[] {
+  return [...trips.filter((t) => t.phase === "active"), ...trips.filter((t) => t.phase !== "active")];
+}

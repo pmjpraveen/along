@@ -5,11 +5,13 @@ const mockLoad = jest.fn();
 const mockDates = jest.fn();
 const mockCurrency = jest.fn();
 const mockPush = jest.fn();
+const mockDelete = jest.fn();
+const mockReplace = jest.fn();
 jest.mock("../api/trips", () => ({
-  loadTripSettings: (...a: unknown[]) => mockLoad(...a), updateTripDates: (...a: unknown[]) => mockDates(...a), setTripCurrency: (...a: unknown[]) => mockCurrency(...a),
+  loadTripSettings: (...a: unknown[]) => mockLoad(...a), updateTripDates: (...a: unknown[]) => mockDates(...a), setTripCurrency: (...a: unknown[]) => mockCurrency(...a), deleteTrip: (...a: unknown[]) => mockDelete(...a),
 }));
 jest.mock("expo-router", () => ({
-  useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush, back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
+  useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush, back: jest.fn(), canGoBack: () => true, replace: mockReplace }),
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
 }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
@@ -18,13 +20,14 @@ const settings = (o: object = {}) => ({ ok: true, settings: { start: "2026-12-01
   currencies: [{ code: "INR", name: "Indian rupee" }, { code: "USD", name: "US dollar" }], ...o } });
 beforeEach(() => { jest.clearAllMocks(); mockLoad.mockResolvedValue(settings()); });
 
-test("Trip settings has exactly three options: modify dates, currency and end trip, with the dates and currency shown", async () => {
+test("Trip settings offers modify dates, currency, end trip and delete trip, with the dates and currency shown", async () => {
   await render(<TripSettings />);
   expect(await screen.findByText("01-12-2026 → 05-12-2026")).toBeTruthy();
   expect(screen.getByText("INR")).toBeTruthy();
   expect(screen.getByRole("button", { name: /^Modify dates/ })).toBeTruthy();
   expect(screen.getByRole("button", { name: /^Currency/ })).toBeTruthy();
   expect(screen.getByRole("button", { name: /^End trip/ })).toBeTruthy();
+  expect(screen.getByRole("button", { name: /^Delete trip/ })).toBeTruthy();
 });
 
 test("End trip opens the review and confirm screen", async () => {
@@ -73,4 +76,39 @@ test("a load failure offers retry", async () => {
   await render(<TripSettings />);
   await fireEvent.press(await screen.findByRole("button", { name: "Retry" }));
   expect(await screen.findByText("INR")).toBeTruthy();
+});
+
+test("Delete trip asks first, then deletes once and goes back to Home", async () => {
+  mockDelete.mockResolvedValue({ ok: true });
+  await render(<TripSettings />);
+  await fireEvent.press(await screen.findByRole("button", { name: /^Delete trip/ }));
+  expect(mockDelete).not.toHaveBeenCalled();
+  expect(screen.getByText("Delete this trip?")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Delete trip" }));
+  await waitFor(() => expect(mockDelete).toHaveBeenCalledWith("t1"));
+  expect(mockDelete).toHaveBeenCalledTimes(1);
+  expect(mockReplace).toHaveBeenCalledWith("/");
+});
+
+test("choosing Keep the trip deletes nothing", async () => {
+  await render(<TripSettings />);
+  await fireEvent.press(await screen.findByRole("button", { name: /^Delete trip/ }));
+  await fireEvent.press(screen.getByRole("button", { name: "Keep the trip" }));
+  expect(mockDelete).not.toHaveBeenCalled();
+});
+
+test("a failed delete keeps the trip and shows why", async () => {
+  mockDelete.mockResolvedValue({ ok: false, message: "No connection. Check your internet and try again." });
+  await render(<TripSettings />);
+  await fireEvent.press(await screen.findByRole("button", { name: /^Delete trip/ }));
+  await fireEvent.press(screen.getByRole("button", { name: "Delete trip" }));
+  expect(await screen.findByRole("alert")).toHaveTextContent(/No connection/);
+  expect(mockReplace).not.toHaveBeenCalled();
+});
+
+test("only the owner sees Delete trip", async () => {
+  mockLoad.mockResolvedValue(settings({ isOwner: false }));
+  await render(<TripSettings />);
+  await screen.findByText("INR");
+  expect(screen.queryByRole("button", { name: /^Delete trip/ })).toBeNull();
 });

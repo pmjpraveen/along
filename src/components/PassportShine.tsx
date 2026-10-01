@@ -4,24 +4,27 @@ import { StyleSheet, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withRepeat, withTiming } from "react-native-reanimated";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 
-// A glint that sweeps across the passport cover, then rests, three times when the screen opens, and only while it is in front. Two slanted bands of light (a wide soft one and a thin bright one)
-// travel left to right, clipped by the card. With Reduce Motion on it stays still, resting on the cover. Ignores touches.
+// A glint that sweeps across a surface, then rests, `sweeps` times when the screen opens, and only while it is in front (the passport cover plays it
+// three times, the Start new trip button twice). Two slanted bands of light (a wide soft one and a thin bright one)
+// travel left to right, clipped by the surface they sit on. With Reduce Motion on, the passport keeps a still highlight; with `still` off nothing
+// shows at all. Ignores touches.
 const SWEEP_MS = 1600;
 const REST_MS = 3200;
 
-export function PassportShine() {
+export function PassportShine({ sweeps = 3, restMs = REST_MS, sweepMs = SWEEP_MS, still = true }: { sweeps?: number; restMs?: number; sweepMs?: number; still?: boolean }) {
   const reduced = useReducedMotion();
   const focused = useIsFocused();
   const [width, setWidth] = useState(0);
   const x = useSharedValue(-200);
 
   useEffect(() => {
-    if (reduced || width === 0 || !focused) { x.value = width * 0.38; return; }
+    if (reduced || width === 0 || !focused) { x.value = still ? width * 0.38 : width + 400; return; }
     x.value = -200;
-    x.value = withRepeat(withDelay(REST_MS, withTiming(width + 200, { duration: SWEEP_MS, easing: Easing.inOut(Easing.quad) })), 3, false);
-  }, [reduced, focused, width, x]);
+    x.value = withRepeat(withDelay(restMs, withTiming(width + 200, { duration: sweepMs, easing: Easing.inOut(Easing.quad) })), sweeps, false);
+  }, [reduced, focused, width, x, sweeps, restMs, sweepMs, still]);
 
   const style = useAnimatedStyle(() => ({ transform: [{ translateX: x.value }] }));
+  if (reduced && !still) return null;
   return (
     <View pointerEvents="none" style={StyleSheet.absoluteFill} onLayout={(e) => setWidth(e.nativeEvent.layout.width)}>
       <Animated.View style={[s.track, style]}>

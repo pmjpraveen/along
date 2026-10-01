@@ -1,10 +1,9 @@
 import { Redirect, useFocusEffect, useRouter } from "expo-router";
-import { Bell, History, Users } from "lucide-react-native";
+import { Bell, History } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
 import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { unreadCount } from "../src/api/notifications";
 import { loadMyName } from "../src/api/profile";
 import { listTrips, TripCard, TripListResult } from "../src/api/trips";
@@ -12,23 +11,25 @@ import { Alert } from "../src/components/Alert";
 import { ProgressiveBlur } from "../src/components/ProgressiveBlur";
 import { Avatar } from "../src/components/Avatar";
 import { Badge, BadgeVariant } from "../src/components/Badge";
-import { Card } from "../src/components/Card";
-import { PrimaryButton, TextButton } from "../src/components/Buttons";
+import { Button, TextButton } from "../src/components/Buttons";
 import { TripCover } from "../src/components/TripCover";
-import { formatRange } from "../src/domain/trip";
+import { TripNameTag } from "../src/components/TripNameTag";
+import { formatRange, ongoingFirst } from "../src/domain/trip";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
 import { useMyNotificationsRealtime } from "../src/hooks/useTripRealtime";
 import { useSession } from "../src/stores/session";
-import { color, radius, space, type } from "../src/theme/tokens";
+import { color, font, radius, space, type } from "../src/theme/tokens";
 
 const PHASE: Record<TripCard["phase"], string> = { draft: "Draft", upcoming: "Upcoming", active: "Ongoing", completed: "Completed", archived: "Archived" };
 const PHASE_BADGE: Record<TripCard["phase"], BadgeVariant> = { draft: "info", upcoming: "info", active: "neutral", completed: "info", archived: "info" };
 const NO_TRIPS = require("../assets/illustrations/no-trips.png");
-const GAP = space.s24;
-const TILT = 2;   // degrees; a tilted square is wider than its side by cos+sin, so tiles are shrunk to stay inside the 20 margins
+const GAP = space.s12;
 
-// Home: a greeting with notifications and profile on top, the trips I'm planning (history sits beside the title), a nudge to invite
-// friends, and the one primary action pinned at the bottom. Sign-in leaves invite links waiting; this sends me back to them.
+// Home: a greeting with notifications and profile on top, then the trips I'm planning (history sits beside the title), and the one primary
+// action pinned at the bottom. Sign-in leaves invite links waiting; this sends me back to them.
+// The button's glint plays once each time the app opens, not on every return to Home.
+let shineShown = false;
+
 export default function Home() {
   const router = useRouter();
   const { top, bottom } = useSafeAreaInsets();
@@ -36,6 +37,7 @@ export default function Home() {
   const pending = useSession((s) => s.pendingInvite);
   const [trips, setTrips] = useState<TripListResult | null>(null);
   const [name, setName] = useState<string | null>(null);
+  const [shine] = useState(() => { const first = !shineShown; shineShown = true; return first ? 2 : 0; });
   const [unread, setUnread] = useState(0);
   const refresh = useCallback(() => {
     listTrips().then(setTrips);
@@ -48,34 +50,24 @@ export default function Home() {
   if (pending) return <Redirect href={{ pathname: "/join/[token]", params: { token: pending } }} />;
 
   const empty = trips?.ok === true && trips.trips.length === 0;
-  const planning = trips?.ok ? trips.trips.filter((t) => t.phase !== "completed" && t.phase !== "archived") : [];
-  const tile = (width - space.s20 * 2 - GAP) / 2;   // one column
-  const rad = (TILT * Math.PI) / 180;
-  const cover = Math.floor(tile / (Math.cos(rad) + Math.sin(rad)));
+  const firstName = name?.trim().split(/\s+/)[0];
+  const planning = trips?.ok ? ongoingFirst(trips.trips.filter((t) => t.phase !== "completed" && t.phase !== "archived")) : [];
+  const tile = (width - space.s20 * 2 - GAP) / 2;   // one column of the two
 
   return (
     <View style={s.screen}>
-      <Svg style={s.glow} width="100%" height={260} pointerEvents="none">
-        <Defs>
-          <LinearGradient id="glow" x1="0" y1="0" x2="0" y2="1">
-            <Stop offset="0" stopColor={color.brightGreen} stopOpacity={0.35} />
-            <Stop offset="1" stopColor={color.brightGreen} stopOpacity={0} />
-          </LinearGradient>
-        </Defs>
-        <Rect width="100%" height="100%" fill="url(#glow)" />
-      </Svg>
-      <ScrollView style={s.scroll} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s64 + space.s48 }]}>
+      <ScrollView style={s.scroll} refreshControl={pull} contentContainerStyle={[s.content, empty && s.contentEmpty, { paddingTop: top + space.s8, paddingBottom: empty ? bottom + space.s16 : bottom + space.s64 + space.s48 }]}>
         <View style={s.top}>
           <View style={s.greeting}>
             <Text maxFontSizeMultiplier={1.3} style={s.hi}>Hi,</Text>
-            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.name}>{name ?? "traveller"}</Text>
+            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.name}>{firstName || "traveller"}</Text>
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"} onPress={() => router.push("/notifications")} style={s.round}>
-            <Bell size={22} color={color.forestInk} strokeWidth={1.75} />
+            <Bell size={20} color={color.forestInk} strokeWidth={1.75} />
             {unread > 0 && <View style={s.dot} />}
           </Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel="Profile and travel passport" onPress={() => router.push("/profile")} hitSlop={space.s4}>
-            <Avatar name={name ?? ""} size={48} />
+            <Avatar name={name ?? ""} size={40} />
           </Pressable>
         </View>
 
@@ -99,37 +91,27 @@ export default function Home() {
             <Image accessible accessibilityRole="image" accessibilityLabel="A traveller sitting on a bag, reading a map" accessibilityIgnoresInvertColors source={NO_TRIPS} style={s.emptyImage} resizeMode="contain" />
             <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.emptyTitle}>No trips planned</Text>
             <Text maxFontSizeMultiplier={1.4} style={s.emptyBody}>Plan new trip now with your friends</Text>
-            <View style={s.emptyAction}><PrimaryButton label="Start new trip" onPress={() => router.push("/create-trip")} /></View>
+            <View style={s.emptyAction}><Button label="Start new trip" type="dark" shine={shine} onPress={() => router.push("/create-trip")} /></View>
           </View>
         ) : (
           <View style={s.grid}>
             {planning.map((t, i) => (
-              <Pressable key={t.id} accessibilityRole="button" accessibilityLabel={`${t.name}, ${PHASE[t.phase]}`} style={{ width: tile, gap: space.s8 }}
+              <Pressable key={t.id} accessibilityRole="button" accessibilityLabel={`${t.name}, ${t.destination_name}, ${formatRange(t.start_date, t.end_date)}, ${PHASE[t.phase]}`} style={{ width: tile, gap: space.s8 }}
                 onPress={() => router.push({ pathname: "/trip/[id]", params: { id: t.id } })}>
-                {/* A playful tilt, alternating left and right; the words underneath stay level. */}
-                <View style={{ width: cover, alignSelf: "center", transform: [{ rotate: `${i % 2 === 0 ? -TILT : TILT}deg` }] }}>
+                <View>
                   <TripCover uri={t.coverUrl} destination={t.destination_name} ratio={1} />
                   <View style={s.badge}><Badge variant={PHASE_BADGE[t.phase]} label={PHASE[t.phase]} /></View>
                 </View>
-                <View>
-                  <Text maxFontSizeMultiplier={1.3} style={s.tripName}>{t.name}</Text>
-                  <Text maxFontSizeMultiplier={1.4} style={s.dates}>{formatRange(t.start_date, t.end_date)}</Text>
+                <View style={s.meta}>
+                  <View style={s.datePill}><Text maxFontSizeMultiplier={1.3} style={s.dateText}>{formatRange(t.start_date, t.end_date)}</Text></View>
+                  <TripNameTag key={t.name} name={t.name} maxWidth={tile} tilt={i % 2 === 0 ? -2 : 2} />
+                  <Text maxFontSizeMultiplier={1.3} style={s.place}>{t.destination_name}</Text>
                 </View>
               </Pressable>
             ))}
           </View>
         )}
 
-        {planning.length > 0 && (
-          <>
-            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={[s.section, { marginTop: space.s24 }]}>Invite friends</Text>
-            <Card accessibilityLabel={`Invite friends to ${planning[0].name}`} onPress={() => router.push({ pathname: "/trip/[id]", params: { id: planning[0].id } })} style={s.invite}>
-              <Users size={28} color={color.forestInk} strokeWidth={1.75} />
-              <Text maxFontSizeMultiplier={1.3} style={s.inviteTitle}>Bring people along</Text>
-              <Text maxFontSizeMultiplier={1.4} style={s.body}>Share the invite link for {planning[0].name}.</Text>
-            </Card>
-          </>
-        )}
       </ScrollView>
       {!empty && trips?.ok && (
       <>
@@ -137,7 +119,7 @@ export default function Home() {
       {/* The bar floats over the list; a blur that thins out toward the top lets it melt into the page. */}
       <View pointerEvents="box-none" style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
         <ProgressiveBlur edge="bottom" />
-        <PrimaryButton label="Start new trip" onPress={() => router.push("/create-trip")} />
+        <Button label="Start new trip" type="dark" shine={shine} onPress={() => router.push("/create-trip")} />
       </View>
       </>
       )}
@@ -147,31 +129,30 @@ export default function Home() {
 
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
-  glow: { position: "absolute", top: 0, left: 0, right: 0 },
   scroll: { flex: 1 },
   content: { paddingHorizontal: space.s20, gap: space.s12 },
   top: { flexDirection: "row", alignItems: "center", gap: space.s8, marginBottom: space.s8 },
   greeting: { flex: 1 },
-  hi: { ...type.fieldValue, color: color.obsidian },
-  name: { ...type.sheetTitle, fontSize: 24, lineHeight: 30, letterSpacing: -0.4, color: color.obsidian },
-  round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper, borderWidth: 1, borderColor: color.borderNeutral, alignItems: "center", justifyContent: "center" },
-  roundSmall: { width: 36, height: 36, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper, borderWidth: 1, borderColor: color.borderNeutral, alignItems: "center", justifyContent: "center" },
-  dot: { position: "absolute", top: 10, right: 12, width: 9, height: 9, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.alarmRed },
+  hi: { ...type.fieldMessage, color: color.obsidian },
+  name: { ...type.sheetTitle, fontSize: 20, lineHeight: 26, letterSpacing: -0.3, color: color.obsidian },
+  round: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper, borderWidth: 1, borderColor: color.borderNeutral, alignItems: "center", justifyContent: "center" },
+  roundSmall: { width: 32, height: 32, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper, borderWidth: 1, borderColor: color.borderNeutral, alignItems: "center", justifyContent: "center" },
+  dot: { position: "absolute", top: 8, right: 10, width: 9, height: 9, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.alarmRed },
   sectionRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: space.s8 },
-  section: { ...type.fieldValue, color: color.charcoal },
-  grid: { flexDirection: "row", flexWrap: "wrap", columnGap: GAP, rowGap: space.s24 },
-  badge: { position: "absolute", top: space.s12, left: space.s12, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper },
-  tripName: { ...type.label, color: color.obsidian },
-  dates: { ...type.fieldMessage, color: color.charcoal },
-  invite: { minHeight: 128, justifyContent: "center", gap: space.s8, padding: space.s20, borderRadius: radius.sheet , borderCurve: "continuous"},
-  inviteTitle: { ...type.label, color: color.obsidian },
+  section: { ...type.fieldMessage, color: color.charcoal },
+  grid: { flexDirection: "row", flexWrap: "wrap", columnGap: GAP, rowGap: space.s32 },
+  badge: { position: "absolute", bottom: space.s12, left: space.s12, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper },
+  meta: { alignItems: "center", gap: space.s8 },
+  datePill: { paddingHorizontal: space.s8, paddingVertical: 2, borderRadius: 6, borderCurve: "continuous", backgroundColor: color.neutralSolid },
+  dateText: { fontFamily: font.medium, fontSize: 12, lineHeight: 16, color: color.charcoal, fontVariant: ["tabular-nums"] },
+  place: { fontFamily: font.medium, fontSize: 12, lineHeight: 16, textAlign: "center", color: color.obsidian },
   footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: space.s20, paddingTop: space.s48 },
   blurStep: { position: "absolute", left: 0, right: 0, bottom: 0 },
   gap: { gap: space.s8 },
-  empty: { alignItems: "center", gap: space.s8, marginTop: space.s48 },
-  emptyImage: { width: 240, height: 240, marginBottom: space.s16 },
+  contentEmpty: { flexGrow: 1 },
+  empty: { flex: 1, alignItems: "center", justifyContent: "center", gap: space.s8 },
+  emptyImage: { width: 150, height: 150, marginBottom: space.s4 },
   emptyTitle: { ...type.sheetTitle, fontSize: 24, lineHeight: 30, letterSpacing: -0.4, textAlign: "center", color: color.obsidian },
-  emptyBody: { ...type.fieldValue, textAlign: "center", color: color.charcoal },
+  emptyBody: { ...type.fieldValue, textAlign: "center", color: color.slate },
   emptyAction: { alignSelf: "stretch", marginTop: space.s16 },
-  body: { ...type.fieldValue, color: color.charcoal },
 });

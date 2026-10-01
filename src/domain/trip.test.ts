@@ -1,4 +1,4 @@
-import { compactDate, formatDate, formatRange, toIso, validateTrip } from "./trip";
+import { compactDate, formatDate, formatRange, ongoingFirst, toIso, validateTrip } from "./trip";
 
 const ok = { name: "Goa", destination: "Goa, India", start: "2026-12-01", end: "2026-12-05" };
 
@@ -35,4 +35,19 @@ test("compactDate writes day, month and year the way a passport's machine-readab
   expect(compactDate("2026-09-08")).toBe("08SEP26");
   expect(compactDate("2025-12-31")).toBe("31DEC25");
   expect(compactDate("")).toBe("");
+});
+
+describe("ongoingFirst", () => {
+  const t = (id: string, phase: string) => ({ id, phase });
+  test("an ongoing trip comes first, however late it appears", () => {
+    expect(ongoingFirst([t("a", "upcoming"), t("b", "draft"), t("c", "active")]).map((x) => x.id)).toEqual(["c", "a", "b"]);
+  });
+  test("several ongoing trips stay in their order, then the rest in theirs", () => {
+    expect(ongoingFirst([t("a", "upcoming"), t("b", "active"), t("c", "upcoming"), t("d", "active")]).map((x) => x.id)).toEqual(["b", "d", "a", "c"]);
+  });
+  test("with no ongoing trip nothing moves, and the input is not changed", () => {
+    const input = [t("a", "upcoming"), t("b", "draft")];
+    expect(ongoingFirst(input)).toEqual(input);
+    expect(input.map((x) => x.id)).toEqual(["a", "b"]);
+  });
 });

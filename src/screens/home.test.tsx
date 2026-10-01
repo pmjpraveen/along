@@ -11,7 +11,7 @@ jest.mock("../api/supabase", () => ({ supabase: {} }));
 jest.mock("../hooks/useTripRealtime", () => ({ useMyNotificationsRealtime: jest.fn() }));
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush }), Redirect: () => null,
-  useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
+  useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]), useIsFocused: () => true,
 }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 
@@ -25,8 +25,9 @@ test("Home greets me, lists trips I'm planning with their status and short dates
   expect(await screen.findByText("Asha")).toBeTruthy();
   expect(screen.getByText("Ongoing")).toBeTruthy();
   expect(screen.getByText("25 Sep - 2 Oct")).toBeTruthy();
+  expect(screen.getByText("Goa, India")).toBeTruthy();
   expect(screen.queryByText("Ooty weekend")).toBeNull();
-  await fireEvent.press(screen.getByRole("button", { name: "Goa with the gang, Ongoing" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Goa with the gang, Goa, India, 25 Sep - 2 Oct, Ongoing" }));
   expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]", params: { id: "t1" } });
 });
 
@@ -68,4 +69,13 @@ test("each trip card shows its cover photo, or the default illustration when it 
   await render(<Home />);
   expect(await screen.findByRole("image", { name: "Cover photo of Goa, India" })).toBeTruthy();
   expect(screen.getByRole("image", { name: "Ooty, India, default cover" })).toBeTruthy();
+});
+
+test("Home puts the ongoing trip first, even when it was started earlier than an upcoming one", async () => {
+  mockList.mockResolvedValue({ ok: true, trips: [trip({ id: "u", name: "Later trip", phase: "upcoming" }), trip({ id: "a", name: "Happening now", phase: "active" })] });
+  await render(<Home />);
+  await screen.findByText("Happening now");
+  const names = screen.getAllByRole("button").map((b) => b.props.accessibilityLabel as string).filter((l) => /^(Later trip|Happening now),/.test(l));
+  expect(names[0]).toMatch(/^Happening now,/);
+  expect(names[1]).toMatch(/^Later trip,/);
 });
