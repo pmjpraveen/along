@@ -2,11 +2,12 @@ import { useState } from "react";
 import { ActivityIndicator, Image, Linking, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
-import { signInWithGoogle } from "../src/api/auth";
+import { signInWithEmail, signInWithGoogle } from "../src/api/auth";
 import { Alert } from "../src/components/Alert";
 import { AlongLogo } from "../src/components/AlongLogo";
 import { DEV_PEOPLE, devLoginEnabled, signInAsDev } from "../src/api/devAuth";
-import { OutlinedButton } from "../src/components/Buttons";
+import { OutlinedButton, PrimaryButton, TextButton } from "../src/components/Buttons";
+import { TextField } from "../src/components/TextField";
 import { Pressable } from "../src/components/Pressable";
 import { color, font, radius, space, type } from "../src/theme/tokens";
 
@@ -32,12 +33,25 @@ export default function SignIn() {
   const photoW = width - space.s20 * 2;
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [emailMode, setEmailMode] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
   const onPress = async () => {
     if (busy) return;
     setBusy(true);
     setError(null);
     const r = await signInWithGoogle();
+    setBusy(false);
+    if (!r.ok && !r.cancelled) setError(r.message);
+  };
+
+  const emailSignIn = async () => {
+    if (busy) return;
+    if (!email.trim() || !password) return setError("Enter your email and password.");
+    setBusy(true);
+    setError(null);
+    const r = await signInWithEmail(email, password);
     setBusy(false);
     if (!r.ok && !r.cancelled) setError(r.message);
   };
@@ -64,14 +78,26 @@ export default function SignIn() {
         </View>
         {error && <Alert variant="negative">{error}</Alert>}
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel="Login with Google" accessibilityState={{ busy }} onPress={onPress} style={s.google}>
-        {busy ? <ActivityIndicator color={color.paper} /> : (
-          <>
-            <GoogleG size={24} />
-            <Text maxFontSizeMultiplier={1.3} style={s.googleLabel}>Login with Google</Text>
-          </>
-        )}
-      </Pressable>
+      {emailMode ? (
+        <View style={s.form}>
+          <TextField label="Email" value={email} onChangeText={setEmail} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" textContentType="username" />
+          <TextField label="Password" value={password} onChangeText={setPassword} secureTextEntry autoCapitalize="none" textContentType="password" />
+          <PrimaryButton label={busy ? "Signing in…" : "Sign in"} onPress={emailSignIn} />
+          <TextButton label="Back to Google sign-in" onPress={() => { setEmailMode(false); setError(null); }} />
+        </View>
+      ) : (
+        <>
+          <Pressable accessibilityRole="button" accessibilityLabel="Login with Google" accessibilityState={{ busy }} onPress={onPress} style={s.google}>
+            {busy ? <ActivityIndicator color={color.paper} /> : (
+              <>
+                <GoogleG size={24} />
+                <Text maxFontSizeMultiplier={1.3} style={s.googleLabel}>Login with Google</Text>
+              </>
+            )}
+          </Pressable>
+          <TextButton label="Sign in with email" onPress={() => { setEmailMode(true); setError(null); }} />
+        </>
+      )}
       <Text maxFontSizeMultiplier={1.4} style={s.legal}>
         By continuing you agree to the{" "}
         <Text accessibilityRole="link" onPress={() => open("terms")} style={s.link}>Terms of use</Text>
@@ -102,6 +128,7 @@ const s = StyleSheet.create({
   googleLabel: { ...type.buttonLarge, fontSize: 17, color: color.paper },
   legal: { ...type.fieldMessage, textAlign: "center", color: color.slate, marginTop: space.s12 },
   link: { color: color.brandBlack, textDecorationLine: "underline" },
+  form: { gap: space.s12 },
   dev: { gap: space.s8, marginTop: space.s16 },
   devLabel: { ...type.label, color: color.charcoal },
 });

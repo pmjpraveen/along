@@ -39,3 +39,15 @@ export async function signInWithGoogle(): Promise<SignInResult> {
     return fail(isOffline(e as Error) ? OFFLINE : "Something went wrong. Try again.");
   }
 }
+
+// Email and password sign-in, for an account made in the Supabase dashboard (the App Store reviewer's test account). Nobody can sign up with it:
+// the account has to exist already.
+export async function signInWithEmail(email: string, password: string): Promise<SignInResult> {
+  try {
+    const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
+    if (!error) return { ok: true };
+    return fail(isOffline(error) ? OFFLINE : error.status === 400 ? "That email or password isn't right." : "Couldn't sign you in. Try again.");
+  } catch {
+    return fail(OFFLINE);
+  }
+}

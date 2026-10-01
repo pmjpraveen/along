@@ -5,7 +5,8 @@ const mockSignIn = jest.fn();
 const mockPush = jest.fn();
 let mockDev = false;
 const mockDevSignIn = jest.fn();
-jest.mock("../api/auth", () => ({ signInWithGoogle: () => mockSignIn() }));
+const mockEmail = jest.fn();
+jest.mock("../api/auth", () => ({ signInWithGoogle: () => mockSignIn(), signInWithEmail: (...a: unknown[]) => mockEmail(...a) }));
 jest.mock("../api/devAuth", () => ({
   DEV_PEOPLE: [{ name: "Asha", email: "asha@along.test" }, { name: "Ben", email: "ben@along.test" }],
   devLoginEnabled: () => mockDev, signInAsDev: (...a: unknown[]) => mockDevSignIn(...a),
@@ -55,4 +56,22 @@ test("with dev login on, a test person can be picked, and a failure shows what t
   await fireEvent.press(screen.getByRole("button", { name: "Sign in as Ben" }));
   expect(mockDevSignIn).toHaveBeenCalledWith("ben@along.test");
   expect(await screen.findByRole("alert")).toHaveTextContent(/supabase db reset/);
+});
+
+test("the reviewer can sign in with email and password: it asks for both, shows a wrong password plainly, and goes back to Google", async () => {
+  mockEmail.mockResolvedValueOnce({ ok: false, message: "That email or password isn't right." }).mockResolvedValueOnce({ ok: true });
+  await render(<SignIn />);
+  await fireEvent.press(screen.getByRole("button", { name: "Sign in with email" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
+  expect(await screen.findByText("Enter your email and password.")).toBeTruthy();
+  expect(mockEmail).not.toHaveBeenCalled();
+  await fireEvent.changeText(screen.getByLabelText("Email"), "review@example.com");
+  await fireEvent.changeText(screen.getByLabelText("Password"), "wrong");
+  await fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
+  expect(await screen.findByText("That email or password isn't right.")).toBeTruthy();
+  await fireEvent.changeText(screen.getByLabelText("Password"), "right");
+  await fireEvent.press(screen.getByRole("button", { name: "Sign in" }));
+  await waitFor(() => expect(mockEmail).toHaveBeenLastCalledWith("review@example.com", "right"));
+  await fireEvent.press(screen.getByRole("button", { name: "Back to Google sign-in" }));
+  expect(screen.getByRole("button", { name: "Login with Google" })).toBeTruthy();
 });
