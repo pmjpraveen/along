@@ -3,7 +3,11 @@ import { toast } from "../../../src/stores/toast";
 import { haptic } from "../../../src/haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
+import { ChevronLeft } from "lucide-react-native";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable } from "../../../src/components/Pressable";
+import { Avatar } from "../../../src/components/Avatar";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BalancesResult, loadBalances } from "../../../src/api/balances";
 import { createSettlement } from "../../../src/api/settlements";
@@ -47,10 +51,13 @@ export default function Settle() {
 
   const symbol = bal?.ok ? formatMinor(0, bal.currency.exponent, bal.currency.code).replace(/[\d.,]/g, "") : "";
   return (
-    <ScrollView keyboardShouldPersistTaps="handled" style={s.screen} contentContainerStyle={[s.content, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
+    <ScrollView keyboardShouldPersistTaps="handled" style={s.screen} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
+      <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
+        <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
+      </Pressable>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Settle up</Text>
       {!bal ? (
-        <Text accessibilityLabel="Loading" style={s.body}>Loading…</Text>
+        <Skeleton label="Loading" variant="block" />
       ) : !bal.ok ? (
         <View style={s.gap}>
           <Alert variant="negative" persist>{bal.message}</Alert>
@@ -59,6 +66,10 @@ export default function Settle() {
       ) : (
         <>
           <View accessible style={s.card}>
+            <View style={s.pair}>
+              <Avatar name={nameOf(from)?.name ?? ""} guest={nameOf(from)?.guest} size={48} />
+              <Avatar name={nameOf(to)?.name ?? ""} guest={nameOf(to)?.guest} size={48} />
+            </View>
             <Text maxFontSizeMultiplier={1.4} style={s.who}>{label(from)} {label(from) === "You" ? "pay" : "pays"} {label(to)}</Text>
           </View>
           <View style={s.gap}>
@@ -77,10 +88,12 @@ export default function Settle() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
-  heading: { ...type.display, fontSize: 40, lineHeight: 40, letterSpacing: -1.4, color: color.obsidian },
+  round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
+  heading: { fontFamily: type.sheetTitle.fontFamily, fontSize: 32, lineHeight: 38, letterSpacing: -0.8, color: color.brandBlack, marginVertical: space.s8 },
+  pair: { flexDirection: "row", gap: space.s8 },
   gap: { gap: space.s8 },
-  card: { padding: space.s16, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.neutralWash },
-  who: { ...type.display, fontSize: 24, lineHeight: 28, color: color.forestInk },
+  card: { gap: space.s12, padding: space.s20, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
+  who: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.brandBlack },
   label: { ...type.label, color: color.charcoal },
   body: { ...type.body, color: color.slate },
   error: { ...type.label, color: color.alarmRed },
