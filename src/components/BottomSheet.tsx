@@ -17,6 +17,8 @@ export function SheetRows({ children }: { children: ReactNode }) {
   return <View style={s.rows}>{children}</View>;
 }
 
+const PRESENT_MS = 450;   // longer than iOS takes to present a transparent Modal
+
 type Props = {
   visible: boolean;
   onClose: () => void;
@@ -43,13 +45,12 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
   const sheetH = useSharedValue(screenH);
   const startY = useSharedValue(0);
   const [mounted, setMounted] = useState(visible);
-  // iOS hangs the app if a Modal is hidden while it is still being presented (close, then switch tabs at once), so a close that
-  // arrives early waits for the Modal's onShow before it hides it.
-  const shown = useRef(false);
-  const hideWhenShown = useRef(false);
+  // iOS can hang the app if a Modal is hidden while it is still being presented (close, then switch tabs at once), so a close that
+  // arrives within the presentation time waits out the rest of it.
+  const openedAt = useRef(0);
   const hide = () => {
-    if (Platform.OS === "ios" && mounted && !shown.current) { hideWhenShown.current = true; return; }
-    setMounted(false);
+    const wait = Platform.OS === "ios" ? PRESENT_MS - (Date.now() - openedAt.current) : 0;
+    if (wait > 0) setTimeout(() => setMounted(false), wait); else setMounted(false);
   };
 
   // One spring drives every move and always starts from where the sheet is right now, so any move can be interrupted.
@@ -60,7 +61,7 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
   };
 
   useEffect(() => {
-    if (visible) { hideWhenShown.current = false; setMounted(true); y.value = reduceMotion ? 0 : screenH; settle(0, 0); }
+    if (visible) { openedAt.current = Date.now(); setMounted(true); y.value = reduceMotion ? 0 : screenH; settle(0, 0); }
     else settle(screenH, 0, () => { hide(); if (Platform.OS !== "ios") onClosed?.(); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
@@ -86,8 +87,7 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
   const scrimStyle = useAnimatedStyle(() => ({ opacity: interpolate(y.value, [0, screenH], [1, 0], Extrapolation.CLAMP) }));
   const dismiss = () => settle(sheetH.value, 0, onClose);
   return (
-    <Modal transparent visible={mounted} onDismiss={() => { shown.current = false; hideWhenShown.current = false; onClosed?.(); }}
-      onShow={() => { shown.current = true; if (hideWhenShown.current) { hideWhenShown.current = false; setMounted(false); } }} animationType={reduceMotion ? "fade" : "none"} onRequestClose={dismiss} accessibilityViewIsModal>
+    <Modal transparent visible={mounted} onDismiss={onClosed} animationType={reduceMotion ? "fade" : "none"} onRequestClose={dismiss} accessibilityViewIsModal>
       <GestureHandlerRootView style={s.root}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={s.root} pointerEvents="box-none">
         <Animated.View style={[s.scrimFill, scrimStyle]}>

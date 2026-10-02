@@ -1,5 +1,5 @@
 import type { Share } from "../domain/split";
-import { signAvatar } from "./profile";
+import { signAvatars } from "./profile";
 import { supabase } from "./supabase";
 
 const OFFLINE = "You're offline. Check your connection and try again.";
@@ -51,9 +51,10 @@ export async function loadExpenseForm(tripId: string): Promise<FormResult> {
     const err = cur.error ?? members.error;
     const me = session.data.session?.user.id;
     if (err || !cur.currency) return { ok: false, message: isOffline(err?.message ?? "") ? OFFLINE : "Couldn't load the trip. Try again." };
+    const urls = await signAvatars((members.data ?? []).map((m) => m.avatar_url));
     return { ok: true, data: {
       currency: cur.currency,
-      members: await Promise.all((members.data ?? []).map(async (m) => ({ id: m.id, name: m.display_name, guest: m.membership_type === "guest", isMe: !!me && m.user_id === me, uri: await signAvatar(m.avatar_url) }))),
+      members: (members.data ?? []).map((m) => ({ id: m.id, name: m.display_name, guest: m.membership_type === "guest", isMe: !!me && m.user_id === me, uri: urls.get(m.avatar_url) ?? null })),
     } };
   } catch {
     return { ok: false, message: OFFLINE };
@@ -83,9 +84,10 @@ export async function listExpenses(tripId: string): Promise<ExpensesResult> {
       paidById: e.paid_by_member_id as string, addedById: e.created_by_member_id as string, myShareMinor: share.get(e.id) ?? 0,
       canEdit: !!me && (me.role === "owner" || me.id === e.created_by_member_id),
     }));
+    const urls = await signAvatars((names.data ?? []).map((m) => m.avatar_url));
     return {
       ok: true, currency: cur.currency, expenses, meId: me?.id ?? null, trip: cur.trip,
-      members: await Promise.all((names.data ?? []).filter((m) => m.status === "active").map(async (m) => ({ name: m.display_name as string, guest: m.membership_type === "guest", uri: await signAvatar(m.avatar_url) }))),
+      members: (names.data ?? []).filter((m) => m.status === "active").map((m) => ({ name: m.display_name as string, guest: m.membership_type === "guest", uri: urls.get(m.avatar_url) ?? null })),
     };
   } catch {
     return { ok: false, message: OFFLINE };
@@ -113,11 +115,12 @@ export async function loadExpenseView(tripId: string, expenseId: string): Promis
     const members = new Map((names.data ?? []).map((m) => [m.id as string, m]));
     const me = (names.data ?? []).find((m) => m.user_id === session.data.session?.user.id);
     const e = exp.data;
-    const people = await Promise.all((e.expense_participants as { trip_member_id: string; owed_amount_minor: number; split_value: number | null }[]).map(async (p) => {
+    const urls = await signAvatars((names.data ?? []).map((m) => m.avatar_url));
+    const people = (e.expense_participants as { trip_member_id: string; owed_amount_minor: number; split_value: number | null }[]).map((p) => {
       const m = members.get(p.trip_member_id);
-      return { name: (m?.display_name as string) ?? "Someone", uri: await signAvatar(m?.avatar_url as string | null), guest: m?.membership_type === "guest", isMe: !!me && p.trip_member_id === me.id,
+      return { name: (m?.display_name as string) ?? "Someone", uri: urls.get(m?.avatar_url as string) ?? null, guest: m?.membership_type === "guest", isMe: !!me && p.trip_member_id === me.id,
         owedMinor: Number(p.owed_amount_minor), value: p.split_value === null ? null : Number(p.split_value) };
-    }));
+    });
     people.sort((a, b) => b.owedMinor - a.owedMinor || a.name.localeCompare(b.name));
     return { ok: true, expense: {
       id: e.id, version: e.version, title: e.title, amountMinor: Number(e.amount_minor), date: e.expense_date, category: e.category as string,

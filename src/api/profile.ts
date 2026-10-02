@@ -17,8 +17,29 @@ export type MyProfile = { name: string; email: string; since: string; country: s
 // avatar_url is a storage path in the private 'avatars' bucket; sign it for display.
 export async function signAvatar(path: string | null | undefined): Promise<string | null> {
   if (!path) return null;
-  const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 3600);
-  return data?.signedUrl ?? null;
+  return (await signAvatars([path])).get(path) ?? null;
+}
+
+// Signed links are reused for most of their hour, and any that are missing are signed in one request, not one per person.
+const signed = new Map<string, { url: string; at: number }>();
+export async function signAvatars(paths: (string | null | undefined)[]): Promise<Map<string, string>> {
+  const now = Date.now();
+  const out = new Map<string, string>();
+  const need = new Set<string>();
+  for (const p of paths) {
+    if (!p) continue;
+    const hit = signed.get(p);
+    if (hit && now - hit.at < 50 * 60 * 1000) out.set(p, hit.url); else need.add(p);
+  }
+  if (need.size) {
+    try {
+      const { data } = await supabase.storage.from("avatars").createSignedUrls([...need], 3600);
+      for (const r of data ?? []) if (r.path && r.signedUrl) { signed.set(r.path, { url: r.signedUrl, at: now }); out.set(r.path, r.signedUrl); }
+    } catch {
+      // no picture is shown; initials stand in
+    }
+  }
+  return out;
 }
 
 // My picture for the Home corner. Null when I have none or it can't be read.

@@ -1,4 +1,4 @@
-import { signAvatar } from "./profile";
+import { signAvatars } from "./profile";
 import { supabase } from "./supabase";
 
 export type Member = { id: string; display_name: string; membership_type: "registered" | "guest"; role: "owner" | "member" | "guest"; isMe?: boolean; avatarUrl?: string | null };
@@ -16,7 +16,8 @@ export async function listMembers(tripId: string): Promise<MembersResult> {
     ]);
     if (res.error) return { ok: false, message: isOffline(res.error.message) ? OFFLINE : "Couldn't load people. Try again." };
     const me = session.data.session?.user.id;
-    const members = await Promise.all((res.data ?? []).map(async ({ user_id, avatar_url, ...m }) => ({ ...m, isMe: !!me && user_id === me, avatarUrl: await signAvatar(avatar_url) })));
+    const urls = await signAvatars((res.data ?? []).map((m) => m.avatar_url));
+    const members = (res.data ?? []).map(({ user_id, avatar_url, ...m }) => ({ ...m, isMe: !!me && user_id === me, avatarUrl: urls.get(avatar_url) ?? null }));
     return { ok: true, members: members as Member[] };
   } catch {
     return { ok: false, message: OFFLINE };

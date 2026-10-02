@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen , waitFor } from "@testing-library/react-native";
 import { DateField } from "./DateField";
 
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
@@ -14,13 +14,13 @@ test("an empty field says the format; a filled one shows Select date", async () 
 test("tapping the field opens the calendar, and picking a day reports it and closes", async () => {
   const onChange = jest.fn();
   await render(<DateField label="Start date" value="2026-12-05" onChange={onChange} />);
-  expect(screen.queryByText("December 2026")).toBeNull();
+  await waitFor(() => expect(screen.queryByText("December 2026")).toBeNull());
   await fireEvent.press(screen.getByRole("button", { name: "Start date, 5 Dec" }));
   expect(await screen.findByText("December 2026")).toBeTruthy();
   expect(screen.getByRole("header", { name: "Start date" })).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Tuesday 8 December 2026" }));
   expect(onChange).toHaveBeenCalledWith("2026-12-08");
-  expect(screen.queryByText("December 2026")).toBeNull();
+  await waitFor(() => expect(screen.queryByText("December 2026")).toBeNull());
 });
 
 test("the earliest date is passed on, so an end date cannot be before the start", async () => {
@@ -36,6 +36,6 @@ test("tapping outside the calendar closes it without changing anything", async (
   await render(<DateField label="Start date" value="2026-12-05" onChange={onChange} />);
   await fireEvent.press(screen.getByRole("button", { name: "Start date, 5 Dec" }));
   await fireEvent.press(await screen.findByRole("button", { name: "Close Start date" }));
-  expect(screen.queryByText("December 2026")).toBeNull();
+  await waitFor(() => expect(screen.queryByText("December 2026")).toBeNull());
   expect(onChange).not.toHaveBeenCalled();
 });
