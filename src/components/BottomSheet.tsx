@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { scheduleOnRN } from "react-native-worklets";
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
@@ -43,6 +43,14 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
   const sheetH = useSharedValue(screenH);
   const startY = useSharedValue(0);
   const [mounted, setMounted] = useState(visible);
+  // iOS hangs the app if a Modal is hidden while it is still being presented (close, then switch tabs at once), so a close that
+  // arrives early waits for the Modal's onShow before it hides it.
+  const shown = useRef(false);
+  const hideWhenShown = useRef(false);
+  const hide = () => {
+    if (Platform.OS === "ios" && mounted && !shown.current) { hideWhenShown.current = true; return; }
+    setMounted(false);
+  };
 
   // One spring drives every move and always starts from where the sheet is right now, so any move can be interrupted.
   const settle = (to: number, velocity: number, done?: () => void) => {
@@ -52,8 +60,8 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
   };
 
   useEffect(() => {
-    if (visible) { setMounted(true); y.value = reduceMotion ? 0 : screenH; settle(0, 0); }
-    else settle(screenH, 0, () => { setMounted(false); if (Platform.OS !== "ios") onClosed?.(); });
+    if (visible) { hideWhenShown.current = false; setMounted(true); y.value = reduceMotion ? 0 : screenH; settle(0, 0); }
+    else settle(screenH, 0, () => { hide(); if (Platform.OS !== "ios") onClosed?.(); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 
@@ -78,7 +86,8 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
   const scrimStyle = useAnimatedStyle(() => ({ opacity: interpolate(y.value, [0, screenH], [1, 0], Extrapolation.CLAMP) }));
   const dismiss = () => settle(sheetH.value, 0, onClose);
   return (
-    <Modal transparent visible={mounted} onDismiss={onClosed} animationType={reduceMotion ? "fade" : "none"} onRequestClose={dismiss} accessibilityViewIsModal>
+    <Modal transparent visible={mounted} onDismiss={() => { shown.current = false; hideWhenShown.current = false; onClosed?.(); }}
+      onShow={() => { shown.current = true; if (hideWhenShown.current) { hideWhenShown.current = false; setMounted(false); } }} animationType={reduceMotion ? "fade" : "none"} onRequestClose={dismiss} accessibilityViewIsModal>
       <GestureHandlerRootView style={s.root}>
         <KeyboardAvoidingView behavior={Platform.OS === "ios" ? "padding" : undefined} style={s.root} pointerEvents="box-none">
         <Animated.View style={[s.scrimFill, scrimStyle]}>

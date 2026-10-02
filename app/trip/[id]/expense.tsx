@@ -67,7 +67,7 @@ export default function ExpenseDetail() {
               const entered = x.method === "shares" && p.value !== null ? `${p.value} ${p.value === 1 ? "share" : "shares"}` : null;
               return (
                 <View key={`${p.name}-${i}`} accessible accessibilityLabel={`${p.isMe ? "You" : p.name}, ${formatMinor(p.owedMinor, x.currency.exponent, x.currency.code)}, ${formatPercent(bp)} percent`} style={s.person}>
-                  <Avatar name={p.name} guest={p.guest} size={40} />
+                  <Avatar name={p.name} uri={p.uri} guest={p.guest} size={40} />
                   <View style={s.personText}>
                     <Text maxFontSizeMultiplier={1.4} style={s.name}>{p.isMe ? "You" : p.name}</Text>
                     <Text maxFontSizeMultiplier={1.4} style={s.sub}>{[`${formatPercent(bp)}%`, entered].filter(Boolean).join(" · ")}</Text>

@@ -59,5 +59,6 @@ function parseAppleMapsUrl(u: URL): Place | null {
 }
 
 // Tapping the preview opens the user's maps app on either platform.
+export const mapsSearchUrl = (text: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(text)}`;
 export const mapsOpenUrl = (p: Place) => `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
 

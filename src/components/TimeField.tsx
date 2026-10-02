@@ -24,7 +24,7 @@ export function TimeField({ label, value, onChange }: Props) {
       </Pressable>
       <BottomSheet visible={open} onClose={() => setOpen(false)} title={label} actionLabel="Confirm" onAction={() => { onChange(toHhmm(draft)); setOpen(false); }}>
         <View style={s.wheel}>
-          <DateTimePicker value={draft} mode="time" display="spinner" accessibilityLabel={`${label} wheel`} onChange={(_, d) => { if (d) setDraft(d); }} />
+          <DateTimePicker value={draft} mode="time" display="spinner" themeVariant="light" textColor={color.obsidian} accessibilityLabel={`${label} wheel`} onChange={(_, d) => { if (d) setDraft(d); }} />
         </View>
         {value ? <TextButton label="Remove time" onPress={() => { onChange(null); setOpen(false); }} /> : null}
       </BottomSheet>

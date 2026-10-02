@@ -11,7 +11,7 @@ export function MapPreview({ place, address }: { place: Place; address?: string 
   return (
     <Pressable accessibilityRole="link" accessibilityLabel={`Open ${label} in Maps`} onPress={() => Linking.openURL(mapsOpenUrl(place))} style={s.frame}>
       <View style={s.map} pointerEvents="none">
-        <MapView style={StyleSheet.absoluteFill} liteMode scrollEnabled={false} zoomEnabled={false} rotateEnabled={false} pitchEnabled={false}
+        <MapView style={StyleSheet.absoluteFill} liteMode userInterfaceStyle="light" scrollEnabled={false} zoomEnabled={false} rotateEnabled={false} pitchEnabled={false}
           toolbarEnabled={false} region={{ latitude: place.lat, longitude: place.lng, latitudeDelta: 0.008, longitudeDelta: 0.008 }}>
           <Marker coordinate={{ latitude: place.lat, longitude: place.lng }} />
         </MapView>

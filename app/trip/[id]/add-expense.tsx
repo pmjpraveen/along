@@ -188,7 +188,7 @@ export default function AddExpense() {
               {pickingSplit ? (
                 <>
                   <ParticipantPicker selected={splitWith ?? []} onChange={setSplitWith} amounts={method === "equal" ? amounts : undefined}
-                    members={form.members.map((m) => ({ id: m.id, display_name: m.isMe ? `${m.name} (you)` : m.name, membership_type: m.guest ? "guest" : "registered" }))} />
+                    members={form.members.map((m) => ({ id: m.id, display_name: m.isMe ? `${m.name} (you)` : m.name, membership_type: m.guest ? "guest" : "registered", avatarUrl: m.uri }))} />
                 </>
               ) : (
                 <PickRow label="Split with" value={!splitWith || splitWith.length === form.members.length ? "Everyone" : `${splitWith.length} of ${form.members.length} people`}

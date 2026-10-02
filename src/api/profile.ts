@@ -15,7 +15,7 @@ export async function loadMyName(): Promise<string | null> {
 export type MyProfile = { name: string; email: string; since: string; country: string | null; avatarUrl: string | null; currency: string | null };
 
 // avatar_url is a storage path in the private 'avatars' bucket; sign it for display.
-async function signAvatar(path: string | null | undefined): Promise<string | null> {
+export async function signAvatar(path: string | null | undefined): Promise<string | null> {
   if (!path) return null;
   const { data } = await supabase.storage.from("avatars").createSignedUrl(path, 3600);
   return data?.signedUrl ?? null;

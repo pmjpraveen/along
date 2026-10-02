@@ -3,7 +3,7 @@ import { Chip } from "../../../../src/components/Chip";
 import { TripMenu } from "../../../../src/components/TripMenu";
 import { ChevronLeft, MapPin, MoreHorizontal, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../../../../src/components/Pressable";
 import Animated, { Extrapolation, FadeIn, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { useReducedMotion } from "../../../../src/hooks/useReducedMotion";
@@ -19,9 +19,9 @@ import { PrimaryButton, TextButton } from "../../../../src/components/Buttons";
 import { DateField } from "../../../../src/components/DateField";
 import { MapPreview } from "../../../../src/components/MapPreview";
 import { TripCover } from "../../../../src/components/TripCover";
-import { groupByDay, Item, tripDays, TYPE_LABEL } from "../../../../src/domain/itinerary";
+import { groupByDay, Item, tripDays } from "../../../../src/domain/itinerary";
 import { CARD_COLORS, formatDate, formatRange } from "../../../../src/domain/trip";
-import { parseMapsUrl, Place } from "../../../../src/domain/maps";
+import { mapsOpenUrl, mapsSearchUrl, parseMapsUrl, Place } from "../../../../src/domain/maps";
 import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
 import { TripNameTag } from "../../../../src/components/TripNameTag";
 import { color, font, mix, radius, space, type } from "../../../../src/theme/tokens";
@@ -127,7 +127,7 @@ export default function Trip() {
             <Text maxFontSizeMultiplier={1.4} style={s.summary}>
               {ok.items.length} {ok.items.length === 1 ? "activity" : "activities"} · {days.length} {days.length === 1 ? "day" : "days"}
             </Text>
-            {members.length > 0 && <AvatarGroup people={members.map((m) => ({ name: m.display_name, guest: m.membership_type === "guest" }))} size={48} max={4} />}
+            {members.length > 0 && <AvatarGroup people={members.map((m) => ({ name: m.display_name, uri: m.avatarUrl, guest: m.membership_type === "guest" }))} size={48} max={4} />}
           </View>
         )}
       </View>
@@ -164,14 +164,14 @@ export default function Trip() {
                     <View style={[s.head4, placeOf(i) && s.head4Map]}>
                       <View style={s.titleRow}>
                       <Text maxFontSizeMultiplier={1.4} style={s.itemTitle}>{i.title}</Text>
-                      <Text maxFontSizeMultiplier={1.4} style={s.kind}>{TYPE_LABEL[i.type]}</Text>
                       </View>
                     {i.is_outside_trip_range && <Badge variant="warning" label="Outside trip dates" />}
                     {placeLabel(i) ? (
-                      <View style={s.place}>
+                      <Pressable accessibilityRole="link" accessibilityLabel={`Open ${placeLabel(i)} in Maps`} hitSlop={space.s8}
+                        onPress={() => Linking.openURL(placeOf(i) ? mapsOpenUrl(placeOf(i)!) : mapsSearchUrl(placeLabel(i)!))} style={s.place}>
                         <MapPin size={18} color={color.slate} strokeWidth={1.75} />
                         <Text maxFontSizeMultiplier={1.4} numberOfLines={2} style={s.placeText}>{placeLabel(i)}</Text>
-                      </View>
+                      </Pressable>
                     ) : null}
                     </View>
                     {placeOf(i) && <View style={s.map}><MapPreview place={placeOf(i)!} /></View>}
@@ -246,7 +246,6 @@ const s = StyleSheet.create({
   move: { paddingHorizontal: space.s16, paddingBottom: space.s16 },
   titleRow: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   itemTitle: { ...type.label, flex: 1, fontSize: 17, color: color.obsidian },
-  kind: { ...type.fieldMessage, color: color.slate },
   place: { flexDirection: "row", alignItems: "center", gap: space.s4 },
   placeText: { ...type.fieldMessage, flexShrink: 1, color: color.charcoal },
   gap: { gap: space.s8 },

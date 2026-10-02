@@ -6,7 +6,7 @@ import { Avatar } from "./Avatar";
 import { Badge } from "./Badge";
 import { color, radius, space, type } from "../theme/tokens";
 
-type Props = { members: Pick<Member, "id" | "display_name" | "membership_type">[]; selected: string[]; onChange: (ids: string[]) => void; amounts?: Record<string, string> };
+type Props = { members: Pick<Member, "id" | "display_name" | "membership_type" | "avatarUrl">[]; selected: string[]; onChange: (ids: string[]) => void; amounts?: Record<string, string> };
 
 
 // Toggle who is joining. Guests are shown with a dashed ring and a Guest tag, at the same size as everyone.
@@ -20,7 +20,7 @@ export function ParticipantPicker({ members, selected, onChange, amounts }: Prop
         return (
           <Pressable key={m.id} accessibilityRole="checkbox" accessibilityLabel={guest ? `${m.display_name}, guest` : m.display_name}
             accessibilityState={{ checked: on }} onPress={() => toggle(m.id)} style={s.row}>
-            <Avatar name={m.display_name} guest={guest} size={40} />
+            <Avatar name={m.display_name} uri={m.avatarUrl} guest={guest} size={40} />
             <Text maxFontSizeMultiplier={1.4} style={s.name}>{m.display_name}</Text>
             {guest && <Badge label="Guest" align="center" />}
             {on && amounts?.[m.id] && <Text maxFontSizeMultiplier={1.3} style={s.amount}>{amounts[m.id]}</Text>}
