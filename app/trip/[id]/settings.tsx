@@ -1,7 +1,8 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft, ChevronRight } from "lucide-react-native";
 import { useCallback, useDeferredValue, useState } from "react";
-import { ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadTripSettings, setTripCardColor, setTripCurrency, SettingsResult, updateTripDates, updateTripDetails } from "../../../src/api/trips";
@@ -101,7 +102,7 @@ export default function TripSettings() {
         </View>
 
         {state === null ? (
-          <ActivityIndicator accessibilityLabel="Loading settings" color={color.forestInk} />
+          <Skeleton label="Loading settings" />
         ) : !x || !form ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>

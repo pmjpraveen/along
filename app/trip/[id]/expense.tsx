@@ -1,7 +1,9 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ExpenseViewResult, loadExpenseView } from "../../../src/api/expenses";
@@ -25,18 +27,19 @@ export default function ExpenseDetail() {
   const [state, setState] = useState<ExpenseViewResult | null>(null);
   const load = useCallback(async () => setState(await loadExpenseView(id, expenseId)), [id, expenseId]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
+  const pull = usePullToRefresh(load);
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
   const x = state?.ok ? state.expense : null;
   const parts = x ? moneyParts(x.amountMinor, x.currency.exponent, x.currency.code) : null;
 
   return (
-    <ScrollView style={s.screen} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
+    <ScrollView refreshControl={pull} style={s.screen} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
       <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
         <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
       </Pressable>
       {state === null ? (
-        <ActivityIndicator accessibilityLabel="Loading expense" color={color.forestInk} />
+        <Skeleton label="Loading expense" />
       ) : !x ? (
         <View style={s.gap}>
           <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>
@@ -67,7 +70,7 @@ export default function ExpenseDetail() {
               const entered = x.method === "shares" && p.value !== null ? `${p.value} ${p.value === 1 ? "share" : "shares"}` : null;
               return (
                 <View key={`${p.name}-${i}`} accessible accessibilityLabel={`${p.isMe ? "You" : p.name}, ${formatMinor(p.owedMinor, x.currency.exponent, x.currency.code)}, ${formatPercent(bp)} percent`} style={s.person}>
-                  <Avatar name={p.name} guest={p.guest} size={40} />
+                  <Avatar name={p.name} uri={p.uri} guest={p.guest} size={40} />
                   <View style={s.personText}>
                     <Text maxFontSizeMultiplier={1.4} style={s.name}>{p.isMe ? "You" : p.name}</Text>
                     <Text maxFontSizeMultiplier={1.4} style={s.sub}>{[`${formatPercent(bp)}%`, entered].filter(Boolean).join(" · ")}</Text>

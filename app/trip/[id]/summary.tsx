@@ -1,7 +1,9 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft, ImageIcon, MapPin, Receipt, Scale, Trash2 } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadTripSummary, SummaryResult } from "../../../src/api/passport";
@@ -46,6 +48,7 @@ export default function Summary() {
     listMembers(id).then((r) => { if (r.ok) setMembers(r.members); });
   }, [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
+  const pull = usePullToRefresh(load);
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
   const go = (screen: "memories" | "balances" | "expense-list") =>
@@ -70,7 +73,7 @@ export default function Summary() {
   // The top is the trip page's: the trip's colour behind the cover photo, the date pill, the name tag, the place and who came.
   return (
     <View style={s.screen}>
-      <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: bottom + space.s24 }}>
+      <ScrollView refreshControl={pull} style={s.scroll} contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: bottom + space.s24 }}>
         <View style={[s.head, { paddingTop: navH }, band ? { backgroundColor: band, paddingBottom: space.s24 } : null]}>
           {/* The two stamps the trip earned, arrival top right and departure bottom left, faint behind the content and half pressed off the edge
               (same shapes and inks as in the passport). */}
@@ -82,7 +85,7 @@ export default function Summary() {
             </View>
           ))}
           {state === null ? (
-            <ActivityIndicator accessibilityLabel="Loading trip summary" color={color.brandBlack} />
+            <Skeleton label="Loading trip summary" />
           ) : !sm ? (
             <View style={s.gap}>
               <Alert variant="negative" persist>{state.ok ? "" : state.message}</Alert>
@@ -100,7 +103,7 @@ export default function Summary() {
                 <Text maxFontSizeMultiplier={1.4} style={s.placeText}>{sm.destination_name}</Text>
               </View>
               {(sm.status === "completed" || sm.status === "archived") && <View style={s.badge}><Badge variant="success" label="Completed" /></View>}
-              {members.length > 0 && <AvatarGroup people={members.map((m) => ({ name: m.display_name, guest: m.membership_type === "guest" }))} size={48} max={4} />}
+              {members.length > 0 && <AvatarGroup people={members.map((m) => ({ name: m.display_name, uri: m.avatarUrl, guest: m.membership_type === "guest" }))} size={48} max={4} />}
             </View>
           )}
         </View>

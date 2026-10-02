@@ -1,8 +1,12 @@
 import { forwardRef, useState } from "react";
-import { Pressable as RNPressable, PressableProps, View } from "react-native";
+import { Pressable as RNPressable, PressableProps as RNPressableProps, PressableStateCallbackType, StyleProp, View, ViewStyle } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { reduceMotionNow } from "../motionPref";
 import { EASE_OUT, motion } from "../theme/motion";
+
+// React Native's own types leave out hover, which the app's Pressable adds.
+export type PressState = PressableStateCallbackType & { hovered: boolean };
+type PressableProps = Omit<RNPressableProps, "style"> & { style?: StyleProp<ViewStyle> | ((s: PressState) => StyleProp<ViewStyle>) };
 
 const APressable = Animated.createAnimatedComponent(RNPressable);
 
@@ -19,7 +23,7 @@ export const Pressable = forwardRef<View, PressableProps & { dip?: boolean }>(({
       onPressIn={(e) => { setPressed(true); if (!disabled && dips && !reduceMotionNow()) to(motion.pressScale); onPressIn?.(e); }}
       onPressOut={(e) => { setPressed(false); to(1); onPressOut?.(e); }}
       onHoverIn={(e) => { setHovered(true); onHoverIn?.(e); }} onHoverOut={(e) => { setHovered(false); onHoverOut?.(e); }}
-      style={[typeof style === "function" ? style({ pressed, hovered }) : style, dip]} />
+      style={[typeof style === "function" ? style({ pressed, hovered }) : style, dip] as never} />
   );
 });
 Pressable.displayName = "Pressable";

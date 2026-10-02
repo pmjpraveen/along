@@ -1,7 +1,8 @@
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
+import { Skeleton } from "../../../../src/components/Skeleton";
 import { Backpack, ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BalancesResult, loadBalances } from "../../../../src/api/balances";
@@ -78,7 +79,7 @@ export default function Expenses() {
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Expenses</Text>
 
         {state === null ? (
-          <ActivityIndicator accessibilityLabel="Loading expenses" color={color.forestInk} />
+          <Skeleton label="Loading expenses" />
         ) : !ok ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>

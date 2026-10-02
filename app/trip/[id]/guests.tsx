@@ -1,7 +1,9 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createInviteLink } from "../../../src/api/invites";
 import { listMembers, Member } from "../../../src/api/members";
@@ -24,9 +26,10 @@ export default function Guests() {
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = useCallback(() => {
-    listMembers(id).then((r) => { if (r.ok) { setMembers(r.members); setError(null); } else setError(r.message); });
+    return listMembers(id).then((r) => { if (r.ok) { setMembers(r.members); setError(null); } else setError(r.message); });
   }, [id]);
-  useFocusEffect(load);
+  useFocusEffect(useCallback(() => { load(); }, [load]));
+  const pull = usePullToRefresh(load);
 
   const guests = (members ?? []).filter((m) => m.membership_type === "guest");
   const isOwner = (members ?? []).some((m) => m.isMe && m.role === "owner");
@@ -46,7 +49,7 @@ export default function Guests() {
 
   return (
     <View style={s.screen}>
-      <ScrollView contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + 120 }]}>
+      <ScrollView refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + 120 }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
@@ -57,7 +60,7 @@ export default function Guests() {
         {error ? (
           <View style={s.gap}><Text accessibilityRole="alert" style={s.sub}>{error}</Text><Button label="Retry" type="secondary" size="small" onPress={load} /></View>
         ) : members === null ? (
-          <ActivityIndicator accessibilityLabel="Loading guests" color={color.brandBlack} />
+          <Skeleton label="Loading guests" />
         ) : guests.length === 0 ? (
           <Text style={s.sub}>No guests yet.</Text>
         ) : (

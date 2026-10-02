@@ -26,7 +26,7 @@ export async function loadItinerary(tripId: string): Promise<ItineraryResult> {
     for (const p of people.data ?? []) {
       who.set(p.itinerary_item_id, [...(who.get(p.itinerary_item_id) ?? []), nameOf.get(p.trip_member_id) ?? "Someone"]);
     }
-    const withPeople = (items.data ?? []).map((i) => ({ ...i, participants: who.get(i.id) ?? [] })) as Item[];
+    const withPeople = (items.data ?? []).map((i) => ({ ...i, latitude: i.latitude === null ? null : Number(i.latitude), longitude: i.longitude === null ? null : Number(i.longitude), participants: who.get(i.id) ?? [] })) as Item[];
     return { ok: true, trip: trip.data as TripDates, items: withPeople };
   } catch {
     return { ok: false, message: OFFLINE };

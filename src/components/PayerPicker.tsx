@@ -18,7 +18,7 @@ export function PayerPicker({ members, selected, onChange }: Props) {
         return (
           <Pressable key={m.id} accessibilityRole="radio" accessibilityLabel={m.guest ? `${name}, guest` : name}
             accessibilityState={{ selected: on }} onPress={() => onChange(m.id)} style={s.row}>
-            <Avatar name={m.name} guest={m.guest} size={40} />
+            <Avatar name={m.name} uri={m.uri} guest={m.guest} size={40} />
             <Text maxFontSizeMultiplier={1.4} style={s.name}>{name}</Text>
             {m.guest && <Badge label="Guest" align="center" />}
             <View style={[s.dot, on && s.dotOn]}>{on && <View style={s.dotInner} />}</View>

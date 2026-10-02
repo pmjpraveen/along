@@ -1,4 +1,4 @@
-import { ReactNode, useEffect, useState } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 import { scheduleOnRN } from "react-native-worklets";
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
@@ -16,6 +16,8 @@ import { Button, ButtonType } from "./Buttons";
 export function SheetRows({ children }: { children: ReactNode }) {
   return <View style={s.rows}>{children}</View>;
 }
+
+const PRESENT_MS = 450;   // longer than iOS takes to present a transparent Modal
 
 type Props = {
   visible: boolean;
@@ -43,6 +45,13 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
   const sheetH = useSharedValue(screenH);
   const startY = useSharedValue(0);
   const [mounted, setMounted] = useState(visible);
+  // iOS can hang the app if a Modal is hidden while it is still being presented (close, then switch tabs at once), so a close that
+  // arrives within the presentation time waits out the rest of it.
+  const openedAt = useRef(0);
+  const hide = () => {
+    const wait = Platform.OS === "ios" ? PRESENT_MS - (Date.now() - openedAt.current) : 0;
+    if (wait > 0) setTimeout(() => setMounted(false), wait); else setMounted(false);
+  };
 
   // One spring drives every move and always starts from where the sheet is right now, so any move can be interrupted.
   const settle = (to: number, velocity: number, done?: () => void) => {
@@ -52,8 +61,8 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
   };
 
   useEffect(() => {
-    if (visible) { setMounted(true); y.value = reduceMotion ? 0 : screenH; settle(0, 0); }
-    else settle(screenH, 0, () => { setMounted(false); if (Platform.OS !== "ios") onClosed?.(); });
+    if (visible) { openedAt.current = Date.now(); setMounted(true); y.value = reduceMotion ? 0 : screenH; settle(0, 0); }
+    else settle(screenH, 0, () => { hide(); if (Platform.OS !== "ios") onClosed?.(); });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [visible]);
 

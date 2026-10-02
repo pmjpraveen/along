@@ -1,4 +1,5 @@
 import { Alert } from "../../../src/components/Alert";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { toast } from "../../../src/stores/toast";
 import { Chip } from "../../../src/components/Chip";
 import { haptic } from "../../../src/haptics";
@@ -156,7 +157,7 @@ export default function AddExpense() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : !form ? (
-          <Text accessibilityLabel="Loading" style={s.hint}>Loading…</Text>
+          <Skeleton label="Loading" />
         ) : (
           <>
             <View style={s.field}>
@@ -188,7 +189,7 @@ export default function AddExpense() {
               {pickingSplit ? (
                 <>
                   <ParticipantPicker selected={splitWith ?? []} onChange={setSplitWith} amounts={method === "equal" ? amounts : undefined}
-                    members={form.members.map((m) => ({ id: m.id, display_name: m.isMe ? `${m.name} (you)` : m.name, membership_type: m.guest ? "guest" : "registered" }))} />
+                    members={form.members.map((m) => ({ id: m.id, display_name: m.isMe ? `${m.name} (you)` : m.name, membership_type: m.guest ? "guest" : "registered", avatarUrl: m.uri }))} />
                 </>
               ) : (
                 <PickRow label="Split with" value={!splitWith || splitWith.length === form.members.length ? "Everyone" : `${splitWith.length} of ${form.members.length} people`}

@@ -134,7 +134,7 @@ test("choosing a country also sets the preferred currency, but a country with no
   await fireEvent.press(await screen.findByRole("radio", { name: "Japan" }));
   await waitFor(() => expect(mockCurrency).toHaveBeenCalledWith("JPY"));
   mockCurrency.mockClear();
-  await fireEvent.press(screen.getByRole("button", { name: /^Country/ }));
+  await fireEvent.press(await screen.findByRole("button", { name: /^Country/ }));
   await fireEvent.press(await screen.findByRole("radio", { name: "Antarctica" }));
   await waitFor(() => expect(mockCountry).toHaveBeenCalledWith("AQ"));
   expect(mockCurrency).not.toHaveBeenCalled();

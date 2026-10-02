@@ -1,8 +1,9 @@
 import { Alert } from "../../src/components/Alert";
+import { Skeleton } from "../../src/components/Skeleton";
 import { TripNameTag } from "../../src/components/TripNameTag";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { acceptInvite, claimGuestProfile, InvitePreview, previewInvite } from "../../src/api/invites";
 import { PrimaryButton, TextButton } from "../../src/components/Buttons";
@@ -71,7 +72,7 @@ export default function Join() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : (
-          <ActivityIndicator accessibilityLabel="Loading invite" color={color.brandBlack} />
+          <Skeleton label="Loading invite" variant="cards" />
         )}
         {preview && <Text maxFontSizeMultiplier={1.4} style={s.note}>This is a preview. Join to see the plan, the expenses and everyone on the trip.</Text>}
         {error && <Alert variant="negative">{error}</Alert>}

@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen , waitFor } from "@testing-library/react-native";
 import { StyleSheet, Text } from "react-native";
 import { BottomSheet } from "./BottomSheet";
 import { color } from "../theme/tokens";
@@ -12,7 +12,7 @@ test("it shows a header, the body text and its content when visible, and nothing
   expect(screen.getByText("This is the body text if needed.")).toBeTruthy();
   expect(screen.getByText("Content")).toBeTruthy();
   await rerender(<BottomSheet visible={false} onClose={jest.fn()} title="Header" />);
-  expect(screen.queryByText("Header")).toBeNull();
+  await waitFor(() => expect(screen.queryByText("Header")).toBeNull());
 });
 
 test("the header is 28/32 medium Obsidian and the body 16/24", async () => {
@@ -58,5 +58,5 @@ test("a footer action is one primary button that fires once, and shows busy", as
 
 test("without an action there is no footer", async () => {
   await render(<BottomSheet visible onClose={jest.fn()} title="Header" />);
-  expect(screen.queryByRole("button", { name: "Save" })).toBeNull();
+  await waitFor(() => expect(screen.queryByRole("button", { name: "Save" })).toBeNull());
 });

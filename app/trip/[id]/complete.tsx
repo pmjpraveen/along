@@ -1,9 +1,11 @@
 import { Alert } from "../../../src/components/Alert";
+import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { haptic } from "../../../src/haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Check, ChevronLeft, Info, MapPin, Stamp } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadTripSummary, SummaryResult } from "../../../src/api/passport";
@@ -27,6 +29,7 @@ export default function Complete() {
 
   const load = useCallback(async () => setSummary(await loadTripSummary(id)), [id]);
   useEffect(() => { load(); }, [load]);
+  const pull = usePullToRefresh(load);
   useEffect(() => { if (done) stampForTrip(id).then((x) => setStamp(x?.destination ?? null)); }, [done, id]);
 
   const confirm = async () => {
@@ -53,7 +56,7 @@ export default function Complete() {
   ) : null;
   return (
     <View style={s.screen}>
-      <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: (footer ? 160 : space.s24) + bottom }]}>
+      <ScrollView refreshControl={pull} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: (footer ? 160 : space.s24) + bottom }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
@@ -67,7 +70,7 @@ export default function Complete() {
           )}
         </View>
         {summary === null ? (
-          <ActivityIndicator accessibilityLabel="Loading trip summary" color={color.forestInk} />
+          <Skeleton label="Loading trip summary" />
         ) : !s0 ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{summary.ok ? "" : summary.message}</Alert>

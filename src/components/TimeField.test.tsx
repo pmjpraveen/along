@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen , waitFor } from "@testing-library/react-native";
 import { TimeField } from "./TimeField";
 
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
@@ -20,21 +20,21 @@ test("an empty field says it is optional; a filled one shows the time", async ()
 test("tapping the field opens the picker in a bottom sheet, and Confirm sets the chosen time and closes", async () => {
   const onChange = jest.fn();
   await render(<TimeField label="Time" value={null} onChange={onChange} />);
-  expect(screen.queryByRole("adjustable", { name: "wheel" })).toBeNull();
+  await waitFor(() => expect(screen.queryByRole("adjustable", { name: "wheel" })).toBeNull());
   await fireEvent.press(screen.getByRole("button", { name: "Time" }));
   expect(await screen.findByRole("header", { name: "Time" })).toBeTruthy();
   await fireEvent.press(screen.getByRole("adjustable", { name: "wheel" }));
   expect(onChange).not.toHaveBeenCalled();
   await fireEvent.press(screen.getByRole("button", { name: "Confirm" }));
   expect(onChange).toHaveBeenCalledWith("14:05");
-  expect(screen.queryByRole("adjustable", { name: "wheel" })).toBeNull();
+  await waitFor(() => expect(screen.queryByRole("adjustable", { name: "wheel" })).toBeNull());
 });
 
 test("with no time set there is nothing to remove; with one set, Remove time clears it", async () => {
   const onChange = jest.fn();
   const { unmount } = await render(<TimeField label="Time" value={null} onChange={onChange} />);
   await fireEvent.press(screen.getByRole("button", { name: "Time" }));
-  expect(screen.queryByRole("button", { name: "Remove time" })).toBeNull();
+  await waitFor(() => expect(screen.queryByRole("button", { name: "Remove time" })).toBeNull());
   unmount();
   await render(<TimeField label="Time" value="09:30" onChange={onChange} />);
   await fireEvent.press(screen.getByRole("button", { name: "Time, 09:30" }));
