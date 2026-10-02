@@ -1,4 +1,5 @@
 import { Alert } from "../../../src/components/Alert";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { toast } from "../../../src/stores/toast";
 import { Chip } from "../../../src/components/Chip";
 import { haptic } from "../../../src/haptics";
@@ -156,7 +157,7 @@ export default function AddExpense() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : !form ? (
-          <Text accessibilityLabel="Loading" style={s.hint}>Loading…</Text>
+          <Skeleton label="Loading" />
         ) : (
           <>
             <View style={s.field}>
