@@ -1,4 +1,5 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useState } from "react";
@@ -26,13 +27,14 @@ export default function ExpenseDetail() {
   const [state, setState] = useState<ExpenseViewResult | null>(null);
   const load = useCallback(async () => setState(await loadExpenseView(id, expenseId)), [id, expenseId]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
+  const pull = usePullToRefresh(load);
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
   const x = state?.ok ? state.expense : null;
   const parts = x ? moneyParts(x.amountMinor, x.currency.exponent, x.currency.code) : null;
 
   return (
-    <ScrollView style={s.screen} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
+    <ScrollView refreshControl={pull} style={s.screen} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
       <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
         <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
       </Pressable>

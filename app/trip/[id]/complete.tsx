@@ -1,4 +1,5 @@
 import { Alert } from "../../../src/components/Alert";
+import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { haptic } from "../../../src/haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -28,6 +29,7 @@ export default function Complete() {
 
   const load = useCallback(async () => setSummary(await loadTripSummary(id)), [id]);
   useEffect(() => { load(); }, [load]);
+  const pull = usePullToRefresh(load);
   useEffect(() => { if (done) stampForTrip(id).then((x) => setStamp(x?.destination ?? null)); }, [done, id]);
 
   const confirm = async () => {
@@ -54,7 +56,7 @@ export default function Complete() {
   ) : null;
   return (
     <View style={s.screen}>
-      <ScrollView contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: (footer ? 160 : space.s24) + bottom }]}>
+      <ScrollView refreshControl={pull} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: (footer ? 160 : space.s24) + bottom }]}>
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>

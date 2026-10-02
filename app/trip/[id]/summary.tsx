@@ -1,4 +1,5 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft, ImageIcon, MapPin, Receipt, Scale, Trash2 } from "lucide-react-native";
 import { useCallback, useState } from "react";
@@ -47,6 +48,7 @@ export default function Summary() {
     listMembers(id).then((r) => { if (r.ok) setMembers(r.members); });
   }, [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
+  const pull = usePullToRefresh(load);
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
   const go = (screen: "memories" | "balances" | "expense-list") =>
@@ -71,7 +73,7 @@ export default function Summary() {
   // The top is the trip page's: the trip's colour behind the cover photo, the date pill, the name tag, the place and who came.
   return (
     <View style={s.screen}>
-      <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: bottom + space.s24 }}>
+      <ScrollView refreshControl={pull} style={s.scroll} contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: bottom + space.s24 }}>
         <View style={[s.head, { paddingTop: navH }, band ? { backgroundColor: band, paddingBottom: space.s24 } : null]}>
           {/* The two stamps the trip earned, arrival top right and departure bottom left, faint behind the content and half pressed off the edge
               (same shapes and inks as in the passport). */}
