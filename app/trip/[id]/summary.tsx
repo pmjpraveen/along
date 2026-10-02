@@ -1,7 +1,8 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft, ImageIcon, MapPin, Receipt, Scale, Trash2 } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadTripSummary, SummaryResult } from "../../../src/api/passport";
@@ -82,7 +83,7 @@ export default function Summary() {
             </View>
           ))}
           {state === null ? (
-            <ActivityIndicator accessibilityLabel="Loading trip summary" color={color.brandBlack} />
+            <Skeleton label="Loading trip summary" />
           ) : !sm ? (
             <View style={s.gap}>
               <Alert variant="negative" persist>{state.ok ? "" : state.message}</Alert>

@@ -1,7 +1,8 @@
 import { useRouter } from "expo-router";
+import { Skeleton } from "../src/components/Skeleton";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { listTrips, TripListResult } from "../src/api/trips";
@@ -40,7 +41,7 @@ export default function TripHistory() {
         </Pressable>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Completed trips</Text>
         {state === null ? (
-          <ActivityIndicator accessibilityLabel="Loading your trips" color={color.forestInk} />
+          <Skeleton label="Loading your trips" variant="cards" />
         ) : !state.ok ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{state.message}</Alert>

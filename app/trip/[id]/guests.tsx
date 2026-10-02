@@ -1,7 +1,8 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, Share, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createInviteLink } from "../../../src/api/invites";
 import { listMembers, Member } from "../../../src/api/members";
@@ -57,7 +58,7 @@ export default function Guests() {
         {error ? (
           <View style={s.gap}><Text accessibilityRole="alert" style={s.sub}>{error}</Text><Button label="Retry" type="secondary" size="small" onPress={load} /></View>
         ) : members === null ? (
-          <ActivityIndicator accessibilityLabel="Loading guests" color={color.brandBlack} />
+          <Skeleton label="Loading guests" />
         ) : guests.length === 0 ? (
           <Text style={s.sub}>No guests yet.</Text>
         ) : (

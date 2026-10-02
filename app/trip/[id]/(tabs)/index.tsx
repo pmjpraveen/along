@@ -1,9 +1,10 @@
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
+import { Skeleton } from "../../../../src/components/Skeleton";
 import { Chip } from "../../../../src/components/Chip";
 import { TripMenu } from "../../../../src/components/TripMenu";
 import { ChevronLeft, MapPin, MoreHorizontal, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
-import { ActivityIndicator, Linking, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Linking, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../../../../src/components/Pressable";
 import Animated, { Extrapolation, FadeIn, interpolate, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue } from "react-native-reanimated";
 import { useReducedMotion } from "../../../../src/hooks/useReducedMotion";
@@ -111,7 +112,7 @@ export default function Trip() {
       contentContainerStyle={{ paddingBottom: bottom + space.s64 + space.s32 }}>
       <View style={[s.head, { paddingTop: navH + space.s4 }, band ? { backgroundColor: band, paddingBottom: space.s24 } : null]}>
         {state === null ? (
-          <ActivityIndicator accessibilityLabel="Loading itinerary" color={color.forestInk} />
+          <Skeleton label="Loading itinerary" />
         ) : !ok ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>

@@ -1,10 +1,11 @@
 import { Alert } from "../../../src/components/Alert";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { Avatar } from "../../../src/components/Avatar";
 import { ChevronLeft } from "lucide-react-native";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BalancesResult, loadBalances } from "../../../src/api/balances";
@@ -48,7 +49,7 @@ export default function Balances() {
         </Pressable>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Balances</Text>
         {state === null ? (
-          <ActivityIndicator accessibilityLabel="Loading balances" color={color.brandBlack} />
+          <Skeleton label="Loading balances" />
         ) : !state.ok ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{state.message}</Alert>

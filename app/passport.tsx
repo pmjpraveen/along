@@ -1,7 +1,8 @@
 import { useFocusEffect, useRouter } from "expo-router";
+import { Skeleton } from "../src/components/Skeleton";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadStamps, StampsResult } from "../src/api/passport";
@@ -40,7 +41,7 @@ export default function Passport() {
         <Text maxFontSizeMultiplier={1.4} style={s.body}>One stamp for every finished trip.</Text>
       </View>
       {state === null ? (
-        <ActivityIndicator accessibilityLabel="Loading your stamps" color={color.brandBlack} />
+        <Skeleton label="Loading your stamps" variant="cards" />
       ) : !state.ok ? (
         <View style={s.gap}>
           <Alert variant="negative" persist>{state.message}</Alert>

@@ -1,11 +1,12 @@
 import { Alert } from "../../../src/components/Alert";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Avatar } from "../../../src/components/Avatar";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useRef, useState } from "react";
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { addNote, addPhoto, listMemories, MemoriesResult } from "../../../src/api/memories";
@@ -88,7 +89,7 @@ export default function Memories() {
         )}
         <View style={s.divider} />
         {state === null ? (
-          <ActivityIndicator accessibilityLabel="Loading memories" color={color.brandBlack} />
+          <Skeleton label="Loading memories" />
         ) : !state.ok ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{state.message}</Alert>

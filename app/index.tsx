@@ -1,7 +1,8 @@
 import { Redirect, useFocusEffect, useRouter } from "expo-router";
+import { Skeleton } from "../src/components/Skeleton";
 import { Bell, History } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, Image, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { Image, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { unreadCount } from "../src/api/notifications";
@@ -84,7 +85,7 @@ export default function Home() {
         )}
 
         {trips === null ? (
-          <ActivityIndicator accessibilityLabel="Loading your trips" color={color.forestInk} />
+          <Skeleton label="Loading your trips" variant="cards" />
         ) : !trips.ok ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{trips.message}</Alert>

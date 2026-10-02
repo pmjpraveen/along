@@ -1,7 +1,8 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft } from "lucide-react-native";
 import { useCallback, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ExpenseViewResult, loadExpenseView } from "../../../src/api/expenses";
@@ -36,7 +37,7 @@ export default function ExpenseDetail() {
         <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
       </Pressable>
       {state === null ? (
-        <ActivityIndicator accessibilityLabel="Loading expense" color={color.forestInk} />
+        <Skeleton label="Loading expense" />
       ) : !x ? (
         <View style={s.gap}>
           <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>

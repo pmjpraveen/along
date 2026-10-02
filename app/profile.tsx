@@ -1,10 +1,11 @@
 import { useFocusEffect, useRouter } from "expo-router";
+import { Skeleton } from "../src/components/Skeleton";
 import { Bell, Camera, ChevronLeft, Coins, FileText, Globe, LogOut, Shield, Trash2 } from "lucide-react-native";
 
 const GOLD = "#e8cf8a";   // the gold used for embossing on a passport cover
 import * as ImagePicker from "expo-image-picker";
 import { useCallback, useDeferredValue, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadStamps, StampsResult } from "../src/api/passport";
@@ -143,7 +144,7 @@ export default function Profile() {
             <Globe size={22} color={GOLD} strokeWidth={1.5} />
           </View>
           {state === null ? (
-            <ActivityIndicator accessibilityLabel="Loading your passport" color={color.forestInk} />
+            <Skeleton label="Loading your passport" variant="block" />
           ) : !state.ok ? (
             <View style={s.gap}>
               <Alert variant="negative" persist>{state.message}</Alert>
@@ -207,7 +208,7 @@ export default function Profile() {
         </SheetRows>
       </BottomSheet>
       <BottomSheet visible={sheet === "notifications"} onClose={() => setSheet(null)} title="Notifications" body="Choose what you want to hear about.">
-        {prefs === null ? <ActivityIndicator accessibilityLabel="Loading your choices" color={color.forestInk} /> : (
+        {prefs === null ? <Skeleton label="Loading your choices" variant="block" /> : (
           <SheetRows>
             {TYPES.map((tp) => (
               <ListItem key={tp} title={TYPE_LABEL[tp]} trailing="switch" checked={prefs[tp]} onPress={() => toggle(tp, !prefs[tp])} />

@@ -1,9 +1,10 @@
 import { Alert } from "../../../src/components/Alert";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { haptic } from "../../../src/haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Check, ChevronLeft, Info, MapPin, Stamp } from "lucide-react-native";
 import { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadTripSummary, SummaryResult } from "../../../src/api/passport";
@@ -67,7 +68,7 @@ export default function Complete() {
           )}
         </View>
         {summary === null ? (
-          <ActivityIndicator accessibilityLabel="Loading trip summary" color={color.forestInk} />
+          <Skeleton label="Loading trip summary" />
         ) : !s0 ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{summary.ok ? "" : summary.message}</Alert>
