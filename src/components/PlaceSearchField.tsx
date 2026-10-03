@@ -20,17 +20,17 @@ export function PlaceSearchField({ label, placeholder, value, onChangeText, onPi
   // field), and comes back only when the person types again.
   const [settled, setSettled] = useState(true);
   const searching = !settled;
-  const { places, busy, error } = usePlaceSearch(value, searching);
+  const { places, busy, error, stale } = usePlaceSearch(value, searching);
   const pick = (p: FoundPlace) => { setSettled(true); onPick(p); };
   const type = (t: string) => { setSettled(false); onChangeText(t); };
   return (
     <View style={s.wrap}>
       <TextField label={label} placeholder={placeholder} value={value} onChangeText={type} onEndEditing={onEndEditing}
         autoCapitalize={autoCapitalize} autoCorrect={false} status={status} message={message} />
-      {searching && busy && <ActivityIndicator accessibilityLabel="Searching places" color={color.forestInk} style={s.busy} />}
+      {searching && busy && places.length === 0 && <ActivityIndicator accessibilityLabel="Searching places" color={color.forestInk} style={s.busy} />}
       {searching && error && <FieldMessage status="warning">{error}</FieldMessage>}
       {searching && places.length > 0 && (
-        <View accessibilityLabel="Place suggestions" style={s.list}>
+        <View accessibilityLabel="Place suggestions" accessibilityState={{ busy: stale }} style={[s.list, stale && s.stale]}>
           {places.map((p, i) => (
             <Pressable key={p.id} accessibilityRole="button" accessibilityLabel={`${p.title}, ${p.subtitle}`} onPress={() => pick(p)}
               style={({ pressed }) => [s.row, i > 0 && s.rule, pressed && s.pressed]}>
@@ -53,6 +53,7 @@ const s = StyleSheet.create({
   busy: { alignSelf: "flex-start" },
   list: { borderRadius: radius.card, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, overflow: "hidden" },
   row: { flexDirection: "row", alignItems: "center", gap: space.s12, minHeight: 56, paddingHorizontal: space.s16, paddingVertical: space.s8 },
+  stale: { opacity: 0.5 },   // earlier matches stay up, dimmed, while the new ones load
   rule: { borderTopWidth: 1, borderTopColor: color.borderNeutral },
   pressed: { backgroundColor: color.neutralWash },
   text: { flex: 1 },

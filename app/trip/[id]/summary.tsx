@@ -24,7 +24,7 @@ import { haptic } from "../../../src/haptics";
 import { toast } from "../../../src/stores/toast";
 import { formatMinor } from "../../../src/domain/money";
 import { CARD_COLORS, formatRange } from "../../../src/domain/trip";
-import { color, font, mix, radius, space, type } from "../../../src/theme/tokens";
+import { color, font, mix, radius, space, type, pillOn } from "../../../src/theme/tokens";
 
 // A finished trip at a glance: where and when, who came, what was planned, what was spent, what is still to settle, and the way into its
 // memories, balances and expenses. Read-only, and it works for any trip status.
@@ -95,7 +95,7 @@ export default function Summary() {
           ) : (
             <View style={s.title}>
               <View style={s.cover}><TripCover uri={look.cover} destination={sm.name} ratio={1} ring /></View>
-              <View style={[s.datePill, { backgroundColor: band ? mix(band, "#000000", 0.105) : color.neutralSolid }]}>
+              <View style={[s.datePill, { backgroundColor: band ? pillOn(band) : color.neutralSolid }]}>
                 <Text maxFontSizeMultiplier={1.3} style={s.dateText}>{formatRange(sm.start_date, sm.end_date)}</Text>
               </View>
               <View accessibilityRole="header" accessibilityLabel={sm.name}><TripNameTag name={sm.name} maxWidth={width - space.s20 * 2} tilt={-2} /></View>

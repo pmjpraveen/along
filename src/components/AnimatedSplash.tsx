@@ -4,13 +4,14 @@ import Animated, { cancelAnimation, interpolate, useAnimatedStyle, useSharedValu
 import { scheduleOnRN } from "react-native-worklets";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { EASE_IN_OUT, EASE_OUT, EASE_ZOOM_THROUGH, motion } from "../theme/motion";
+import { color, splashStripes } from "../theme/tokens";
 import { AlongLogo, LOGO_RATIO } from "./AlongLogo";
 
 // The opening moment, from the brand animation: the logo sits on six tilted colour stripes; the stripes swing upright and widen to fill
 // the screen, then the whole thing zooms all the way into the logo. It speeds up into the logo and cuts straight to the app (Home or sign-in) at the end, with no pause. The first frame matches the native splash image exactly, so the
 // hand-off is invisible. Tap to skip. With Reduce Motion on it only holds, then fades. Runs once per launch.
-const BG = "#222222";
-const STRIPES = ["#ffcc3d", "#ffad00", "#ff4b00", "#de005a", "#6f00b1", "#002385"];
+const BG = color.brandBlack;
+const STRIPES = splashStripes;
 const TILT = -8.35;                 // degrees, counter-clockwise: the stripes rise to the right
 const BAND = 0.1207;                // one stripe's thickness, as a fraction of the screen width
 const LOGO_W = 0.413;               // the logo's width, as a fraction of the screen width

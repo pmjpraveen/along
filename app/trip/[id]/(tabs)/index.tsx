@@ -27,7 +27,7 @@ import { CARD_COLORS, formatDate, formatRange } from "../../../../src/domain/tri
 import { mapsOpenUrl, mapsSearchUrl, parseMapsUrl, Place } from "../../../../src/domain/maps";
 import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
 import { TripNameTag } from "../../../../src/components/TripNameTag";
-import { color, font, mix, radius, space, type } from "../../../../src/theme/tokens";
+import { color, font, mix, radius, space, type, pillOn } from "../../../../src/theme/tokens";
 
 // The pin for an item: its stored coordinates, or, for items saved before the link could be read, whatever the saved link says.
 const placeOf = (i: Item): Place | null =>
@@ -135,7 +135,7 @@ export default function Trip() {
         ) : (
           <View style={s.title}>
             <View style={s.cover}><TripCover uri={cover} destination={ok.trip.name} ratio={1} ring /></View>
-            <View style={[s.datePill, { backgroundColor: band ? mix(band, "#000000", 0.105) : color.neutralSolid }]}>
+            <View style={[s.datePill, { backgroundColor: band ? pillOn(band) : color.neutralSolid }]}>
               <Text maxFontSizeMultiplier={1.3} style={s.dateText}>{formatRange(ok.trip.start_date, ok.trip.end_date)}</Text>
             </View>
             <View accessibilityRole="header" accessibilityLabel={ok.trip.name}><TripNameTag name={ok.trip.name} maxWidth={width - space.s20 * 2} tilt={-2} /></View>

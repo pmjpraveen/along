@@ -63,3 +63,21 @@ test("nothing is searched for short text or a pasted link, and a failed search s
   expect(await screen.findByText(/You can still type the place/)).toBeTruthy();
   expect(screen.getByLabelText("Location").props.value).toBe("Goa beach");
 });
+
+test("typing more keeps the earlier matches on screen, dimmed, until the new ones arrive", async () => {
+  mockSearch.mockReset();
+  mockSearch.mockResolvedValueOnce({ ok: true, places: [goa] });
+  await render(<Harness onPick={jest.fn()} />);
+  await fireEvent.changeText(screen.getByLabelText("Location"), "goa");
+  await act(async () => { jest.advanceTimersByTime(800); });
+  expect(await screen.findByText("Goa")).toBeTruthy();
+  let resolve: (v: unknown) => void = () => {};
+  mockSearch.mockReturnValueOnce(new Promise((r) => { resolve = r; }));
+  await fireEvent.changeText(screen.getByLabelText("Location"), "goa beach");
+  expect(screen.getByText("Goa")).toBeTruthy();                       // still there, not replaced by a spinner
+  expect(screen.getByLabelText("Place suggestions").props.accessibilityState).toMatchObject({ busy: true });
+  await act(async () => { jest.advanceTimersByTime(1200); });
+  await act(async () => { resolve({ ok: true, places: [{ ...goa, id: "2", title: "Goa Beach" }] }); });
+  expect(await screen.findByText("Goa Beach")).toBeTruthy();
+  expect(screen.getByLabelText("Place suggestions").props.accessibilityState).toMatchObject({ busy: false });
+});

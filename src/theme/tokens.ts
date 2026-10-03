@@ -85,5 +85,14 @@ export const type = {
   buttonSmall: { fontFamily: font.medium, fontSize: 14, lineHeight: 22, letterSpacing: 0.175 },
   body: { fontFamily: font.regular, fontSize: 18, lineHeight: 26, letterSpacing: -0.09 },
   label: { fontFamily: font.medium, fontSize: 16, lineHeight: 20 },
+  pageTitle: { fontFamily: font.medium, fontSize: 32, lineHeight: 38, letterSpacing: -0.8 },   // the title at the top of every page
   display: { fontFamily: font.medium, fontSize: 56, lineHeight: 54, letterSpacing: -1.96 },
 } as const;
+
+// The darker pill behind a trip's dates: the trip's card colour darkened about 10%.
+export const pillOn = (card: string) => mix(card, "#000000", 0.105);
+
+// The passport cover's embossing and its colour before a country is chosen, and the opening animation's stripes: brand art, so named here
+// rather than scattered through screens.
+export const passportArt = { gold: "#e8cf8a", defaultCover: "#1f6f78", goldFrame: "rgba(232,207,138,0.35)" } as const;
+export const splashStripes = ["#ffcc3d", "#ffad00", "#ff4b00", "#de005a", "#6f00b1", "#002385"] as const;

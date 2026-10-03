@@ -2,7 +2,7 @@ import { ReactNode, useState } from "react";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Pressable } from "./Pressable";
 import { Check } from "lucide-react-native";
-import { color, radius, space } from "../theme/tokens";
+import { color, radius, rowState, space } from "../theme/tokens";
 
 // Figma "Card": neutral wash fill, no border. Pressed darkens the fill; focus and selected add a 2px Forest Ink ring
 // (selected also shows a check, so it never rests on colour alone). The border is always 2px so states do not shift layout.
@@ -33,7 +33,7 @@ function Tick() {
 
 const s = StyleSheet.create({
   card: { padding: space.s16, gap: space.s4, borderRadius: radius.card, borderCurve: "continuous", borderWidth: 2, borderColor: "transparent", backgroundColor: color.neutralWash },
-  pressed: { backgroundColor: "rgba(22,51,0,0.2)" },
+  pressed: { backgroundColor: rowState.pressed },
   ring: { borderColor: color.brandBlack },
   check: { position: "absolute", top: space.s8, right: space.s8, width: 20, height: 20, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.brandBlack, alignItems: "center", justifyContent: "center" },
 });

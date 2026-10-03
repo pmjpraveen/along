@@ -9,7 +9,7 @@ import { acceptInvite, claimGuestProfile, InvitePreview, previewInvite } from ".
 import { PrimaryButton, TextButton } from "../../src/components/Buttons";
 import { CARD_COLORS, formatRange } from "../../src/domain/trip";
 import { useSession } from "../../src/stores/session";
-import { color, font, mix, radius, space, type } from "../../src/theme/tokens";
+import { color, font, mix, radius, space, type, pillOn } from "../../src/theme/tokens";
 
 // Signed-out visitors keep the token and go through sign-in; Home sends them back here. The trip preview is story 2.4.
 export default function Join() {
@@ -58,7 +58,7 @@ export default function Join() {
         )}
         {preview ? (
           <View accessible style={[s.card, { backgroundColor: band }]}>
-            <View style={[s.datePill, { backgroundColor: mix(band, "#000000", 0.105) }]}>
+            <View style={[s.datePill, { backgroundColor: pillOn(band) }]}>
               <Text maxFontSizeMultiplier={1.3} style={s.dateText}>{formatRange(preview.start_date, preview.end_date)}</Text>
             </View>
             <TripNameTag name={preview.name} maxWidth={width - space.s20 * 2 - space.s24 * 2} tilt={-2} />
@@ -89,7 +89,7 @@ export default function Join() {
 const s = StyleSheet.create({
   screen: { flex: 1, paddingHorizontal: space.s20, backgroundColor: color.paper },
   hero: { flex: 1, gap: space.s16 },
-  heading: { fontFamily: type.sheetTitle.fontFamily, fontSize: 32, lineHeight: 38, letterSpacing: -0.8, color: color.brandBlack },
+  heading: { ...type.pageTitle, color: color.brandBlack },
   gap: { gap: space.s8 },
   card: { alignItems: "center", gap: space.s8, padding: space.s24, borderRadius: radius.sheet, borderCurve: "continuous" },
   datePill: { paddingHorizontal: space.s8, paddingVertical: 2, borderRadius: 6, borderCurve: "continuous" },

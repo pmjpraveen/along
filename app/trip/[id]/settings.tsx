@@ -186,7 +186,7 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: space.s20, gap: space.s20 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
   head: { gap: space.s4, marginBottom: space.s8 },
-  heading: { fontFamily: type.sheetTitle.fontFamily, fontSize: 32, lineHeight: 38, letterSpacing: -0.8, color: color.brandBlack },
+  heading: { ...type.pageTitle, color: color.brandBlack },
   subtitle: { ...type.fieldValue, color: color.slate },
   gap: { gap: space.s8 },
   colourRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s12, minHeight: 44 },

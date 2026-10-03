@@ -10,6 +10,7 @@ export function usePlaceSearch(query: string, enabled = true) {
   const [places, setPlaces] = useState<FoundPlace[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [forQuery, setForQuery] = useState("");   // what the current matches were searched for
   const lastAt = useRef(0);
 
   useEffect(() => {
@@ -22,10 +23,12 @@ export function usePlaceSearch(query: string, enabled = true) {
       const r = await searchPlaces(query, ctrl.signal);
       if (ctrl.signal.aborted) return;
       setBusy(false);
+      setForQuery(query);
       if (r.ok) { setPlaces(r.places); setError(null); } else { setPlaces([]); setError(r.message); }
     }, wait);
     return () => { clearTimeout(timer); ctrl.abort(); };
   }, [query, enabled]);
 
-  return { places, busy, error };
+  // `stale`: the matches shown are for an earlier version of the text, so the list can stay up, dimmed, until the new ones land.
+  return { places, busy, error, stale: places.length > 0 && forQuery !== query };
 }

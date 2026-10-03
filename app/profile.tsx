@@ -2,7 +2,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { Skeleton } from "../src/components/Skeleton";
 import { Bell, Camera, ChevronLeft, Coins, ImagePlus, Pencil, FileText, Globe, LogOut, Shield, Trash2 } from "lucide-react-native";
 
-const GOLD = "#e8cf8a";   // the gold used for embossing on a passport cover
+const GOLD = passportArt.gold;   // the gold used for embossing on a passport cover
 import * as ImagePicker from "expo-image-picker";
 import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
@@ -27,7 +27,7 @@ import { TextButton } from "../src/components/Buttons";
 import { PassportShine } from "../src/components/PassportShine";
 import { compactDate, longDate } from "../src/domain/trip";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
-import { color, font, mix, radius, space, type } from "../src/theme/tokens";
+import { color, font, mix, radius, space, type, passportArt } from "../src/theme/tokens";
 
 // Me: a big avatar, my details, and my Travel Passport (a count of trips and one stamp per completed trip, most recent first).
 // Tap a stamp to reopen that trip's summary.
@@ -117,7 +117,7 @@ export default function Profile() {
   const icon = (I: typeof Globe, danger?: boolean) => <View style={s.icon}><I size={20} color={danger ? color.alarmRed : color.iconInk} strokeWidth={1.75} /></View>;
   // The cover takes its colour from the passport of my country (teal until one is chosen).
   const passport = me?.country ? PASSPORTS[me.country] : undefined;
-  const cover = passport?.cover ?? "#1f6f78";
+  const cover = passport?.cover ?? passportArt.defaultCover;
   const coverTop = mix(cover, "#ffffff", 0.14);      // the cover is a touch lighter at the top and darker at the bottom, like a lit leather cover
   const coverBottom = mix(cover, "#000000", 0.28);
   const mrzName = (me?.name ?? "").toUpperCase().replace(/[^A-Z]/g, "");
@@ -273,7 +273,7 @@ const s = StyleSheet.create({
   passportCard: { paddingTop: space.s20, paddingHorizontal: space.s8, paddingBottom: space.s8, backgroundColor: "transparent", overflow: "hidden" },
   passportTitleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: space.s12 },
   passportTitle: { ...type.fieldValue, fontFamily: font.medium, letterSpacing: 2, textTransform: "uppercase", color: GOLD },
-  frame: { position: "absolute", top: 6, left: 6, right: 6, bottom: 6, borderRadius: radius.tile, borderCurve: "continuous", borderWidth: 1, borderColor: "rgba(232,207,138,0.35)" },
+  frame: { position: "absolute", top: 6, left: 6, right: 6, bottom: 6, borderRadius: radius.tile, borderCurve: "continuous", borderWidth: 1, borderColor: passportArt.goldFrame },
   grain: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
   grainLine: { position: "absolute", left: 0, right: 0, height: 1, backgroundColor: "rgba(255,255,255,0.05)" },
   gap: { gap: space.s8 },
