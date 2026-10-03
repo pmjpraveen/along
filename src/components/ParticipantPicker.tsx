@@ -21,9 +21,9 @@ export function ParticipantPicker({ members, selected, onChange, amounts }: Prop
           <Pressable key={m.id} accessibilityRole="checkbox" accessibilityLabel={guest ? `${m.display_name}, guest` : m.display_name}
             accessibilityState={{ checked: on }} onPress={() => toggle(m.id)} style={s.row}>
             <Avatar name={m.display_name} uri={m.avatarUrl} guest={guest} size={40} />
-            <Text maxFontSizeMultiplier={1.4} style={s.name}>{m.display_name}</Text>
+            <Text style={s.name}>{m.display_name}</Text>
             {guest && <Badge label="Guest" align="center" />}
-            {on && amounts?.[m.id] && <Text maxFontSizeMultiplier={1.3} style={s.amount}>{amounts[m.id]}</Text>}
+            {on && amounts?.[m.id] && <Text style={s.amount}>{amounts[m.id]}</Text>}
             <View style={[s.box, on && s.boxOn]}>{on && <Check size={16} color={color.paper} strokeWidth={3} />}</View>
           </Pressable>
         );

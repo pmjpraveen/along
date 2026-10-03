@@ -56,10 +56,10 @@ export default function Expenses() {
   ) : (
     <Card key={q.key} accessible style={s.queued}>
       <View style={s.queuedRow}>
-        <Text maxFontSizeMultiplier={1.4} style={s.title}>{q.payload.title}</Text>
-        <Text maxFontSizeMultiplier={1.4} style={s.amount}>{state?.ok ? formatMinor(q.payload.amountMinor, state.currency.exponent, state.currency.code) : ""}</Text>
+        <Text style={s.title}>{q.payload.title}</Text>
+        <Text style={s.amount}>{state?.ok ? formatMinor(q.payload.amountMinor, state.currency.exponent, state.currency.code) : ""}</Text>
       </View>
-      <Text maxFontSizeMultiplier={1.4} style={s.sub}>Saved on your phone. It'll sync when you're back online.</Text>
+      <Text style={s.sub}>Saved on your phone. It'll sync when you're back online.</Text>
     </Card>
   ));
 
@@ -76,7 +76,7 @@ export default function Expenses() {
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Expenses</Text>
+        <Text accessibilityRole="header" style={s.heading}>Expenses</Text>
 
         {state === null ? (
           <Skeleton label="Loading expenses" variant="expenses" />
@@ -94,28 +94,28 @@ export default function Expenses() {
               </View>
               <View style={s.tripRow}>
                 <Backpack size={20} color={color.iconInk} strokeWidth={1.75} />
-                <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={s.tripName}>Trip to {ok.trip?.destination ?? ok.trip?.name ?? ""}</Text>
+                <Text numberOfLines={1} style={s.tripName}>Trip to {ok.trip?.destination ?? ok.trip?.name ?? ""}</Text>
               </View>
               <View accessible accessibilityLabel={`Total expenses ${formatMinor(total, ok.currency.exponent, ok.currency.code)}`} style={s.inner}>
-                <Text maxFontSizeMultiplier={1.3} style={s.innerLabel}>Expenses</Text>
+                <Text style={s.innerLabel}>Expenses</Text>
                 {parts && (
-                  <Text maxFontSizeMultiplier={1.2} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={s.total}>
+                  <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={s.total}>
                     <Text style={s.frac}>{parts.prefix}</Text> {parts.whole}<Text style={s.frac}>{parts.frac}</Text>
                   </Text>
                 )}
-                {mine && bal?.ok && <Text maxFontSizeMultiplier={1.4} style={s.balance}>{describeBalance(mine.net, mine.name, true, bal.currency.exponent, bal.currency.code)}</Text>}
+                {mine && bal?.ok && <Text style={s.balance}>{describeBalance(mine.net, mine.name, true, bal.currency.exponent, bal.currency.code)}</Text>}
                 {!!ok.members?.length && <AvatarGroup people={ok.members} size={40} max={4} />}
               </View>
             </View>
 
             {ok.expenses.length === 0 && queuedCount === 0 ? (
               <View style={s.gap}>
-                <Text maxFontSizeMultiplier={1.4} style={s.body}>{canAdd ? "No expenses yet. Add what you paid and split it in seconds." : "No expenses were added. This trip is completed, so only the owner can add one."}</Text>
+                <Text style={s.body}>{canAdd ? "No expenses yet. Add what you paid and split it in seconds." : "No expenses were added. This trip is completed, so only the owner can add one."}</Text>
                 {canAdd && <PrimaryButton label="Add an expense" onPress={add} />}
               </View>
             ) : (
               <>
-                <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Transactions</Text>
+                <Text accessibilityRole="header" style={s.section}>Transactions</Text>
                 {queuedRows}
                 <View>
                   {ok.expenses.map((e) => {
@@ -127,10 +127,10 @@ export default function Expenses() {
                         style={({ pressed }) => [s.tx, pressed && s.pressed]}>
                         <CategoryIcon category={e.category} />
                         <View style={s.txText}>
-                          <Text maxFontSizeMultiplier={1.4} style={s.title}>{e.title}</Text>
-                          <Text maxFontSizeMultiplier={1.4} style={s.sub}>{line}</Text>
+                          <Text style={s.title}>{e.title}</Text>
+                          <Text style={s.sub}>{line}</Text>
                         </View>
-                        <Text maxFontSizeMultiplier={1.4} style={s.amount}>{amount}</Text>
+                        <Text style={s.amount}>{amount}</Text>
                       </Pressable>
                     );
                   })}

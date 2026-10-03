@@ -9,7 +9,7 @@ import { acceptInvite, claimGuestProfile, InvitePreview, previewInvite } from ".
 import { PrimaryButton, TextButton } from "../../src/components/Buttons";
 import { CARD_COLORS, formatRange } from "../../src/domain/trip";
 import { useSession } from "../../src/stores/session";
-import { color, font, mix, radius, space, type } from "../../src/theme/tokens";
+import { color, font, mix, radius, space, type, textScale } from "../../src/theme/tokens";
 
 // Signed-out visitors keep the token and go through sign-in; Home sends them back here. The trip preview is story 2.4.
 export default function Join() {
@@ -50,21 +50,21 @@ export default function Join() {
   return (
     <View style={[s.screen, { paddingTop: top + space.s32, paddingBottom: bottom + space.s16 }]}>
       <View style={s.hero}>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>{preview?.claims_name ? "Claim your spot" : "You're invited"}</Text>
+        <Text accessibilityRole="header" style={s.heading}>{preview?.claims_name ? "Claim your spot" : "You're invited"}</Text>
         {preview?.claims_name && (
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>
+          <Text style={s.body}>
             Are you {preview.claims_name}? Claiming links this trip's history for {preview.claims_name} to your account.
           </Text>
         )}
         {preview ? (
           <View accessible style={[s.card, { backgroundColor: band }]}>
             <View style={[s.datePill, { backgroundColor: mix(band, "#000000", 0.105) }]}>
-              <Text maxFontSizeMultiplier={1.3} style={s.dateText}>{formatRange(preview.start_date, preview.end_date)}</Text>
+              <Text maxFontSizeMultiplier={textScale.dense} style={s.dateText}>{formatRange(preview.start_date, preview.end_date)}</Text>
             </View>
             <TripNameTag name={preview.name} maxWidth={width - space.s20 * 2 - space.s24 * 2} tilt={-2} />
-            <Text maxFontSizeMultiplier={1.4} style={s.place}>{preview.destination}</Text>
-            <Text maxFontSizeMultiplier={1.4} style={s.body}>{preview.participant_count} {preview.participant_count === 1 ? "person" : "people"} going</Text>
-            {preview.invited_by ? <Text maxFontSizeMultiplier={1.4} style={s.body}>Invited by {preview.invited_by}</Text> : null}
+            <Text maxFontSizeMultiplier={textScale.dense} style={s.place}>{preview.destination}</Text>
+            <Text style={s.body}>{preview.participant_count} {preview.participant_count === 1 ? "person" : "people"} going</Text>
+            {preview.invited_by ? <Text style={s.body}>Invited by {preview.invited_by}</Text> : null}
           </View>
         ) : previewError ? (
           <View style={s.gap}>
@@ -74,7 +74,7 @@ export default function Join() {
         ) : (
           <Skeleton label="Loading invite" variant="inviteCard" />
         )}
-        {preview && <Text maxFontSizeMultiplier={1.4} style={s.note}>This is a preview. Join to see the plan, the expenses and everyone on the trip.</Text>}
+        {preview && <Text style={s.note}>This is a preview. Join to see the plan, the expenses and everyone on the trip.</Text>}
         {error && <Alert variant="negative">{error}</Alert>}
       </View>
       {!preview ? null : status === "in" ? (

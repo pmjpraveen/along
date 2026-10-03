@@ -102,8 +102,8 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
                 <X size={20} color={color.iconInk} strokeWidth={2} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
               </Pressable>
               <View style={s.titleBlock}>
-                <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.title}>{title}</Text>
-                {body && <Text maxFontSizeMultiplier={1.4} style={s.body}>{body}</Text>}
+                <Text accessibilityRole="header" style={s.title}>{title}</Text>
+                {body && <Text style={s.body}>{body}</Text>}
               </View>
             </View>
           </GestureDetector>

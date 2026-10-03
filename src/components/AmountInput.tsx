@@ -18,19 +18,19 @@ export function AmountInput({ label, value, onChange, exponent, symbol, invalid,
   const [focused, setFocused] = useState(false);
   return (
     <View style={[s.box, compact && s.boxCompact, focused && !invalid && s.focused, invalid && s.invalid]}>
-      {!suffix && <Text maxFontSizeMultiplier={1.3} style={[s.symbol, compact && s.symbolCompact]}>{symbol}</Text>}
+      {!suffix && <Text style={[s.symbol, compact && s.symbolCompact]}>{symbol}</Text>}
       <View style={s.field}>
         <TextInput accessibilityLabel={label} value={value} onChangeText={(t) => onChange(sanitizeAmount(t, exponent))}
-          keyboardType={exponent === 0 ? "number-pad" : "decimal-pad"} maxFontSizeMultiplier={1.3} style={[s.input, compact && s.inputCompact]}
+          keyboardType={exponent === 0 ? "number-pad" : "decimal-pad"} style={[s.input, compact && s.inputCompact]}
           onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} />
         {/* iOS draws a native placeholder lower than the cursor and typed digits, so the placeholder is drawn here, centred like them. */}
         {value === "" && (
           <View pointerEvents="none" style={s.placeholderBox} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-            <Text maxFontSizeMultiplier={1.3} style={[s.placeholder, compact && s.placeholderCompact]}>{exponent === 0 ? "0" : `0.${"0".repeat(exponent)}`}</Text>
+            <Text style={[s.placeholder, compact && s.placeholderCompact]}>{exponent === 0 ? "0" : `0.${"0".repeat(exponent)}`}</Text>
           </View>
         )}
       </View>
-      {suffix && <Text maxFontSizeMultiplier={1.3} style={[s.symbol, compact && s.symbolCompact]}>{symbol}</Text>}
+      {suffix && <Text style={[s.symbol, compact && s.symbolCompact]}>{symbol}</Text>}
     </View>
   );
 }

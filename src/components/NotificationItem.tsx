@@ -15,10 +15,10 @@ export function NotificationItem({ actor, parts, time, unread = false, onPress }
     <Pressable accessibilityRole="button" accessibilityLabel={`${unread ? "Unread. " : ""}${plain}, ${time}`} onPress={onPress} style={({ pressed }) => [s.row, pressed && s.pressed]}>
       <Avatar name={actor} size={40} />
       <View style={s.text}>
-        <Text maxFontSizeMultiplier={1.4} style={s.line}>{parts.map((p, i) => <Text key={i} style={p.bold ? s.bold : undefined}>{p.text}</Text>)}</Text>
+        <Text style={s.line}>{parts.map((p, i) => <Text key={i} style={p.bold ? s.bold : undefined}>{p.text}</Text>)}</Text>
         {unread && <Badge label="New" variant="success" />}
       </View>
-      <Text maxFontSizeMultiplier={1.4} style={s.time}>{time}</Text>
+      <Text style={s.time}>{time}</Text>
     </Pressable>
   );
 }

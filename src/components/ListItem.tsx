@@ -21,12 +21,12 @@ export function ListItem({ title, subtitle, overline, leading, trailing = "none"
     <>
       {leading}
       <View style={s.text}>
-        {overline ? <Text maxFontSizeMultiplier={1.4} style={s.overline}>{overline}</Text> : null}
-        <Text maxFontSizeMultiplier={1.4} style={[s.title, disabled && s.muted, destructive && s.destructive]}>{title}</Text>
-        {subtitle ? <Text maxFontSizeMultiplier={1.4} style={s.subtitle}>{subtitle}</Text> : null}
-        {message ? <Text maxFontSizeMultiplier={1.4} style={s.message}>{message}</Text> : null}
+        {overline ? <Text style={s.overline}>{overline}</Text> : null}
+        <Text style={[s.title, disabled && s.muted, destructive && s.destructive]}>{title}</Text>
+        {subtitle ? <Text style={s.subtitle}>{subtitle}</Text> : null}
+        {message ? <Text style={s.message}>{message}</Text> : null}
       </View>
-      {value ? <Text maxFontSizeMultiplier={1.4} style={[s.title, disabled && s.muted]}>{value}</Text> : null}
+      {value ? <Text style={[s.title, disabled && s.muted]}>{value}</Text> : null}
       {trailing === "chevron" && <ChevronRight size={20} color={color.brandBlack} strokeWidth={2} />}
       {trailing === "edit" && <Pencil size={18} color={color.forestInk} strokeWidth={2} />}
       {trailing === "checkbox" && <View style={[s.box, checked && s.on]}>{checked && <Check size={14} color={color.paper} strokeWidth={3} />}</View>}

@@ -49,19 +49,19 @@ export default function ExpenseDetail() {
         <>
           <View style={s.head}>
             <CategoryIcon category={x.category} size={56} />
-            <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.title}>{x.title}</Text>
-            {parts && <Text maxFontSizeMultiplier={1.2} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={s.total}>{parts.prefix} {parts.whole}<Text style={s.frac}>{parts.frac}</Text></Text>}
-            <Text maxFontSizeMultiplier={1.4} style={s.meta}>{formatDate(x.date)}</Text>
+            <Text accessibilityRole="header" style={s.title}>{x.title}</Text>
+            {parts && <Text numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={s.total}>{parts.prefix} {parts.whole}<Text style={s.frac}>{parts.frac}</Text></Text>}
+            <Text style={s.meta}>{formatDate(x.date)}</Text>
           </View>
 
           <View style={s.card}>
-            <View style={s.row}><Text maxFontSizeMultiplier={1.4} style={s.label}>Paid by</Text><Text maxFontSizeMultiplier={1.4} style={s.value}>{x.paidBy}</Text></View>
+            <View style={s.row}><Text style={s.label}>Paid by</Text><Text style={s.value}>{x.paidBy}</Text></View>
             <View style={s.line} />
-            <View style={s.row}><Text maxFontSizeMultiplier={1.4} style={s.label}>Added by</Text><Text maxFontSizeMultiplier={1.4} style={s.value}>{x.addedBy}</Text></View>
+            <View style={s.row}><Text style={s.label}>Added by</Text><Text style={s.value}>{x.addedBy}</Text></View>
           </View>
 
           <View style={s.split}>
-            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Split with</Text>
+            <Text accessibilityRole="header" style={s.section}>Split with</Text>
             <Badge label={METHOD_LABEL[x.method]} />
           </View>
           <View>
@@ -72,10 +72,10 @@ export default function ExpenseDetail() {
                 <View key={`${p.name}-${i}`} accessible accessibilityLabel={`${p.isMe ? "You" : p.name}, ${formatMinor(p.owedMinor, x.currency.exponent, x.currency.code)}, ${formatPercent(bp)} percent`} style={s.person}>
                   <Avatar name={p.name} uri={p.uri} guest={p.guest} size={40} />
                   <View style={s.personText}>
-                    <Text maxFontSizeMultiplier={1.4} style={s.name}>{p.isMe ? "You" : p.name}</Text>
-                    <Text maxFontSizeMultiplier={1.4} style={s.sub}>{[`${formatPercent(bp)}%`, entered].filter(Boolean).join(" · ")}</Text>
+                    <Text style={s.name}>{p.isMe ? "You" : p.name}</Text>
+                    <Text style={s.sub}>{[`${formatPercent(bp)}%`, entered].filter(Boolean).join(" · ")}</Text>
                   </View>
-                  <Text maxFontSizeMultiplier={1.4} style={s.share}>{formatMinor(p.owedMinor, x.currency.exponent, x.currency.code)}</Text>
+                  <Text style={s.share}>{formatMinor(p.owedMinor, x.currency.exponent, x.currency.code)}</Text>
                 </View>
               );
             })}

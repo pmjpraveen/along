@@ -10,13 +10,13 @@ export function TripSummaryCards({ summary }: { summary: TripSummary }) {
   return (
     <>
       <View accessible style={s.card}>
-        <Text maxFontSizeMultiplier={1.3} style={s.big}>{summary.people} {summary.people === 1 ? "person" : "people"}</Text>
-        <Text maxFontSizeMultiplier={1.4} style={s.body}>{summary.activities} {summary.activities === 1 ? "activity" : "activities"} planned</Text>
+        <Text style={s.big}>{summary.people} {summary.people === 1 ? "person" : "people"}</Text>
+        <Text style={s.body}>{summary.activities} {summary.activities === 1 ? "activity" : "activities"} planned</Text>
       </View>
       <View accessible style={s.card}>
-        <Text maxFontSizeMultiplier={1.4} style={s.label}>Total spent</Text>
-        <Text maxFontSizeMultiplier={1.3} style={s.big}>{money(summary.total_spend_minor)}</Text>
-        <Text maxFontSizeMultiplier={1.4} style={s.body}>
+        <Text style={s.label}>Total spent</Text>
+        <Text style={s.big}>{money(summary.total_spend_minor)}</Text>
+        <Text style={s.body}>
           {summary.outstanding_minor === 0 ? "Everyone's settled up." : `${money(summary.outstanding_minor)} still to settle`}
         </Text>
       </View>

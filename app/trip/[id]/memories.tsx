@@ -72,8 +72,8 @@ export default function Memories() {
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
         <View style={s.head}>
-          <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Memories</Text>
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>Photos and notes from the trip, shared with everyone on it.</Text>
+          <Text accessibilityRole="header" style={s.heading}>Memories</Text>
+          <Text style={s.body}>Photos and notes from the trip, shared with everyone on it.</Text>
         </View>
 
         <View style={s.add}>
@@ -96,20 +96,20 @@ export default function Memories() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : state.memories.length === 0 ? (
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>No memories yet. Add a photo or a note to hold on to this trip.</Text>
+          <Text style={s.body}>No memories yet. Add a photo or a note to hold on to this trip.</Text>
         ) : (
           state.memories.map((m) => (
             <View key={m.id} accessible style={s.memory}>
               {m.photoUrl && <Image accessibilityIgnoresInvertColors source={{ uri: m.photoUrl }} style={s.photo} />}
               {(m.body || m.caption) && (
                 <View style={s.text}>
-                  {m.body && <Text maxFontSizeMultiplier={1.4} style={s.line}>{m.body}</Text>}
-                  {m.caption && <Text maxFontSizeMultiplier={1.4} style={s.line}>{m.caption}</Text>}
+                  {m.body && <Text style={s.line}>{m.body}</Text>}
+                  {m.caption && <Text style={s.line}>{m.caption}</Text>}
                 </View>
               )}
               <View style={s.byline}>
                 <Avatar name={m.author} size={24} />
-                <Text maxFontSizeMultiplier={1.4} style={s.meta}>{m.author} · {formatDate(toIso(new Date(m.created_at)))}</Text>
+                <Text style={s.meta}>{m.author} · {formatDate(toIso(new Date(m.created_at)))}</Text>
               </View>
             </View>
           ))

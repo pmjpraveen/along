@@ -47,7 +47,7 @@ export default function Balances() {
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Balances</Text>
+        <Text accessibilityRole="header" style={s.heading}>Balances</Text>
         {state === null ? (
           <Skeleton label="Loading balances" variant="balances" />
         ) : !state.ok ? (
@@ -59,19 +59,19 @@ export default function Balances() {
           <>
             {mine && (
               <View accessible style={s.mine}>
-                <Text maxFontSizeMultiplier={1.3} style={s.mineLabel}>Your balance</Text>
-                <Text maxFontSizeMultiplier={1.3} style={s.mineText}>{describeBalance(mine.net, mine.name, true, state.currency.exponent, state.currency.code)}</Text>
+                <Text style={s.mineLabel}>Your balance</Text>
+                <Text style={s.mineText}>{describeBalance(mine.net, mine.name, true, state.currency.exponent, state.currency.code)}</Text>
               </View>
             )}
 
             {ordered.length > 0 && (
               <>
-                <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>To settle up</Text>
+                <Text accessibilityRole="header" style={s.section}>To settle up</Text>
                 <View>
                   {ordered.map((t) => (
                     <View key={`${t.from}-${t.to}`} style={s.row}>
                       <Avatar name={nameOf(t.from)} size={40} />
-                      <Text maxFontSizeMultiplier={1.4} style={s.line}>{describeTransfer(t, nameOf, mine?.memberId ?? null, state.currency.exponent, state.currency.code)}</Text>
+                      <Text style={s.line}>{describeTransfer(t, nameOf, mine?.memberId ?? null, state.currency.exponent, state.currency.code)}</Text>
                       {canSettle(t) && (
                         <Button label="Settle up" type="secondaryNeutral" size="small" onPress={() => router.push({ pathname: "/trip/[id]/settle", params: { id, from: t.from, to: t.to, amount: String(t.amountMinor) } })} />
                       )}
@@ -81,12 +81,12 @@ export default function Balances() {
               </>
             )}
 
-            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Everyone</Text>
+            <Text accessibilityRole="header" style={s.section}>Everyone</Text>
             <View>
               {others.map((r) => (
                 <View key={r.memberId} accessible style={s.row}>
                   <Avatar name={r.name} guest={r.guest} size={40} />
-                  <Text maxFontSizeMultiplier={1.4} style={s.line}>{describeBalance(r.net, r.name, false, state.currency.exponent, state.currency.code)}</Text>
+                  <Text style={s.line}>{describeBalance(r.net, r.name, false, state.currency.exponent, state.currency.code)}</Text>
                 </View>
               ))}
             </View>

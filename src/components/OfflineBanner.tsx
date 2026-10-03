@@ -39,7 +39,7 @@ export function OfflineBanner() {
   if (!text) return null;
   return (
     <View accessible accessibilityRole="text" accessibilityLiveRegion="polite" style={[s.bar, { paddingBottom: bottom + space.s8 }]}>
-      <Text maxFontSizeMultiplier={1.3} style={s.text}>{online ? "✓ " : "○ "}{text}</Text>
+      <Text style={s.text}>{online ? "✓ " : "○ "}{text}</Text>
     </View>
   );
 }

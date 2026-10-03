@@ -20,7 +20,7 @@ export function DateRangeField({ label, start, end, onChange, invalid, today = t
     <>
       <Pressable accessibilityRole="button" accessibilityLabel={has ? `${label}, ${formatDate(start)} to ${formatDate(end)}` : label}
         onPress={() => { setDraft({ start, end }); setOpen(true); }} style={[s.box, invalid && s.invalid]}>
-        <Text maxFontSizeMultiplier={1.4} style={[s.text, !has && s.placeholder]}>{has ? formatRange(start, end) : "Select date"}</Text>
+        <Text style={[s.text, !has && s.placeholder]}>{has ? formatRange(start, end) : "Select date"}</Text>
         <ChevronRight size={20} color={color.brandBlack} strokeWidth={2} />
       </Pressable>
       <BottomSheet visible={open} onClose={() => setOpen(false)} title={label} actionLabel="Confirm" actionType="secondaryNeutral" actionDisabled={!draft.end}

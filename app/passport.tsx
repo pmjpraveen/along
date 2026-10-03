@@ -30,8 +30,8 @@ export default function Passport() {
         <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
       </Pressable>
       <View style={s.head}>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Travel stamps</Text>
-        <Text maxFontSizeMultiplier={1.4} style={s.body}>An arrival and a departure for every finished trip.</Text>
+        <Text accessibilityRole="header" style={s.heading}>Travel stamps</Text>
+        <Text style={s.body}>An arrival and a departure for every finished trip.</Text>
       </View>
       {state === null ? (
         <Skeleton label="Loading your stamps" variant="stamps" />
@@ -41,7 +41,7 @@ export default function Passport() {
           <TextButton label="Retry" onPress={load} />
         </View>
       ) : stamps.length === 0 ? (
-        <Text maxFontSizeMultiplier={1.4} style={s.body}>No stamps yet. Finish a trip and you'll earn your first one.</Text>
+        <Text style={s.body}>No stamps yet. Finish a trip and you'll earn your first one.</Text>
       ) : (
         <View style={s.grid}>
           {impressions(stamps).map((im, i) => {

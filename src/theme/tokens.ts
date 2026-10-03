@@ -62,6 +62,10 @@ export const tint = {
 export const mix = (a: string, b: string, t: number) =>
   "#" + [1, 3, 5].map((i) => Math.round(parseInt(a.slice(i, i + 2), 16) * (1 - t) + parseInt(b.slice(i, i + 2), 16) * t).toString(16).padStart(2, "0")).join("");
 
+// How far text may grow with the system text size. Everything follows the setting; compact elements that sit in a fixed shape (date pills, name tags,
+// badges, tile captions) stop at `dense` so their tile or tag keeps its shape.
+export const textScale = { dense: 1.4 } as const;
+
 export const space = { s4: 4, s8: 8, s12: 12, s16: 16, s20: 20, s24: 24, s32: 32, s40: 40, s48: 48, s64: 64 } as const;
 
 export const radius = { small: 10, pill: 9999, input: 12, card: 16, tile: 24, sheet: 28, xLarge: 32 } as const;

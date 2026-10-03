@@ -42,7 +42,7 @@ export function Button({ label, onPress, type: kind = "primary", size = "large",
         accessibilityState={{ disabled, busy }} disabled={inactive} onPress={onPress} hitSlop={slop}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         style={({ pressed, hovered }) => [...box, shine > 0 && s.clip, !inactive && (pressed || hovered) && { backgroundColor: buttonState[stateKey(kind)][pressed ? "pressed" : "hover"] }]}>
-        {busy ? <ActivityIndicator color={kind === "primary" ? color.paper : color.brandBlack} /> : <Text maxFontSizeMultiplier={1.3} style={labelStyle}>{label}</Text>}
+        {busy ? <ActivityIndicator color={kind === "primary" ? color.paper : color.brandBlack} /> : <Text style={labelStyle}>{label}</Text>}
         {shine > 0 && !inactive && <PassportShine sweeps={shine} restMs={motion.shine.buttonRestMs} sweepMs={motion.shine.buttonSweepMs} still={false} />}
       </Pressable>
     </View>

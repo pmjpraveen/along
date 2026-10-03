@@ -61,8 +61,8 @@ export default function SignIn() {
         <Image accessible accessibilityRole="image" accessibilityLabel="A group of friends with their luggage, ready to travel" accessibilityIgnoresInvertColors
           source={FRIENDS} resizeMode="contain" style={{ width: photoW, height: photoW * (2 / 3) }} />
         <View style={s.copy}>
-          <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Welcome to Along</Text>
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>Plan together, split costs fairly and keep the memories, all in one place.</Text>
+          <Text accessibilityRole="header" style={s.heading}>Welcome to Along</Text>
+          <Text style={s.body}>Plan together, split costs fairly and keep the memories, all in one place.</Text>
         </View>
         {error && <Alert variant="negative">{error}</Alert>}
       </View>
@@ -70,12 +70,12 @@ export default function SignIn() {
         {busy ? <ActivityIndicator color={color.paper} /> : (
           <>
             <GoogleG size={24} />
-            <Text maxFontSizeMultiplier={1.3} style={s.googleLabel}>Login with Google</Text>
+            <Text style={s.googleLabel}>Login with Google</Text>
           </>
         )}
       </Pressable>
       <TextButton label="Sign in with email" onPress={() => router.push("/sign-in-email")} />
-      <Text maxFontSizeMultiplier={1.4} style={s.legal}>
+      <Text style={s.legal}>
         By continuing you agree to the{" "}
         <Text accessibilityRole="link" onPress={() => open("terms")} style={s.link}>Terms of use</Text>
         {" "}and the{" "}
@@ -83,7 +83,7 @@ export default function SignIn() {
       </Text>
       {devLoginEnabled() && (
         <View style={s.dev}>
-          <Text maxFontSizeMultiplier={1.3} style={s.devLabel}>Development only: sign in as a test person</Text>
+          <Text style={s.devLabel}>Development only: sign in as a test person</Text>
           {DEV_PEOPLE.map((p) => <OutlinedButton key={p.email} label={`Sign in as ${p.name}`} onPress={() => devSignIn(p.email)} />)}
         </View>
       )}

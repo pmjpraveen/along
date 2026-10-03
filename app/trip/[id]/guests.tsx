@@ -54,7 +54,7 @@ export default function Guests() {
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
         <View style={s.head}>
-          <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Guests</Text>
+          <Text accessibilityRole="header" style={s.heading}>Guests</Text>
           <Text style={s.sub}>Friends who aren't on along yet. Send an invite so they can join the trip.</Text>
         </View>
         {error ? (

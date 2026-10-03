@@ -24,7 +24,7 @@ import { haptic } from "../../../src/haptics";
 import { toast } from "../../../src/stores/toast";
 import { formatMinor } from "../../../src/domain/money";
 import { CARD_COLORS, formatRange } from "../../../src/domain/trip";
-import { color, font, mix, radius, space, type } from "../../../src/theme/tokens";
+import { color, font, mix, radius, space, type, textScale } from "../../../src/theme/tokens";
 
 // A finished trip at a glance: where and when, who came, what was planned, what was spent, what is still to settle, and the way into its
 // memories, balances and expenses. Read-only, and it works for any trip status.
@@ -96,12 +96,12 @@ export default function Summary() {
             <View style={s.title}>
               <View style={s.cover}><TripCover uri={look.cover} destination={sm.name} ratio={1} ring /></View>
               <View style={[s.datePill, { backgroundColor: band ? mix(band, "#000000", 0.105) : color.neutralSolid }]}>
-                <Text maxFontSizeMultiplier={1.3} style={s.dateText}>{formatRange(sm.start_date, sm.end_date)}</Text>
+                <Text maxFontSizeMultiplier={textScale.dense} style={s.dateText}>{formatRange(sm.start_date, sm.end_date)}</Text>
               </View>
               <View accessibilityRole="header" accessibilityLabel={sm.name}><TripNameTag name={sm.name} maxWidth={width - space.s20 * 2} tilt={-2} /></View>
               <View style={s.place}>
                 <MapPin size={16} color={color.brandBlack} strokeWidth={1.75} />
-                <Text maxFontSizeMultiplier={1.4} style={s.placeText}>{sm.destination_name}</Text>
+                <Text style={s.placeText}>{sm.destination_name}</Text>
               </View>
               {(sm.status === "completed" || sm.status === "archived") && <View style={s.badge}><Badge variant="success" label="Completed" /></View>}
               {members.length > 0 && <AvatarGroup people={members.map((m) => ({ name: m.display_name, uri: m.avatarUrl, guest: m.membership_type === "guest" }))} size={48} max={4} />}
@@ -113,14 +113,14 @@ export default function Summary() {
         {sm && (
           <View style={s.content}>
             <View accessible style={s.total}>
-              <Text maxFontSizeMultiplier={1.4} style={s.label}>Total spent</Text>
-              <Text maxFontSizeMultiplier={1.3} style={s.big}>{money(sm.total_spend_minor)}</Text>
-              <Text maxFontSizeMultiplier={1.4} style={s.body}>
+              <Text style={s.label}>Total spent</Text>
+              <Text style={s.big}>{money(sm.total_spend_minor)}</Text>
+              <Text style={s.body}>
                 {sm.outstanding_minor === 0 ? "Everyone's settled up." : `${money(sm.outstanding_minor)} still to settle`}
               </Text>
               <View style={s.line} />
-              <Text maxFontSizeMultiplier={1.4} style={s.body}>{sm.people} {sm.people === 1 ? "person" : "people"}</Text>
-              <Text maxFontSizeMultiplier={1.4} style={s.body}>{sm.activities} {sm.activities === 1 ? "activity" : "activities"} planned</Text>
+              <Text style={s.body}>{sm.people} {sm.people === 1 ? "person" : "people"}</Text>
+              <Text style={s.body}>{sm.activities} {sm.activities === 1 ? "activity" : "activities"} planned</Text>
             </View>
             <View style={s.list}>
               <ListItem title="Memories" subtitle="Photos and notes from the trip" leading={icon(ImageIcon)} trailing="chevron" onPress={() => go("memories")} />

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { color, font, space } from "../theme/tokens";
+import { color, font, space, textScale } from "../theme/tokens";
 
 const R = 8;
 // Home uses the regular size; the Completed trips cards use the smaller one from their design.
@@ -18,7 +18,7 @@ export function TripNameTag({ name, maxWidth, tilt, small }: { name: string; max
   const shown = lines && lines.length > 1 ? (cut ? [lines[0], lines.slice(1).join(" ")] : lines) : [name];
   return (
     <View style={[s.wrap, { transform: [{ rotate: `${tilt}deg` }] }]}>
-      <Text accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none" maxFontSizeMultiplier={1.3}
+      <Text maxFontSizeMultiplier={textScale.dense} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" pointerEvents="none"
         onTextLayout={(e) => setLines(e.nativeEvent.lines.map((l) => l.text.trim()).filter(Boolean))}
         style={[s.text, size.text, s.measure, { width: maxWidth - size.padX * 2 }]}>{name}</Text>
       {shown.map((line, i) => {
@@ -28,7 +28,7 @@ export function TripNameTag({ name, maxWidth, tilt, small }: { name: string; max
         return (
           <View key={`${i}-${line}`} onLayout={(e) => { const w = e.nativeEvent.layout.width; setWidths((p) => (p[i] === w ? p : Object.assign([...p], { [i]: w }))); }}
             style={[s.tag, { paddingHorizontal: size.padX }, i > 0 && { marginTop: -0.5 }, { paddingTop: i === 0 ? size.padY : 0, paddingBottom: i === shown.length - 1 ? size.padY : 0 }, { borderTopLeftRadius: top, borderTopRightRadius: top, borderBottomLeftRadius: bottom, borderBottomRightRadius: bottom }]}>
-            <Text numberOfLines={cut && i === 1 ? 1 : undefined} ellipsizeMode="tail" maxFontSizeMultiplier={1.3} style={[s.text, size.text, s.shrink]}>{line}</Text>
+            <Text maxFontSizeMultiplier={textScale.dense} numberOfLines={cut && i === 1 ? 1 : undefined} ellipsizeMode="tail" style={[s.text, size.text, s.shrink]}>{line}</Text>
           </View>
         );
       })}

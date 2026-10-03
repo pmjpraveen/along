@@ -28,7 +28,7 @@ export default function TripTabs() {
           <NativeTabs.Trigger.Icon sf={{ default: "creditcard", selected: "creditcard.fill" }} md="payments" />
         </NativeTabs.Trigger>
         <NativeTabs.Trigger name="activity">
-          <NativeTabs.Trigger.Label>History</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Label>Activity</NativeTabs.Trigger.Label>
           <NativeTabs.Trigger.Icon sf={{ default: "clock", selected: "clock.fill" }} md="history" />
         </NativeTabs.Trigger>
         {/* iOS: the "search" role draws a separate round button beside the bar; the "+" below sits exactly over it. */}

@@ -20,7 +20,7 @@ export function TimeField({ label, value, onChange }: Props) {
   return (
     <>
       <Pressable accessibilityRole="button" accessibilityLabel={value ? `${label}, ${value}` : label} onPress={show} style={s.box}>
-        <Text maxFontSizeMultiplier={1.4} style={[s.text, !value && s.placeholder]}>{value ?? "Start time (optional)"}</Text>
+        <Text style={[s.text, !value && s.placeholder]}>{value ?? "Start time (optional)"}</Text>
       </Pressable>
       <BottomSheet visible={open} onClose={() => setOpen(false)} title={label} actionLabel="Confirm" onAction={() => { onChange(toHhmm(draft)); setOpen(false); }}>
         <View style={s.wheel}>

@@ -15,7 +15,7 @@ export function DateField({ label, value, onChange, invalid, min, compact, dark 
     <>
       <Pressable accessibilityRole="button" accessibilityLabel={value ? `${label}, ${formatDate(value)}` : label} onPress={() => setOpen(true)}
         style={[s.box, compact && s.boxCompact, dark && s.boxDark, invalid && s.invalid]}>
-        <Text maxFontSizeMultiplier={1.4} style={[s.text, compact && s.textCompact, dark && s.textDark, !value && s.placeholder]}>{value ? formatDate(value) : "Select date"}</Text>
+        <Text style={[s.text, compact && s.textCompact, dark && s.textDark, !value && s.placeholder]}>{value ? formatDate(value) : "Select date"}</Text>
       </Pressable>
       <BottomSheet visible={open} onClose={() => setOpen(false)} title={label}>
         <Calendar value={value} min={min} onSelect={(iso) => { onChange(iso); setOpen(false); }} />

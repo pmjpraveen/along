@@ -61,11 +61,11 @@ export default function Complete() {
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
         <View style={s.head}>
-          <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>{done ? "Trip completed" : "Complete this trip?"}</Text>
+          <Text accessibilityRole="header" style={s.heading}>{done ? "Trip completed" : "Complete this trip?"}</Text>
           {s0 && (
             <View style={s.meta}>
               <MapPin size={16} color={color.charcoal} strokeWidth={1.75} />
-              <Text maxFontSizeMultiplier={1.4} style={s.body}>{s0.destination_name} · {formatRange(s0.start_date, s0.end_date)}</Text>
+              <Text style={s.body}>{s0.destination_name} · {formatRange(s0.start_date, s0.end_date)}</Text>
             </View>
           )}
         </View>
@@ -83,12 +83,12 @@ export default function Complete() {
             {done ? (
               <View accessible style={s.note}>
                 <View style={s.icon}><Check size={20} color={color.iconInk} strokeWidth={2} /></View>
-                <Text maxFontSizeMultiplier={1.4} style={s.noteText}>It's in your history now. Everything is still here, and balances stay open until they're settled.</Text>
+                <Text style={s.noteText}>It's in your history now. Everything is still here, and balances stay open until they're settled.</Text>
               </View>
             ) : (
               <View accessible style={s.note}>
                 <View style={s.icon}><Info size={20} color={color.iconInk} strokeWidth={2} /></View>
-                <Text maxFontSizeMultiplier={1.4} style={s.noteText}>
+                <Text style={s.noteText}>
                   The trip moves to your history. Nothing is deleted or locked: expenses, the itinerary and everyone's balances stay exactly as they are, and you can still settle up.
                 </Text>
               </View>
@@ -96,7 +96,7 @@ export default function Complete() {
             {done && stamp && (
               <View accessible style={s.note}>
                 <View style={s.icon}><Stamp size={20} color={color.iconInk} strokeWidth={2} /></View>
-                <Text maxFontSizeMultiplier={1.4} style={s.noteText}>Passport stamp added: {stamp}</Text>
+                <Text style={s.noteText}>Passport stamp added: {stamp}</Text>
               </View>
             )}
             {error && <Alert variant="negative">{error}</Alert>}

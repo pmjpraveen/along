@@ -24,9 +24,9 @@ test("focus thickens the border to 3px in the brand black without changing the b
   // Height is fixed, and horizontally the thicker border is paid for with less padding, so nothing moves.
   const width = (st: Record<string, unknown>) => (st.borderWidth as number) * 2 + (st.paddingHorizontal as number) * 2;
   const before = width(field());
-  expect(field()).toMatchObject({ height: 48 });
+  expect(field()).toMatchObject({ minHeight: 48 });
   await fireEvent(screen.getByLabelText("Name"), "focus");
-  expect(field()).toMatchObject({ borderWidth: 3, borderColor: color.brandBlack, height: 48 });
+  expect(field()).toMatchObject({ borderWidth: 3, borderColor: color.brandBlack, minHeight: 48 });
   expect(width(field())).toBe(before);
   await fireEvent(screen.getByLabelText("Name"), "blur");
   expect(field()).toMatchObject({ borderWidth: 1, borderColor: color.inputBorder });
