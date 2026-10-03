@@ -11,7 +11,7 @@ import { color, radius, space } from "../theme/tokens";
 // on it holds still. The label tells screen readers what is loading.
 export type SkeletonVariant =
   | "list" | "switchRows" | "guestRows"          // avatar rows, plain rows, avatar rows with a button
-  | "tiles" | "cards" | "visa" | "inviteCard"    // Home's two-column grid, History's wide cards, the passport page, the join preview
+  | "tiles" | "cards" | "stamps" | "inviteCard"    // Home's two-column grid, History's wide cards, the travel stamps page, the join preview
   | "tripHeader" | "planRows"                    // the trip page's header (cover, date, name) and its day chips with plans
   | "balances" | "expenses" | "expenseDetail" | "summaryBody" | "summaryCards"
   | "dayChips" | "greetingName" | "profileName" | "profileCard"                 // the profile page's name, and its email and member-since card
@@ -54,8 +54,8 @@ export function Skeleton({ label, variant = "list" }: { label: string; variant?:
       case "cards":   // History: a wide card with the date pill, name tag and place
         return n(3).map((i) => (
           <Box key={i} h={168} r={radius.tile} style={s.cardCenter}><Bar w={96} h={20} style={{ ...on, borderRadius: 6 }} /><Bar w="70%" h={30} style={{ ...on, borderRadius: 8 }} /><Bar w="40%" h={14} style={on} /></Box>));
-      case "visa":   // the passport page: a tall page, then the pager
-        return <><Box h={Math.round((width - space.s40) * 1.45)} r={radius.card} /><Row style={s.rowBetween}><Dot size={48} /><Bar w="30%" /><Dot size={48} /></Row></>;
+      case "stamps":   // travel stamps: two to a row
+        return <View style={s.stampGrid}>{n(6).map((i) => <Box key={i} h={92} r={radius.card} style={{ width: "48%" }} />)}</View>;
       case "inviteCard":   // the join preview card
         return <Box h={190} r={radius.sheet} style={s.cardCenter}><Bar w={96} h={20} style={{ ...on, borderRadius: 6 }} /><Bar w="70%" h={34} style={{ ...on, borderRadius: 8 }} /><Bar w="45%" h={16} style={on} /><Bar w="35%" h={14} style={on} /></Box>;
       case "tripHeader":   // the trip header: cover, date, name, place, avatars
@@ -105,6 +105,7 @@ const s = StyleSheet.create({
   top: { alignItems: "flex-start" },
   grow: { flex: 1 },
   lines: { flex: 1, gap: space.s8 },
+  stampGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: space.s24 },
   tiles: { flexDirection: "row", flexWrap: "wrap", gap: space.s12, rowGap: space.s24 },
   line: { height: 1, backgroundColor: color.borderNeutral },
   inner: { padding: space.s20, gap: space.s12, justifyContent: "center" },
