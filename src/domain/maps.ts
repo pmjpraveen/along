@@ -62,3 +62,34 @@ function parseAppleMapsUrl(u: URL): Place | null {
 export const mapsSearchUrl = (text: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(text)}`;
 export const mapsOpenUrl = (p: Place) => `https://www.google.com/maps/search/?api=1&query=${p.lat},${p.lng}`;
 
+
+// A map drawn from OpenStreetMap tiles: the squares of the standard web-map grid. `tilesFor` lists the squares that cover a
+// width x height box with the place at its exact centre, each with its address and where to draw it inside the box.
+// Tiles are 256-pixel images. One zoom level in is drawn at half the size, so the same ground shows with twice the pixels, which stays sharp on
+// phone screens (zoom 17 drawn 128 points wide covers what zoom 16 would at 256).
+export const OSM_ZOOM = 17;
+export const TILE = 128;   // points on screen per tile
+
+const tileCoords = (lat: number, lng: number, zoom: number) => {
+  const n = 2 ** zoom;
+  const rad = (lat * Math.PI) / 180;
+  return { x: ((lng + 180) / 360) * n, y: ((1 - Math.log(Math.tan(rad) + 1 / Math.cos(rad)) / Math.PI) / 2) * n };
+};
+
+export type MapTile = { key: string; uri: string; left: number; top: number };
+export function tilesFor(place: Pick<Place, "lat" | "lng">, width: number, height: number, zoom = OSM_ZOOM): MapTile[] {
+  const lat = Math.max(-85.0511, Math.min(85.0511, place.lat));
+  const n = 2 ** zoom;
+  const c = tileCoords(lat, place.lng, zoom);
+  const cx = c.x * TILE;
+  const cy = c.y * TILE;
+  const tiles: MapTile[] = [];
+  for (let ty = Math.floor((cy - height / 2) / TILE); ty <= Math.floor((cy + height / 2) / TILE); ty++) {
+    if (ty < 0 || ty >= n) continue;
+    for (let tx = Math.floor((cx - width / 2) / TILE); tx <= Math.floor((cx + width / 2) / TILE); tx++) {
+      const wrapped = ((tx % n) + n) % n;   // the map repeats around the date line
+      tiles.push({ key: `${zoom}/${wrapped}/${ty}@${tx}`, uri: `https://tile.openstreetmap.org/${zoom}/${wrapped}/${ty}.png`, left: tx * TILE - cx + width / 2, top: ty * TILE - cy + height / 2 });
+    }
+  }
+  return tiles;
+}
