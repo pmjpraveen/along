@@ -102,7 +102,7 @@ export default function TripSettings() {
         </View>
 
         {state === null ? (
-          <Skeleton label="Loading settings" />
+          <Skeleton label="Loading settings" variant="fields" />
         ) : !x || !form ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>

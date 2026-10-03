@@ -112,7 +112,7 @@ export default function Trip() {
       contentContainerStyle={{ paddingBottom: bottom + space.s64 + space.s32 }}>
       <View style={[s.head, { paddingTop: navH + space.s4 }, band ? { backgroundColor: band, paddingBottom: space.s24 } : null]}>
         {state === null ? (
-          <Skeleton label="Loading itinerary" />
+          <Skeleton label="Loading itinerary" variant="tripHeader" />
         ) : !ok ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>
@@ -137,6 +137,7 @@ export default function Trip() {
       {hasPlans && <View onLayout={(e) => { barY.value = e.nativeEvent.layout.y; }} style={{ height: barH }} />}
 
       <View style={s.body}>
+        {state === null && <Skeleton label="Loading plans" variant="planRows" />}
         {ok && ok.items.length === 0 && (
           <View style={s.gap}>
             <Text maxFontSizeMultiplier={1.4} style={s.text}>No plans yet. Add the first thing your group will do.</Text>

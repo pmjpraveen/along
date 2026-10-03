@@ -85,7 +85,7 @@ export default function Summary() {
             </View>
           ))}
           {state === null ? (
-            <Skeleton label="Loading trip summary" />
+            <Skeleton label="Loading trip summary" variant="tripHeader" />
           ) : !sm ? (
             <View style={s.gap}>
               <Alert variant="negative" persist>{state.ok ? "" : state.message}</Alert>
@@ -108,6 +108,7 @@ export default function Summary() {
           )}
         </View>
 
+        {state === null && <View style={s.content}><Skeleton label="Loading trip summary details" variant="summaryBody" /></View>}
         {sm && (
           <View style={s.content}>
             <View accessible style={s.total}>

@@ -89,7 +89,7 @@ export default function Memories() {
         )}
         <View style={s.divider} />
         {state === null ? (
-          <Skeleton label="Loading memories" />
+          <Skeleton label="Loading memories" variant="memories" />
         ) : !state.ok ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{state.message}</Alert>

@@ -70,7 +70,7 @@ export default function Complete() {
           )}
         </View>
         {summary === null ? (
-          <Skeleton label="Loading trip summary" />
+          <Skeleton label="Loading trip summary" variant="summaryCards" />
         ) : !s0 ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{summary.ok ? "" : summary.message}</Alert>

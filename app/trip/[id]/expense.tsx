@@ -39,7 +39,7 @@ export default function ExpenseDetail() {
         <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
       </Pressable>
       {state === null ? (
-        <Skeleton label="Loading expense" />
+        <Skeleton label="Loading expense" variant="expenseDetail" />
       ) : !x ? (
         <View style={s.gap}>
           <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>

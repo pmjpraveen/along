@@ -57,7 +57,7 @@ export default function Settle() {
       </Pressable>
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Settle up</Text>
       {!bal ? (
-        <Skeleton label="Loading" variant="block" />
+        <Skeleton label="Loading" variant="fields" />
       ) : !bal.ok ? (
         <View style={s.gap}>
           <Alert variant="negative" persist>{bal.message}</Alert>

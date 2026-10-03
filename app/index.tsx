@@ -85,7 +85,7 @@ export default function Home() {
         )}
 
         {trips === null ? (
-          <Skeleton label="Loading your trips" variant="cards" />
+          <Skeleton label="Loading your trips" variant="tiles" />
         ) : !trips.ok ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{trips.message}</Alert>

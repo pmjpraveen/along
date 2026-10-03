@@ -60,7 +60,7 @@ export default function Guests() {
         {error ? (
           <View style={s.gap}><Text accessibilityRole="alert" style={s.sub}>{error}</Text><Button label="Retry" type="secondary" size="small" onPress={load} /></View>
         ) : members === null ? (
-          <Skeleton label="Loading guests" />
+          <Skeleton label="Loading guests" variant="guestRows" />
         ) : guests.length === 0 ? (
           <Text style={s.sub}>No guests yet.</Text>
         ) : (

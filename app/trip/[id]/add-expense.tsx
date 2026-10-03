@@ -157,7 +157,7 @@ export default function AddExpense() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : !form ? (
-          <Skeleton label="Loading" />
+          <Skeleton label="Loading" variant="fields" />
         ) : (
           <>
             <View style={s.field}>

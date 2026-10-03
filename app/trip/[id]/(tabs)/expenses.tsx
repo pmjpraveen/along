@@ -79,7 +79,7 @@ export default function Expenses() {
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Expenses</Text>
 
         {state === null ? (
-          <Skeleton label="Loading expenses" />
+          <Skeleton label="Loading expenses" variant="expenses" />
         ) : !ok ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{(state as { message: string }).message}</Alert>

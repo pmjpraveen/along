@@ -144,7 +144,7 @@ export default function Profile() {
             <Globe size={22} color={GOLD} strokeWidth={1.5} />
           </View>
           {state === null ? (
-            <Skeleton label="Loading your passport" variant="block" />
+            <Skeleton label="Loading your passport" variant="cover" />
           ) : !state.ok ? (
             <View style={s.gap}>
               <Alert variant="negative" persist>{state.message}</Alert>
@@ -208,7 +208,7 @@ export default function Profile() {
         </SheetRows>
       </BottomSheet>
       <BottomSheet visible={sheet === "notifications"} onClose={() => setSheet(null)} title="Notifications" body="Choose what you want to hear about.">
-        {prefs === null ? <Skeleton label="Loading your choices" variant="block" /> : (
+        {prefs === null ? <Skeleton label="Loading your choices" variant="switchRows" /> : (
           <SheetRows>
             {TYPES.map((tp) => (
               <ListItem key={tp} title={TYPE_LABEL[tp]} trailing="switch" checked={prefs[tp]} onPress={() => toggle(tp, !prefs[tp])} />

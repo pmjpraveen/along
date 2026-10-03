@@ -72,7 +72,7 @@ export default function Join() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : (
-          <Skeleton label="Loading invite" variant="cards" />
+          <Skeleton label="Loading invite" variant="inviteCard" />
         )}
         {preview && <Text maxFontSizeMultiplier={1.4} style={s.note}>This is a preview. Join to see the plan, the expenses and everyone on the trip.</Text>}
         {error && <Alert variant="negative">{error}</Alert>}

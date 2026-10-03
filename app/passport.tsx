@@ -41,7 +41,7 @@ export default function Passport() {
         <Text maxFontSizeMultiplier={1.4} style={s.body}>One stamp for every finished trip.</Text>
       </View>
       {state === null ? (
-        <Skeleton label="Loading your stamps" variant="cards" />
+        <Skeleton label="Loading your stamps" variant="visa" />
       ) : !state.ok ? (
         <View style={s.gap}>
           <Alert variant="negative" persist>{state.message}</Alert>

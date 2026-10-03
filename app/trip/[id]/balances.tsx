@@ -49,7 +49,7 @@ export default function Balances() {
         </Pressable>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Balances</Text>
         {state === null ? (
-          <Skeleton label="Loading balances" />
+          <Skeleton label="Loading balances" variant="balances" />
         ) : !state.ok ? (
           <View style={s.gap}>
             <Alert variant="negative" persist>{state.message}</Alert>
