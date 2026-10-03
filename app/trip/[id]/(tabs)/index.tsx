@@ -274,7 +274,7 @@ const s = StyleSheet.create({
   head4Map: { paddingBottom: space.s12 },   // the map sits 8 in from the card's left, right and bottom
   map: { margin: space.s8, marginTop: 0 },
   move: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: space.s8, paddingTop: space.s8, paddingHorizontal: space.s8, paddingBottom: space.s16 },   // pushed to the right, 8pt from the card's edges
-  moveAfterMap: { paddingTop: 0 },   // the map above already leaves its own 8pt
+  moveAfterMap: { paddingTop: space.s8 },   // the map above leaves 8pt, so 16pt in all between the map and this row
   trash: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.alarmRed, alignItems: "center", justifyContent: "center" },
   titleRow: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   itemTitle: { ...type.label, flex: 1, fontSize: 17, color: color.obsidian },
