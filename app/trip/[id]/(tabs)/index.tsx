@@ -271,7 +271,7 @@ const s = StyleSheet.create({
   card: { flex: 1, overflow: "hidden", borderRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.softGrey },
   head4: { gap: space.s4, padding: space.s16 },
   head4Open: { paddingBottom: 0 },   // the panel below brings its own 8pt
-  head4Map: { paddingBottom: space.s16 },   // 16 between the location text and the map; the map sits 8 in from the card's left, right and bottom
+  head4Map: { paddingBottom: space.s12 },   // 12 between the location text and the map; the map sits 8 in from the card's left, right and bottom
   map: { margin: space.s8, marginTop: 0 },
   move: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: space.s8, paddingTop: space.s8, paddingHorizontal: space.s8, paddingBottom: space.s16 },   // pushed to the right, 8pt from the card's edges
   moveAfterMap: { paddingTop: 0 },   // the map above already leaves its own 8pt
