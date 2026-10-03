@@ -10,6 +10,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { InboxResult, loadInbox, markRead } from "../src/api/notifications";
 import { Alert } from "../src/components/Alert";
 import { TextButton } from "../src/components/Buttons";
+import { WaveLine } from "../src/components/WaveLine";
 import { NotificationItem } from "../src/components/NotificationItem";
 import { clock12, groupByDayHeading } from "../src/domain/feed";
 import { describeParts, Notification, notificationActor, routeFor } from "../src/domain/notifications";
@@ -63,12 +64,12 @@ export default function Notifications() {
           days.map((d) => (
             <View key={d.heading}>
               <View style={s.dayRow} accessibilityRole="header" accessible accessibilityLabel={d.heading}>
-                <View style={s.rule} />
+                <WaveLine />
                 <Text maxFontSizeMultiplier={1.3} style={s.day}>{d.heading}</Text>
-                <View style={s.rule} />
+                <WaveLine />
               </View>
-              {d.events.map((n) => (
-                <NotificationItem key={n.id} actor={notificationActor(n)} parts={describeParts(n)} time={clock12(n.created_at)} unread={!n.read_at} onPress={() => open(n)} />
+              {d.events.map((n, i) => (
+                <NotificationItem key={n.id} actor={notificationActor(n)} parts={describeParts(n)} time={clock12(n.created_at)} unread={!n.read_at} last={i === d.events.length - 1} onPress={() => open(n)} />
               ))}
             </View>
           ))
@@ -87,7 +88,6 @@ const s = StyleSheet.create({
   heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian },
   gap: { gap: space.s8 },
   dayRow: { flexDirection: "row", alignItems: "center", gap: space.s16, marginTop: space.s8, marginBottom: space.s8 },
-  rule: { flex: 1, height: 1, backgroundColor: color.borderNeutral },
   day: { ...type.fieldMessage, color: color.slate },
   body: { ...type.fieldValue, color: color.charcoal },
 });
