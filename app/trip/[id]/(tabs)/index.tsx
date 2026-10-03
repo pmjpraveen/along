@@ -2,7 +2,7 @@ import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
 import { Skeleton } from "../../../../src/components/Skeleton";
 import { Chip } from "../../../../src/components/Chip";
 import { TripMenu } from "../../../../src/components/TripMenu";
-import { ChevronLeft, MapPin, MoreHorizontal, Users } from "lucide-react-native";
+import { ChevronLeft, MapPin, MoreHorizontal, Trash2, Users } from "lucide-react-native";
 import { useCallback, useMemo, useState } from "react";
 import { Linking, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../../../../src/components/Pressable";
@@ -19,7 +19,7 @@ import { haptic } from "../../../../src/haptics";
 import { Alert } from "../../../../src/components/Alert";
 import { AvatarGroup } from "../../../../src/components/Avatar";
 import { Badge } from "../../../../src/components/Badge";
-import { Button, PrimaryButton, TextButton } from "../../../../src/components/Buttons";
+import { PrimaryButton, TextButton } from "../../../../src/components/Buttons";
 import { DateField } from "../../../../src/components/DateField";
 import { MapPreview } from "../../../../src/components/MapPreview";
 import { TripCover } from "../../../../src/components/TripCover";
@@ -196,8 +196,10 @@ export default function Trip() {
                     {placeOf(i) && <View style={s.map}><MapPreview place={placeOf(i)!} /></View>}
                     {moving === i.id && (
                       <View style={s.move}>
-                        <DateField label={`New day for ${i.title}`} value={i.day_date} onChange={(day) => move(i.id, i.version, day)} />
-                        <Button label="Delete plan" type="destructive" size="medium" onPress={() => { setMoving(null); setRemoving(i); }} />
+                        <DateField compact label={`New day for ${i.title}`} value={i.day_date} onChange={(day) => move(i.id, i.version, day)} />
+                        <Pressable accessibilityRole="button" accessibilityLabel="Delete plan" onPress={() => { setMoving(null); setRemoving(i); }} hitSlop={space.s4} style={s.trash}>
+                          <Trash2 size={18} color={color.paper} strokeWidth={1.75} />
+                        </Pressable>
                       </View>
                     )}
                   </Pressable>
@@ -270,7 +272,8 @@ const s = StyleSheet.create({
   head4: { gap: space.s4, padding: space.s16 },
   head4Map: { paddingBottom: space.s12 },   // the map sits 8 in from the card's left, right and bottom
   map: { margin: space.s8, marginTop: 0 },
-  move: { paddingHorizontal: space.s16, paddingBottom: space.s16, gap: space.s12 },
+  move: { flexDirection: "row", alignItems: "center", gap: space.s12, paddingHorizontal: space.s16, paddingBottom: space.s16 },
+  trash: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.brandBlack, alignItems: "center", justifyContent: "center" },
   titleRow: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   itemTitle: { ...type.label, flex: 1, fontSize: 17, color: color.obsidian },
   place: { flexDirection: "row", alignItems: "center", gap: space.s4 },
