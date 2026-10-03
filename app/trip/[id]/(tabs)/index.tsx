@@ -111,9 +111,8 @@ export default function Trip() {
   const onScroll = useAnimatedScrollHandler((e) => { scrollY.value = e.contentOffset.y; });
   const barStyle = useAnimatedStyle(() => ({ transform: [{ translateY: Math.max(barY.value - scrollY.value, pinY) }] }));
   const edgeStyle = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [barY.value - pinY - 12, barY.value - pinY], [0, 1], Extrapolation.CLAMP) }));
-  // With the pull-to-refresh stretch, the navigation row goes down with the content instead of covering the spinner.
-  const navStyle = useAnimatedStyle(() => ({ transform: [{ translateY: Math.max(-scrollY.value, 0) }] }));
 
+  const navBg = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [0, 12], [0, 1], Extrapolation.CLAMP) }));
   const round = (label: string, onPress: () => void, icon: React.ReactNode) => (
     <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={onPress} hitSlop={space.s4} style={s.round}>{icon}</Pressable>
   );
@@ -216,12 +215,15 @@ export default function Trip() {
     </Animated.ScrollView>
 
     {/* The navigation row: pinned over the top, on the trip's colour. */}
-    <Animated.View style={[s.nav, { height: navH, paddingTop: top + space.s16, backgroundColor: band ?? color.paper }, navStyle]}>
+    <View style={[s.nav, { height: navH, paddingTop: top + space.s16 }]}>
+      {/* The row's own background only appears once the page has scrolled up under it; at rest, and while pulling to refresh, the band behind shows
+          through so the refresh spinner is visible between the buttons. */}
+      <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: band ?? color.paper }, navBg]} />
       {round("Back", back, <ChevronLeft {...ic} />)}
       <View style={s.grow} />
       {round("Guests", () => router.push({ pathname: "/trip/[id]/guests", params: { id } }), <Users {...ic} />)}
       {round("Trip options", () => setMenu(true), <MoreHorizontal {...ic} />)}
-    </Animated.View>
+    </View>
 
     {/* The "Plans" label and the day chips: they travel with the content, then pin under the navigation row. */}
     {hasPlans && (
