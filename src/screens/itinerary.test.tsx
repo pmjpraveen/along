@@ -1,10 +1,12 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { useToast } from "../stores/toast";
 import Itinerary from "../../app/trip/[id]/(tabs)/index";
 
 const mockLoad = jest.fn();
 const mockMove = jest.fn();
 const mockDelete = jest.fn();
-jest.mock("../api/itinerary", () => ({ loadItinerary: (...a: unknown[]) => mockLoad(...a), moveItem: (...a: unknown[]) => mockMove(...a), deleteItem: (...a: unknown[]) => mockDelete(...a) }));
+const mockRestore = jest.fn();
+jest.mock("../api/itinerary", () => ({ loadItinerary: (...a: unknown[]) => mockLoad(...a), moveItem: (...a: unknown[]) => mockMove(...a), deleteItem: (...a: unknown[]) => mockDelete(...a), restoreItem: (...a: unknown[]) => mockRestore(...a) }));
 jest.mock("../api/members", () => ({ listMembers: async () => ({ ok: true, members: [{ id: "m1", display_name: "Asha", membership_type: "registered", role: "owner", isMe: true }] }) }));
 jest.mock("../api/invites", () => ({ createInviteLink: jest.fn() }));
 jest.mock("../api/trips", () => ({ loadTripSettings: jest.fn(), loadTripStatus: async () => ({ ok: true, status: "published", completedAt: null, name: "Goa", destination: "Goa", coverUrl: null, cardColor: 0 }) }));
@@ -70,31 +72,42 @@ test("3.5 a rejected move shows the reason and reloads so the user sees the curr
   expect(mockLoad).toHaveBeenCalledTimes(2);
 });
 
-test("long pressing a plan offers Delete plan: it asks first, deletes once, then reloads; Keep the plan deletes nothing", async () => {
+test("each plan card has a visible options button that opens the same panel as a long press", async () => {
+  load({});
+  await render(<Itinerary />);
+  await fireEvent.press(await screen.findByRole("button", { name: "Options for Lunch" }));
+  expect(screen.getByRole("button", { name: "Delete plan" })).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Options for Lunch" }));
+  expect(screen.queryByRole("button", { name: "Delete plan" })).toBeNull();
+});
+
+test("Delete plan deletes at once with no confirmation, reloads, and the Plan deleted toast offers Undo, which brings the plan back", async () => {
   load({});
   mockDelete.mockResolvedValue({ ok: true });
+  mockRestore.mockResolvedValue({ ok: true });
   await render(<Itinerary />);
   await fireEvent(await screen.findByRole("button", { name: "Lunch" }), "longPress");
   await fireEvent.press(screen.getByRole("button", { name: "Delete plan" }));
-  expect(mockDelete).not.toHaveBeenCalled();
-  await fireEvent.press(await screen.findByRole("button", { name: "Keep the plan" }));
-  expect(mockDelete).not.toHaveBeenCalled();
-  await fireEvent(await screen.findByRole("button", { name: "Lunch" }), "longPress");
-  await fireEvent.press(screen.getByRole("button", { name: "Delete plan" }));
-  await fireEvent.press(await screen.findByRole("button", { name: "Delete plan" }));
   await waitFor(() => expect(mockDelete).toHaveBeenCalledWith("i1"));
   expect(mockDelete).toHaveBeenCalledTimes(1);
   await waitFor(() => expect(mockLoad).toHaveBeenCalledTimes(2));
+  const t = useToast.getState();
+  expect(t.message).toBe("Plan deleted");
+  expect(t.action?.label).toBe("Undo");
+  await act(async () => { t.action?.onPress(); });
+  expect(mockRestore).toHaveBeenCalledWith("i1");
+  await waitFor(() => expect(mockLoad).toHaveBeenCalledTimes(3));
 });
 
-test("a refused delete shows the reason", async () => {
+test("a refused delete shows the reason and offers no Undo", async () => {
   load({});
+  useToast.setState({ message: "", action: undefined });
   mockDelete.mockResolvedValue({ ok: false, message: "Only the person who added this plan or the trip owner can delete it." });
   await render(<Itinerary />);
   await fireEvent(await screen.findByRole("button", { name: "Lunch" }), "longPress");
   await fireEvent.press(screen.getByRole("button", { name: "Delete plan" }));
-  await fireEvent.press(await screen.findByRole("button", { name: "Delete plan" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(/Only the person who added/);
+  expect(useToast.getState().action).toBeUndefined();
 });
 
 test("an item outside the trip dates carries a warning badge, and one inside does not", async () => {

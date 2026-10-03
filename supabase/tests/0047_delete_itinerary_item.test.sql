@@ -1,5 +1,5 @@
 begin;
-select plan(6);
+select plan(9);
 
 insert into auth.users (id, email, raw_user_meta_data) values
   ('00000000-0000-0000-0000-00000000000a', 'a@example.com', '{"full_name":"Asha"}'),
@@ -28,6 +28,13 @@ select throws_ok($$ select delete_itinerary_item((select id from i1)) $$, 'P0002
 
 set local request.jwt.claims = '{"sub":"00000000-0000-0000-0000-00000000000a"}';
 select lives_ok($$ select delete_itinerary_item((select id from i2)) $$, 'the trip owner can delete a plan someone else added');
+
+-- undo
+set local request.jwt.claims = '{"sub":"00000000-0000-0000-0000-00000000000c"}';
+select throws_ok($$ select restore_itinerary_item((select id from i2)) $$, '42501', null, 'a stranger cannot bring a deleted plan back');
+set local request.jwt.claims = '{"sub":"00000000-0000-0000-0000-00000000000a"}';
+select lives_ok($$ select restore_itinerary_item((select id from i2)) $$, 'the owner can undo a delete');
+select is((select count(*)::int from itinerary_items where id = (select id from i2) and deleted_at is null), 1, 'and the plan is back');
 
 select * from finish();
 rollback;

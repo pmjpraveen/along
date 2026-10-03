@@ -95,23 +95,20 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
         </Animated.View>
         <Animated.View onLayout={(e) => { sheetH.value = e.nativeEvent.layout.height; }}
           style={[s.sheet, tall && s.tall, { paddingBottom: actionLabel ? 0 : bottom }, sheetStyle]}>
+          {/* The whole top (close button, title and body) is the drag handle: grab it anywhere to move or dismiss the sheet. */}
           <GestureDetector gesture={drag}>
             <View>
               <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={dismiss} hitSlop={space.s8} style={s.close}>
                 <X size={20} color={color.iconInk} strokeWidth={2} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
               </Pressable>
+              <View style={s.titleBlock}>
+                <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.title}>{title}</Text>
+                {body && <Text maxFontSizeMultiplier={1.4} style={s.body}>{body}</Text>}
+              </View>
             </View>
           </GestureDetector>
-          {header ? (
-            <View style={s.pinned}>
-              <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.title}>{title}</Text>
-              {body && <Text maxFontSizeMultiplier={1.4} style={s.body}>{body}</Text>}
-              {header}
-            </View>
-          ) : null}
-          <ScrollView bounces={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={[s.content, !!header && s.contentBelow]}>
-            {!header && <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.title}>{title}</Text>}
-            {!header && body && <Text maxFontSizeMultiplier={1.4} style={s.body}>{body}</Text>}
+          {header ? <View style={s.pinned}>{header}</View> : null}
+          <ScrollView bounces={false} keyboardShouldPersistTaps="handled" keyboardDismissMode="on-drag" contentContainerStyle={s.content}>
             {children}
           </ScrollView>
           {actionLabel && onAction && (
@@ -133,9 +130,9 @@ const s = StyleSheet.create({
   sheet: { maxHeight: "90%", backgroundColor: color.paper, borderTopLeftRadius: radius.sheet, borderTopRightRadius: radius.sheet, borderCurve: "continuous", overflow: "hidden" },
   close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.softGrey, marginLeft: space.s20, marginTop: space.s20 },
   tall: { height: "90%" },
-  pinned: { paddingHorizontal: space.s20, paddingTop: space.s16, paddingBottom: space.s8, gap: space.s8 },
-  contentBelow: { paddingTop: 0 },
-  content: { paddingHorizontal: space.s20, paddingTop: space.s16, paddingBottom: 0, gap: space.s8 },
+  titleBlock: { paddingHorizontal: space.s20, paddingTop: space.s16, paddingBottom: space.s8, gap: space.s8 },
+  pinned: { paddingHorizontal: space.s20, paddingBottom: space.s8 },
+  content: { paddingHorizontal: space.s20, paddingTop: space.s8, paddingBottom: 0, gap: space.s8 },
   rows: { marginHorizontal: -space.s16 },
   title: { ...type.sheetTitle, color: color.obsidian },
   body: { ...type.fieldValue, color: color.obsidian },

@@ -88,3 +88,14 @@ export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
     return { ok: false, message: OFFLINE };
   }
 }
+
+// Brings back a plan that was just deleted (the Undo on the "Plan deleted" toast).
+export async function restoreItem(itemId: string): Promise<DeleteItemResult> {
+  try {
+    const { error } = await supabase.rpc("restore_itinerary_item", { p_item: itemId });
+    if (!error) return { ok: true };
+    return { ok: false, message: isOffline(error.message) ? OFFLINE : "Couldn't bring the plan back. Try again." };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}

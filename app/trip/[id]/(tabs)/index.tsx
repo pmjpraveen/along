@@ -10,10 +10,9 @@ import Animated, { Extrapolation, FadeIn, interpolate, useAnimatedScrollHandler,
 import { useReducedMotion } from "../../../../src/hooks/useReducedMotion";
 import { motion } from "../../../../src/theme/motion";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { deleteItem, ItineraryResult, loadItinerary, moveItem } from "../../../../src/api/itinerary";
+import { deleteItem, ItineraryResult, loadItinerary, moveItem, restoreItem } from "../../../../src/api/itinerary";
 import { listMembers, Member } from "../../../../src/api/members";
 import { loadTripStatus } from "../../../../src/api/trips";
-import { Dialog } from "../../../../src/components/Dialog";
 import { toast } from "../../../../src/stores/toast";
 import { haptic } from "../../../../src/haptics";
 import { Alert } from "../../../../src/components/Alert";
@@ -76,16 +75,14 @@ export default function Trip() {
     if (!r.ok) setMoveError(r.message);
     await load();
   };
-  const [removing, setRemoving] = useState<Item | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const removePlan = async () => {
-    if (!removing || deleting) return;
-    setDeleting(true);
+  // Deleting a plan is instant and can be undone: a plan is only hidden, so the toast offers to bring it straight back (no "are you sure").
+  const removePlan = async (item: Item) => {
+    setMoving(null);
     setMoveError(null);
-    const r = await deleteItem(removing.id);
-    setDeleting(false);
-    setRemoving(null);
-    if (r.ok) { haptic.success(); toast("Plan deleted"); } else { haptic.warn(); setMoveError(r.message); }
+    const r = await deleteItem(item.id);
+    if (!r.ok) { haptic.warn(); setMoveError(r.message); return; }
+    haptic.success();
+    toast("Plan deleted", { label: "Undo", onPress: async () => { const u = await restoreItem(item.id); if (!u.ok) setMoveError(u.message); await load(); } });
     await load();
   };
   const add = (day?: string) => router.push({ pathname: "/trip/[id]/add-item", params: { id, ...(day && { day }) } });
@@ -182,7 +179,11 @@ export default function Trip() {
                     onLongPress={() => setMoving(i.id)} delayLongPress={350} style={s.card}>
                     <View style={[s.head4, placeOf(i) && s.head4Map, moving === i.id && !placeOf(i) && s.head4Open]}>
                       <View style={s.titleRow}>
-                      <Text maxFontSizeMultiplier={1.4} style={s.itemTitle}>{i.title}</Text>
+                      <Text maxFontSizeMultiplier={1.4} style={[s.itemTitle, s.grow]}>{i.title}</Text>
+                      <Pressable accessibilityRole="button" accessibilityLabel={`Options for ${i.title}`} accessibilityState={{ expanded: moving === i.id }} hitSlop={space.s8}
+                        onPress={() => setMoving(moving === i.id ? null : i.id)} style={s.more}>
+                        <MoreHorizontal size={18} color={color.iconInk} strokeWidth={2} />
+                      </Pressable>
                       </View>
                     {i.is_outside_trip_range && <Badge variant="warning" label="Outside trip dates" />}
                     {placeLabel(i) ? (
@@ -197,7 +198,7 @@ export default function Trip() {
                     {moving === i.id && (
                       <View style={[s.move, placeOf(i) && s.moveAfterMap]}>
                         <DateField compact dark label={`New day for ${i.title}`} value={i.day_date} onChange={(day) => move(i.id, i.version, day)} />
-                        <Pressable accessibilityRole="button" accessibilityLabel="Delete plan" onPress={() => { setMoving(null); setRemoving(i); }} hitSlop={space.s4} style={s.trash}>
+                        <Pressable accessibilityRole="button" accessibilityLabel="Delete plan" onPress={() => removePlan(i)} hitSlop={space.s4} style={s.trash}>
                           <Trash2 size={18} color={color.paper} strokeWidth={1.75} />
                         </Pressable>
                       </View>
@@ -236,9 +237,6 @@ export default function Trip() {
       </Animated.View>
     )}
 
-    <Dialog visible={!!removing} onClose={() => setRemoving(null)} title="Delete this plan?" subheader={removing?.title}
-      body="It disappears for everyone on the trip." actionLabel={deleting ? "Deleting…" : "Delete plan"} actionType="destructive" onAction={removePlan} actionBusy={deleting}
-      secondaryLabel="Keep the plan" onSecondary={() => setRemoving(null)} />
     <TripMenu tripId={id} isOwner={isOwner} visible={menu} onClose={() => setMenu(false)} />
     </View>
   );
@@ -275,6 +273,7 @@ const s = StyleSheet.create({
   map: { margin: space.s8, marginTop: 0 },
   move: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: space.s8, paddingTop: space.s8, paddingHorizontal: space.s8, paddingBottom: space.s16 },   // pushed to the right, 8pt from the card's edges
   moveAfterMap: { paddingTop: 0 },   // the map above already leaves its own 8pt
+  more: { width: 32, height: 32, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center" },
   trash: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.alarmRed, alignItems: "center", justifyContent: "center" },
   titleRow: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   itemTitle: { ...type.label, flex: 1, fontSize: 17, color: color.obsidian },

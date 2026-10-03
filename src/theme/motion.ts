@@ -8,6 +8,7 @@ export const motion = {
   settle: spring(0.4, 1),
   fadeMs: 150,        // a quick crossfade when content swaps in place (another day, a confirmation)
   toastMs: 2200,      // how long a confirmation stays
+  toastActionMs: 5000,   // how long one with an Undo stays, so there is time to reach it
   pressMs: 120,
   splash: { holdMs: 700, turnMs: 950, zoomMs: 1300 },   // the opening animation: rest, stripes swing upright, zoom all the way into the logo and straight into the app
   shine: { sweepMs: 1600, restMs: 3200, buttonSweepMs: 900, buttonRestMs: 500 },   // the glint across the passport cover and the Start new trip button
