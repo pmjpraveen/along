@@ -39,6 +39,7 @@ export default function AddItem() {
   // Resolve when the field loses focus so the group sees the place before saving; save re-resolves if the text changed since.
   // Picking a suggestion also ends editing, so the field's own blur-resolve runs right after the pick. Plain text has no coordinates, so its result
   // must never replace a place that was just picked (that made the map snippet vanish), and a result for text that has since changed is dropped.
+  const picked = useRef<{ text: string; lat: number; lng: number } | null>(null);   // the place chosen from the suggestions, kept apart from the blur-resolve
   const latest = useRef(location);
   latest.current = location;
   const resolve = async () => {
@@ -69,7 +70,10 @@ export default function AddItem() {
     setFormError(null);
     if (Object.keys(e).length) return;
     setBusy(true);
-    const loc = resolved?.text === location.trim() ? resolved : location.trim() ? await resolveLocation(location) : undefined;
+    // A place picked from the suggestions is saved with its coordinates, whatever the field's own resolving did since.
+    const pick = picked.current?.text === location.trim() ? picked.current : null;
+    const loc = pick ? { text: pick.text, url: null, place: { lat: pick.lat, lng: pick.lng, name: pick.text } }
+      : resolved?.text === location.trim() ? resolved : location.trim() ? await resolveLocation(location) : undefined;
     const r = await createItem({ tripId: id, title, type: "activity", day: date, startTime: time, participantIds: [], location: loc ?? undefined, description: message });
     setBusy(false);
     if (r.ok) { haptic.success(); toast("Plan added"); router.back(); }
@@ -101,7 +105,7 @@ export default function AddItem() {
           status={errors.title ? "error" : undefined} message={errors.title} />
         <View style={s.field}>
           <PlaceSearchField label="Location" placeholder="Search a place, or paste a Google or Apple Maps link" value={location} onChangeText={setLocation} onEndEditing={resolve}
-            onPick={(p) => { setLocation(p.title); setResolved({ text: p.title, url: null, place: { lat: p.lat, lng: p.lng, name: p.title } }); }} />
+            onPick={(p) => { picked.current = { text: p.title, lat: p.lat, lng: p.lng }; setLocation(p.title); setResolved({ text: p.title, url: null, place: { lat: p.lat, lng: p.lng, name: p.title } }); }} />
           {resolved?.place && <MapPreview place={resolved.place} />}
         </View>
         <View style={s.field}>

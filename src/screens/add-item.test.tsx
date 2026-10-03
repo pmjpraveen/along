@@ -102,5 +102,11 @@ test("a place picked from the suggestions shows its map snippet, and the field l
   await fireEvent(field, "endEditing");   // picking a suggestion blurs the field, which resolves the text now in it
   await act(async () => { jest.advanceTimersByTime(100); });
   expect(screen.getByText("Map of Baga Beach")).toBeTruthy();
+  mockCreate.mockResolvedValue({ ok: true });
+  await fireEvent.changeText(screen.getByLabelText("Plan name"), "Sunset");
+  await save();
+  await waitFor(() => expect(mockCreate).toHaveBeenCalled());
+  // the plan is saved with the picked place's coordinates, so its card can show the map
+  expect(mockCreate.mock.calls[0][0].location).toEqual({ text: "Baga Beach", url: null, place: { lat: 15.55, lng: 73.75, name: "Baga Beach" } });
   jest.useRealTimers();
 });
