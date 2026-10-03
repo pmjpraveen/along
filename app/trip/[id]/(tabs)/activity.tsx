@@ -17,7 +17,7 @@ import { color, font, radius, space, type } from "../../../../src/theme/tokens";
 
 // What changed in this trip, newest first, under a heading per day: joins, plans added, new expenses. Entries since the last visit are
 // marked New.
-export default function History() {
+export default function Activity() {
   const { id } = useGlobalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
   const router = useRouter();
@@ -46,7 +46,7 @@ export default function History() {
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>History</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Activity</Text>
 
         {state === null ? (
           <Skeleton label="Loading history" />

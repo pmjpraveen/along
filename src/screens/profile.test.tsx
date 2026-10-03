@@ -204,6 +204,7 @@ test("Delete account asks first, deletes only when confirmed, and says why when 
   expect(await screen.findByText("Delete your account?")).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Keep my account" }));
   expect(mockDelete).not.toHaveBeenCalled();
+  await waitFor(() => expect(screen.queryByText("Delete your account?")).toBeNull(), { timeout: 2000 });   // the dialog leaves once its close has played
   await fireEvent.press(await screen.findByRole("button", { name: /^Delete account/ }));
   await fireEvent.press(await screen.findByRole("button", { name: "Delete account" }));
   expect(mockDelete).toHaveBeenCalledTimes(1);
