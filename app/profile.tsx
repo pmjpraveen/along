@@ -1,22 +1,23 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { Skeleton } from "../src/components/Skeleton";
-import { Bell, Camera, ChevronLeft, Coins, FileText, Globe, LogOut, Shield, Trash2 } from "lucide-react-native";
+import { Bell, Camera, ChevronLeft, Coins, ImagePlus, FileText, Globe, LogOut, Shield, Trash2 } from "lucide-react-native";
 
 const GOLD = "#e8cf8a";   // the gold used for embossing on a passport cover
 import * as ImagePicker from "expo-image-picker";
-import { useCallback, useDeferredValue, useEffect, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadStamps, StampsResult } from "../src/api/passport";
 import { loadPreferences, setPreference } from "../src/api/notifications";
-import { Currency, deleteMyAccount, listCurrencies, loadMyProfile, setMyCountry, setMyCurrency, signOut, uploadAvatar } from "../src/api/profile";
+import { Currency, deleteMyAccount, listCurrencies, loadMyProfile, removeAvatar, setMyCountry, setMyCurrency, signOut, uploadAvatar } from "../src/api/profile";
 import { Alert } from "../src/components/Alert";
 import { SearchField } from "../src/components/SearchField";
 import { Avatar } from "../src/components/Avatar";
 import { BottomSheet, SheetRows } from "../src/components/BottomSheet";
 import { Dialog } from "../src/components/Dialog";
 import { ListItem } from "../src/components/ListItem";
+import { toast } from "../src/stores/toast";
 import { useProfile } from "../src/stores/profile";
 import { appVersionLabel } from "../src/appVersion";
 import { matches } from "../src/domain/search";
@@ -45,11 +46,11 @@ export default function Profile() {
   useEffect(() => { loadMyProfile().then((p) => { if (p) setMe(p); }); listCurrencies().then(setCurrencies); }, [setMe]);
   const pull = usePullToRefresh(load);
   const stamps = state?.ok ? state.stamps : [];
-  const [sheet, setSheet] = useState<"country" | "currency" | "notifications" | null>(null);
+  const [sheet, setSheet] = useState<"country" | "currency" | "notifications" | "photo" | null>(null);
   const [currencies, setCurrencies] = useState<Currency[]>([]);
   const [query, setQuery] = useState("");
   const deferred = useDeferredValue(query);
-  const open = (s: "country" | "currency" | "notifications") => { setQuery(""); setSheet(s); };
+  const open = (s: "country" | "currency" | "notifications" | "photo") => { setQuery(""); setSheet(s); };
   const [prefs, setPrefs] = useState<Record<NotificationType, boolean> | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -93,6 +94,16 @@ export default function Profile() {
     const r = await setMyCurrency(code);
     if (r.ok) setMe((m) => (m ? { ...m, currency: code } : m)); else setError(r.message);
   };
+  // With a picture set, tapping it asks what to do (a new one, or remove it); without one it goes straight to choosing.
+  const pickAfterClose = useRef(false);
+  const takeOut = async () => {
+    setSheet(null);
+    setError(null);
+    const r = await removeAvatar();
+    if (!r.ok) return setError(r.message);
+    setMe((m) => (m ? { ...m, avatarUrl: null } : m));
+    toast("Profile picture removed");
+  };
   const logOut = async () => { setError(null); const r = await signOut(); if (!r.ok) setError(r.message); };
   const remove = async () => {
     if (busy) return;
@@ -119,7 +130,7 @@ export default function Profile() {
         </Pressable>
 
         <View style={s.avatar}>
-          <Pressable accessibilityRole="button" accessibilityLabel="Change profile picture" onPress={changePhoto} hitSlop={space.s8}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Change profile picture" onPress={() => (me?.avatarUrl ? open("photo") : changePhoto())} hitSlop={space.s8}>
             <Avatar name={me?.name ?? ""} uri={me?.avatarUrl} size={72} />
             <View style={s.camera}><Camera size={14} color={color.iconInk} strokeWidth={2} /></View>
           </Pressable>
@@ -200,6 +211,13 @@ export default function Profile() {
         </View>
         <Text accessibilityLabel={appVersionLabel()} maxFontSizeMultiplier={1.3} style={s.version}>{appVersionLabel()}</Text>
       </ScrollView>
+      <BottomSheet visible={sheet === "photo"} onClose={() => setSheet(null)} title="Profile picture"
+        onClosed={() => { if (pickAfterClose.current) { pickAfterClose.current = false; changePhoto(); } }}>
+        <SheetRows>
+          <ListItem title="Choose a new photo" leading={icon(ImagePlus)} trailing="chevron" onPress={() => { pickAfterClose.current = true; setSheet(null); }} />
+          <ListItem title="Remove photo" leading={icon(Trash2, true)} destructive trailing="chevron" onPress={takeOut} />
+        </SheetRows>
+      </BottomSheet>
       <BottomSheet visible={sheet === "country"} onClose={() => setSheet(null)} title="Country" tall header={<SearchField placeholder="Search countries" value={query} onChangeText={setQuery} />}>
         <SheetRows>
           {COUNTRIES.filter((c) => matches(deferred, c.name)).map((c) => (

@@ -155,3 +155,22 @@ export async function setMyCurrency(code: string | null): Promise<Result> {
     return { ok: false, message: OFFLINE };
   }
 }
+
+// Removes my picture: the account stops pointing at it first, then the files are deleted (best effort; they are unreachable either way).
+export async function removeAvatar(): Promise<Result> {
+  try {
+    const { error } = await supabase.rpc("set_my_avatar", { p_path: null });
+    if (error) return { ok: false, message: isOffline(error.message) ? OFFLINE : "Couldn't remove your picture. Try again." };
+    try {
+      const { data: auth } = await supabase.auth.getUser();
+      const folder = auth.user?.id;
+      if (folder) {
+        const { data: files } = await supabase.storage.from("avatars").list(folder);
+        if (files?.length) await supabase.storage.from("avatars").remove(files.map((f) => `${folder}/${f.name}`));
+      }
+    } catch { /* the picture is already detached from the account */ }
+    return { ok: true };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}

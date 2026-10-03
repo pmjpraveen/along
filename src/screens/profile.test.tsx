@@ -14,12 +14,13 @@ const mockSignOut = jest.fn();
 const mockDelete = jest.fn();
 const mockPref = jest.fn();
 const mockUploadAvatar = jest.fn();
+const mockRemoveAvatar = jest.fn();
 const mockPick = jest.fn();
 jest.mock("expo-image-picker", () => ({ launchImageLibraryAsync: (...a: unknown[]) => mockPick(...a) }));
 jest.mock("../api/profile", () => ({
   ...{},
   loadMyProfile: (...a: unknown[]) => mockLoadMe(...a),
-  listCurrencies: async () => [{ code: "INR", name: "Indian rupee" }, { code: "USD", name: "US dollar" }], setMyCurrency: (...a: unknown[]) => mockCurrency(...a), uploadAvatar: (...a: unknown[]) => mockUploadAvatar(...a),
+  listCurrencies: async () => [{ code: "INR", name: "Indian rupee" }, { code: "USD", name: "US dollar" }], setMyCurrency: (...a: unknown[]) => mockCurrency(...a), uploadAvatar: (...a: unknown[]) => mockUploadAvatar(...a), removeAvatar: (...a: unknown[]) => mockRemoveAvatar(...a),
   setMyCountry: (...a: unknown[]) => mockCountry(...a), signOut: (...a: unknown[]) => mockSignOut(...a), deleteMyAccount: (...a: unknown[]) => mockDelete(...a),
 }));
 jest.mock("../api/notifications", () => ({
@@ -305,4 +306,27 @@ test("the profile page opens with my name and details already there when Home ha
   expect(screen.getByText("Cached Name")).toBeTruthy();
   expect(screen.getByText("cached@along.test")).toBeTruthy();
   useProfile.getState().set(null);
+});
+
+test("with a picture set, tapping it offers to remove it, and removing it takes the picture away once", async () => {
+  mockStamps.mockResolvedValue({ ok: true, stamps: [] });
+  mockLoadMe.mockImplementation(async () => ({ name: "Asha", email: "asha@along.test", since: "2026-09-29", country: "IN", avatarUrl: "https://example.com/me.jpg", currency: null }));
+  mockRemoveAvatar.mockResolvedValue({ ok: true });
+  await render(<Profile />);
+  await fireEvent.press(await screen.findByRole("button", { name: "Change profile picture" }));
+  expect(mockPick).not.toHaveBeenCalled();
+  await fireEvent.press(await screen.findByRole("button", { name: /^Remove photo/ }));
+  await waitFor(() => expect(mockRemoveAvatar).toHaveBeenCalledTimes(1));
+  await waitFor(() => expect(screen.queryByTestId("avatar-photo")).toBeNull());
+});
+
+test("a failed removal says why and keeps the picture", async () => {
+  mockStamps.mockResolvedValue({ ok: true, stamps: [] });
+  mockLoadMe.mockImplementation(async () => ({ name: "Asha", email: "asha@along.test", since: "2026-09-29", country: "IN", avatarUrl: "https://example.com/me.jpg", currency: null }));
+  mockRemoveAvatar.mockResolvedValue({ ok: false, message: "Couldn't remove your picture. Try again." });
+  await render(<Profile />);
+  await fireEvent.press(await screen.findByRole("button", { name: "Change profile picture" }));
+  await fireEvent.press(await screen.findByRole("button", { name: /^Remove photo/ }));
+  expect(await screen.findByText("Couldn't remove your picture. Try again.")).toBeTruthy();
+  expect(screen.getByTestId("avatar-photo")).toBeTruthy();
 });

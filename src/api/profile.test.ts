@@ -43,3 +43,18 @@ test("US-02 deleting the account also removes my profile picture files, and a re
   expect(mockList).toHaveBeenCalledWith("u1");
   expect(mockRemove).toHaveBeenCalledWith(["u1/1.jpg", "u1/2.png"]);
 });
+
+test("US-02 removing my picture detaches it from the account first, then deletes the files, and a refusal removes nothing", async () => {
+  const api = jest.requireMock("./supabase").supabase;
+  const mockList = jest.fn().mockResolvedValue({ data: [{ name: "1.jpg" }] });
+  const mockRemove = jest.fn().mockResolvedValue({ error: null });
+  api.storage.from = () => ({ list: mockList, remove: mockRemove });
+  const { removeAvatar } = jest.requireActual("./profile");
+  mockRpc.mockResolvedValueOnce({ error: { message: "boom" } });
+  expect((await removeAvatar()).ok).toBe(false);
+  expect(mockRemove).not.toHaveBeenCalled();
+  mockRpc.mockResolvedValueOnce({ error: null });
+  expect(await removeAvatar()).toEqual({ ok: true });
+  expect(mockRpc).toHaveBeenLastCalledWith("set_my_avatar", { p_path: null });
+  expect(mockRemove).toHaveBeenCalledWith(["u1/1.jpg"]);
+});
