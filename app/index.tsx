@@ -6,7 +6,8 @@ import { Image, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "
 import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { unreadCount } from "../src/api/notifications";
-import { loadMyAvatar, loadMyName } from "../src/api/profile";
+import { loadMyProfile } from "../src/api/profile";
+import { useProfile } from "../src/stores/profile";
 import { listTrips, TripCard, TripListResult } from "../src/api/trips";
 import { Alert } from "../src/components/Alert";
 import { ProgressiveBlur } from "../src/components/ProgressiveBlur";
@@ -37,7 +38,9 @@ export default function Home() {
   const { width } = useWindowDimensions();
   const pending = useSession((s) => s.pendingInvite);
   const [trips, setTrips] = useState<TripListResult | null>(null);
-  const [name, setName] = useState<string | null>(null);
+  const me = useProfile((s) => s.me);
+  const setMe = useProfile((s) => s.set);
+  const name = me?.name ?? null;
   const [shine] = useState(() => { const first = !shineShown; shineShown = true; return first ? 2 : 0; });
   const [unread, setUnread] = useState(0);
   const refresh = useCallback(() => {
@@ -45,9 +48,7 @@ export default function Home() {
     unreadCount().then(setUnread);
   }, []);
   useFocusEffect(refresh);
-  const [avatar, setAvatar] = useState<string | null>(null);
-  useFocusEffect(useCallback(() => { loadMyAvatar().then(setAvatar); }, []));
-  useEffect(() => { loadMyName().then(setName); }, []);
+  useFocusEffect(useCallback(() => { loadMyProfile().then((p) => { if (p) setMe(p); }); }, [setMe]));
   useMyNotificationsRealtime(() => { unreadCount().then(setUnread); });
   const pull = usePullToRefresh(() => Promise.all([listTrips().then(setTrips), unreadCount().then(setUnread)]));
   if (pending) return <Redirect href={{ pathname: "/join/[token]", params: { token: pending } }} />;
@@ -72,7 +73,7 @@ export default function Home() {
             {unread > 0 && <View style={s.dot} />}
           </Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel="Profile and travel passport" onPress={() => router.push("/profile")} hitSlop={space.s4}>
-            <Avatar name={name ?? ""} uri={avatar} size={40} />
+            <Avatar name={name ?? ""} uri={me?.avatarUrl} size={40} />
           </Pressable>
         </View>
 

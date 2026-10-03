@@ -6,7 +6,7 @@ const mockList = jest.fn();
 const mockPush = jest.fn();
 jest.mock("../api/trips", () => ({ listTrips: (...a: unknown[]) => mockList(...a) }));
 jest.mock("../api/notifications", () => ({ unreadCount: async () => 0 }));
-jest.mock("../api/profile", () => ({ loadMyName: async () => "Asha", loadMyAvatar: async () => null }));
+jest.mock("../api/profile", () => ({ loadMyProfile: async () => ({ name: "Asha", email: "asha@along.test", since: "2026-09-29", country: null, avatarUrl: null, currency: null }) }));
 jest.mock("../api/supabase", () => ({ supabase: {} }));
 jest.mock("../hooks/useTripRealtime", () => ({ useMyNotificationsRealtime: jest.fn() }));
 jest.mock("expo-router", () => ({

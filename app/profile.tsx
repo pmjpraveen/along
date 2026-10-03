@@ -10,13 +10,14 @@ import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadStamps, StampsResult } from "../src/api/passport";
 import { loadPreferences, setPreference } from "../src/api/notifications";
-import { Currency, deleteMyAccount, listCurrencies, loadMyProfile, MyProfile, setMyCountry, setMyCurrency, signOut, uploadAvatar } from "../src/api/profile";
+import { Currency, deleteMyAccount, listCurrencies, loadMyProfile, setMyCountry, setMyCurrency, signOut, uploadAvatar } from "../src/api/profile";
 import { Alert } from "../src/components/Alert";
 import { SearchField } from "../src/components/SearchField";
 import { Avatar } from "../src/components/Avatar";
 import { BottomSheet, SheetRows } from "../src/components/BottomSheet";
 import { Dialog } from "../src/components/Dialog";
 import { ListItem } from "../src/components/ListItem";
+import { useProfile } from "../src/stores/profile";
 import { appVersionLabel } from "../src/appVersion";
 import { matches } from "../src/domain/search";
 import { COUNTRIES, countryName, currencyOf, flagOf, PASSPORTS } from "../src/domain/countries";
@@ -33,10 +34,11 @@ export default function Profile() {
   const { top, bottom } = useSafeAreaInsets();
   const router = useRouter();
   const [state, setState] = useState<StampsResult | null>(null);
-  const [me, setMe] = useState<MyProfile | null>(null);
+  const me = useProfile((s) => s.me);
+  const setMe = useProfile((s) => s.set);
   const load = useCallback(async () => { setState(await loadStamps()); }, []);
   useFocusEffect(useCallback(() => { load(); }, [load]));
-  useEffect(() => { loadMyProfile().then(setMe); listCurrencies().then(setCurrencies); }, []);
+  useEffect(() => { loadMyProfile().then((p) => { if (p) setMe(p); }); listCurrencies().then(setCurrencies); }, [setMe]);
   const pull = usePullToRefresh(load);
   const stamps = state?.ok ? state.stamps : [];
   const [sheet, setSheet] = useState<"country" | "currency" | "notifications" | null>(null);
@@ -78,7 +80,7 @@ export default function Profile() {
     const a = res.assets[0];
     const r = await uploadAvatar(a.uri, a.mimeType ?? "image/jpeg");
     if (!r.ok) return setError(r.message);
-    loadMyProfile().then(setMe);
+    loadMyProfile().then((p) => { if (p) setMe(p); });
   };
   const openCurrency = () => { open("currency"); if (!currencies.length) listCurrencies().then(setCurrencies); };
   const pickCurrency = async (code: string) => {
@@ -117,9 +119,10 @@ export default function Profile() {
             <Avatar name={me?.name ?? ""} uri={me?.avatarUrl} size={72} />
             <View style={s.camera}><Camera size={14} color={color.iconInk} strokeWidth={2} /></View>
           </Pressable>
-          <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.name}>{me?.name ?? "Profile"}</Text>
+          {me ? <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.name}>{me.name}</Text> : <Skeleton label="Loading your name" variant="profileName" />}
         </View>
 
+        {!me && <Skeleton label="Loading your details" variant="profileCard" />}
         {me && (
           <View accessible style={s.card}>
             <>

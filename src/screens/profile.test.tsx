@@ -7,6 +7,7 @@ const mockStamps = jest.fn();
 const mockSummary = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
+const mockLoadMe = jest.fn();
 const mockCountry = jest.fn();
 const mockCurrency = jest.fn();
 const mockSignOut = jest.fn();
@@ -17,7 +18,7 @@ const mockPick = jest.fn();
 jest.mock("expo-image-picker", () => ({ launchImageLibraryAsync: (...a: unknown[]) => mockPick(...a) }));
 jest.mock("../api/profile", () => ({
   ...{},
-  loadMyProfile: async () => ({ name: "Asha", email: "asha@along.test", since: "2026-09-29", country: "IN", avatarUrl: null, currency: null }),
+  loadMyProfile: (...a: unknown[]) => mockLoadMe(...a),
   listCurrencies: async () => [{ code: "INR", name: "Indian rupee" }, { code: "USD", name: "US dollar" }], setMyCurrency: (...a: unknown[]) => mockCurrency(...a), uploadAvatar: (...a: unknown[]) => mockUploadAvatar(...a),
   setMyCountry: (...a: unknown[]) => mockCountry(...a), signOut: (...a: unknown[]) => mockSignOut(...a), deleteMyAccount: (...a: unknown[]) => mockDelete(...a),
 }));
@@ -37,7 +38,7 @@ jest.mock("expo-router", () => ({
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 
 const stamp = (id: string, dest: string, start: string, end: string) => ({ id, trip_id: `trip-${id}`, destination_name: dest, start_date: start, end_date: end, awarded_at: "x" });
-beforeEach(() => jest.clearAllMocks());
+beforeEach(() => { jest.clearAllMocks(); mockLoadMe.mockImplementation(async () => ({ name: "Asha", email: "asha@along.test", since: "2026-09-29", country: "IN", avatarUrl: null, currency: null })); });
 
 test("7.4 the passport shows a stamp per completed trip, in the order given, with destination in caps and DD-MM-YYYY dates", async () => {
   mockStamps.mockResolvedValue({ ok: true, stamps: [stamp("b", "Lisbon", "2026-06-10", "2026-06-14"), stamp("a", "Goa, India", "2025-12-01", "2025-12-05")] });
@@ -284,4 +285,15 @@ test("a member who is not the owner sees no Delete trip on the summary", async (
   await screen.findByRole("button", { name: /^Memories/ });
   expect(screen.queryByRole("button", { name: /^Delete trip/ })).toBeNull();
   mockOwner = true;
+});
+
+test("the profile page opens with my name and details already there when Home has loaded them", async () => {
+  const { useProfile } = require("../stores/profile");
+  useProfile.getState().set({ name: "Cached Name", email: "cached@along.test", since: "2026-09-29", country: null, avatarUrl: null, currency: null });
+  mockStamps.mockResolvedValue({ ok: true, stamps: [] });
+  mockLoadMe.mockImplementation(() => new Promise(() => {}));   // the refresh has not come back yet
+  await render(<Profile />);
+  expect(screen.getByText("Cached Name")).toBeTruthy();
+  expect(screen.getByText("cached@along.test")).toBeTruthy();
+  useProfile.getState().set(null);
 });

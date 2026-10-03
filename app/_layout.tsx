@@ -10,6 +10,7 @@ import { StatusBarScrim } from "../src/components/StatusBarScrim";
 import { startConnectivity } from "../src/offline/connectivity";
 import { startSync } from "../src/offline/sync";
 import { initSession, useSession } from "../src/stores/session";
+import { useProfile } from "../src/stores/profile";
 
 SplashScreen.preventAutoHideAsync();
 initSession();
@@ -27,7 +28,7 @@ export default function Layout() {
   const hideNative = useCallback(() => { SplashScreen.hideAsync(); }, []);   // the animated splash's first frame is identical, so swap at once
   const endSplash = useCallback(() => setSplashDone(true), []);
   // The offline queue only runs while signed in, so a queued expense is never sent (or rejected) without a session.
-  useEffect(() => { if (status === "in") startSync(); }, [status]);
+  useEffect(() => { if (status === "in") startSync(); else if (status === "out") useProfile.getState().set(null); }, [status]);
 
   return (
     <View style={{ flex: 1 }}>

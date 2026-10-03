@@ -14,6 +14,7 @@ export type SkeletonVariant =
   | "tiles" | "cards" | "visa" | "inviteCard"    // Home's two-column grid, History's wide cards, the passport page, the join preview
   | "tripHeader" | "planRows"                    // the trip page's header (cover, date, name) and its day chips with plans
   | "balances" | "expenses" | "expenseDetail" | "summaryBody" | "summaryCards"
+  | "profileName" | "profileCard"                 // the profile page's name, and its email and member-since card
   | "fields" | "memories" | "cover" | "block";
 
 const Bar = ({ w, h = 16, style }: { w: ViewStyle["width"]; h?: number; style?: ViewStyle }) => <View style={[s.fill, { width: w, height: h, borderRadius: radius.pill }, style]} />;
@@ -77,6 +78,10 @@ export function Skeleton({ label, variant = "list" }: { label: string; variant?:
       case "memories":   // a photo (4:3), a line of text and the byline
         return n(2).map((i) => (
           <Box key={i} r={radius.sheet} style={s.memory}><Box h={Math.round((width - space.s40 - space.s16) * 0.75)} r={radius.card} style={s.photo} /><Bar w="70%" style={on} /><Row><Box h={24} r={radius.pill} style={{ ...on, width: 24 }} /><Bar w="40%" h={12} style={on} /></Row></Box>));
+      case "profileName":
+        return <View style={s.center}><Bar w="55%" h={32} style={{ borderRadius: 8 }} /></View>;
+      case "profileCard":
+        return <Box r={radius.sheet} style={s.inner}><Row style={s.rowBetween}><Bar w="20%" h={14} style={on} /><Bar w="45%" h={16} style={on} /></Row><View style={s.line} /><Row style={s.rowBetween}><Bar w="30%" h={14} style={on} /><Bar w="30%" h={16} style={on} /></Row></Box>;
       case "cover":   // the profile's passport cover
         return <Box h={172} r={radius.card} />;
       case "block":
@@ -97,6 +102,7 @@ const s = StyleSheet.create({
   grow: { flex: 1 },
   lines: { flex: 1, gap: space.s8 },
   tiles: { flexDirection: "row", flexWrap: "wrap", gap: space.s12, rowGap: space.s24 },
+  line: { height: 1, backgroundColor: color.borderNeutral },
   inner: { padding: space.s20, gap: space.s12, justifyContent: "center" },
   cardCenter: { alignItems: "center", justifyContent: "center", gap: space.s8 },
   center: { alignItems: "center", gap: space.s8 },
