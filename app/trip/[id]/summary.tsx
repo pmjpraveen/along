@@ -76,6 +76,8 @@ export default function Summary() {
     <View style={s.screen}>
       <ScrollView refreshControl={pull} style={s.scroll} contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: bottom + space.s24 }}>
         <View style={[s.head, { paddingTop: navH }, band ? { backgroundColor: band, paddingBottom: space.s24 } : null]}>
+          {/* Pulling down to refresh drags the page down: this extends the band above it so the gap shows the trip's colour, not white. */}
+          {band ? <View pointerEvents="none" style={[s.bandAbove, { backgroundColor: band }]} /> : null}
           {/* The two stamps the trip earned, arrival top right and departure bottom left, faint behind the content and half pressed off the edge
               (same shapes and inks as in the passport). */}
           {sm && (["arrival", "departure"] as const).map((kind, k) => (
@@ -155,6 +157,7 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   scroll: { flex: 1 },
   nav: { position: "absolute", top: 0, left: 0, right: 0, zIndex: 5, paddingHorizontal: space.s20 },
+  bandAbove: { position: "absolute", top: -1200, left: 0, right: 0, height: 1200 },
   head: { paddingHorizontal: space.s20, gap: space.s16, overflow: "hidden" },
   stamp: { position: "absolute", opacity: 0.55 },
   content: { paddingHorizontal: space.s20, paddingTop: space.s24, gap: space.s16 },

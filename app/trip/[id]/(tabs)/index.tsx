@@ -125,6 +125,8 @@ export default function Trip() {
     <Animated.ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" automaticallyAdjustContentInsets={false} refreshControl={pull} scrollEventThrottle={16} onScroll={onScroll}
       contentContainerStyle={{ paddingBottom: bottom + space.s64 + space.s32 }}>
       <View style={[s.head, { paddingTop: navH + space.s4 }, band ? { backgroundColor: band, paddingBottom: space.s24 } : null]}>
+        {/* Pulling down to refresh drags the page down: this extends the band above it so the gap shows the trip's colour, not white. */}
+        {band ? <View pointerEvents="none" style={[s.bandAbove, { backgroundColor: band }]} /> : null}
         {state === null || (state.ok && !(extras.look && extras.people)) ? (
           <Skeleton label="Loading itinerary" variant="tripHeader" />
         ) : !ok ? (
@@ -245,6 +247,7 @@ export default function Trip() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   scroll: { flex: 1 },
+  bandAbove: { position: "absolute", top: -1200, left: 0, right: 0, height: 1200 },
   head: { paddingHorizontal: space.s20, gap: space.s16 },
   nav: { position: "absolute", top: 0, left: 0, right: 0, zIndex: 5, flexDirection: "row", alignItems: "flex-start", gap: space.s8, paddingHorizontal: space.s20 },
   grow: { flex: 1 },
