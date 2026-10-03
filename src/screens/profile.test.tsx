@@ -230,7 +230,16 @@ test("stamps are not on the profile; tapping the passport opens the passport pag
 test("the passport prints my country's three-letter code on its machine-readable line", async () => {
   mockStamps.mockResolvedValue({ ok: true, stamps: [] });
   await render(<Profile />);
-  expect(await screen.findByText(/^<<IND<<ASHA<<MEMBERSINCE29SEP26<<$/)).toBeTruthy();
+  expect(await screen.findByText(/^<<IND<<ASHA<<MEMBERSINCE29SEP26<<<+$/)).toBeTruthy();
+});
+
+test("both machine-readable lines are padded well past a phone's width, so the passport page is full on any screen", async () => {
+  mockStamps.mockResolvedValue({ ok: true, stamps: [] });
+  await render(<Profile />);
+  const first = await screen.findByText(/^<<IND<<ASHA<<MEMBERSINCE29SEP26/);
+  const second = screen.getByText(/^TRIPS000/);
+  expect(String(first.props.children).length).toBeGreaterThanOrEqual(200);
+  expect(String(second.props.children).length).toBeGreaterThanOrEqual(200);
 });
 
 test("a completed trip's summary carries a Completed badge and a back button, and opens balances and expenses", async () => {

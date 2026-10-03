@@ -30,6 +30,10 @@ import { color, font, mix, radius, space, type } from "../src/theme/tokens";
 
 // Me: a big avatar, my details, and my Travel Passport (a count of trips and one stamp per completed trip, most recent first).
 // Tap a stamp to reopen that trip's summary.
+// A machine-readable line runs the whole width of the page: the text, then filler `<` far past any screen's edge, which the page clips.
+const mrzLine = (text: string) => text.padEnd(MRZ_LENGTH, "<");
+const MRZ_LENGTH = 200;
+
 export default function Profile() {
   const { top, bottom } = useSafeAreaInsets();
   const router = useRouter();
@@ -159,8 +163,8 @@ export default function Profile() {
               <View style={s.inset}>
               {/* The passport's page: two machine-readable lines, then the trip count; it runs off the bottom like a page in a cover. */}
               <View style={s.page}>
-                <Text numberOfLines={1} ellipsizeMode="clip" maxFontSizeMultiplier={1.2} style={s.mrz}>{`<<${passport?.iso3 ?? "ALONG"}<<${mrzName}<<MEMBERSINCE${compactDate(me?.since ?? "")}<<`}</Text>
-                <Text numberOfLines={1} ellipsizeMode="clip" maxFontSizeMultiplier={1.2} style={s.mrz}>{`TRIPS${String(stamps.length).padStart(3, "0")}<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<`}</Text>
+                <Text numberOfLines={1} ellipsizeMode="clip" maxFontSizeMultiplier={1.2} style={s.mrz}>{mrzLine(`<<${passport?.iso3 ?? "ALONG"}<<${mrzName}<<MEMBERSINCE${compactDate(me?.since ?? "")}<<`)}</Text>
+                <Text numberOfLines={1} ellipsizeMode="clip" maxFontSizeMultiplier={1.2} style={s.mrz}>{mrzLine(`TRIPS${String(stamps.length).padStart(3, "0")}`)}</Text>
                 <Text maxFontSizeMultiplier={1.3} style={s.label}>Total trips</Text>
                 <Text maxFontSizeMultiplier={1.2} style={s.count}>{stamps.length}</Text>
               </View>
