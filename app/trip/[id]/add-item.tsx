@@ -2,7 +2,7 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { toast } from "../../../src/stores/toast";
 import { haptic } from "../../../src/haptics";
 import { X } from "lucide-react-native";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -37,7 +37,17 @@ export default function AddItem() {
   const [location, setLocation] = useState("");
   const [resolved, setResolved] = useState<ResolvedLocation | null>(null);
   // Resolve when the field loses focus so the group sees the place before saving; save re-resolves if the text changed since.
-  const resolve = async () => setResolved(location.trim() ? await resolveLocation(location) : null);
+  // Picking a suggestion also ends editing, so the field's own blur-resolve runs right after the pick. Plain text has no coordinates, so its result
+  // must never replace a place that was just picked (that made the map snippet vanish), and a result for text that has since changed is dropped.
+  const latest = useRef(location);
+  latest.current = location;
+  const resolve = async () => {
+    const text = location.trim();
+    if (!text) return setResolved(null);
+    const r = await resolveLocation(text);
+    if (latest.current.trim() !== text) return;
+    setResolved((prev) => (prev?.place && prev.text === text && !r.place ? prev : r));
+  };
 
   // The trip's days become the chips (with any chosen day that lies outside them, so it is never lost).
   const [daysLoaded, setDaysLoaded] = useState(false);

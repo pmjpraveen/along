@@ -1,10 +1,12 @@
-import { fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
 import AddItem from "../../app/trip/[id]/add-item";
 
 const mockCreate = jest.fn();
 const mockBack = jest.fn();
 jest.mock("../api/location", () => ({ resolveLocation: async (t: string) => t.includes("google") ? { text: t, url: t, place: { lat: 1, lng: 2, name: "Spot" } } : { text: t, url: null, place: null } }));
-jest.mock("../components/MapPreview", () => ({ MapPreview: () => null }));
+jest.mock("../components/MapPreview", () => ({ MapPreview: ({ place }: { place: { name: string } }) => { const { Text } = require("react-native"); return <Text>{`Map of ${place.name}`}</Text>; } }));
+const mockSearch = jest.fn();
+jest.mock("../api/placeSearch", () => ({ searchPlaces: (...a: unknown[]) => mockSearch(...a) }));
 jest.mock("../api/itinerary", () => ({ createItem: (...a: unknown[]) => mockCreate(...a),
   loadItinerary: async () => ({ ok: true, trip: { name: "Goa", start_date: "2026-12-01", end_date: "2026-12-03" }, items: [] }) }));
 jest.mock("../components/DateField", () => ({ DateField: () => null }));
@@ -87,4 +89,18 @@ test("with no day given, the trip's first day is selected", async () => {
   mockCreate.mockResolvedValue({ ok: true });
   await render(<AddItem />);
   expect((await screen.findByRole("tab", { name: "Day 1, 1 Dec" })).props.accessibilityState.selected).toBe(true);
+});
+
+test("a place picked from the suggestions shows its map snippet, and the field losing focus afterwards does not remove it", async () => {
+  jest.useFakeTimers();
+  mockSearch.mockResolvedValue({ ok: true, places: [{ id: "1", title: "Baga Beach", subtitle: "Goa", lat: 15.55, lng: 73.75 }] });
+  await render(<AddItem />);
+  const field = screen.getByLabelText("Location");
+  await fireEvent.changeText(field, "baga");
+  await act(async () => { jest.advanceTimersByTime(600); });
+  await fireEvent.press(await screen.findByText("Baga Beach"));
+  await fireEvent(field, "endEditing");   // picking a suggestion blurs the field, which resolves the text now in it
+  await act(async () => { jest.advanceTimersByTime(100); });
+  expect(screen.getByText("Map of Baga Beach")).toBeTruthy();
+  jest.useRealTimers();
 });
