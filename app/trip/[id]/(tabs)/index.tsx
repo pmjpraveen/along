@@ -180,7 +180,7 @@ export default function Trip() {
                   <Pressable accessibilityRole="button" accessibilityLabel={i.title} accessibilityHint="Long press to move to another day"
                     accessibilityActions={[{ name: "move", label: `Move ${i.title} to another day` }]} onAccessibilityAction={() => setMoving(i.id)}
                     onLongPress={() => setMoving(i.id)} delayLongPress={350} style={s.card}>
-                    <View style={[s.head4, placeOf(i) && s.head4Map, moving === i.id && s.head4Open]}>
+                    <View style={[s.head4, placeOf(i) && s.head4Map, moving === i.id && !placeOf(i) && s.head4Open]}>
                       <View style={s.titleRow}>
                       <Text maxFontSizeMultiplier={1.4} style={s.itemTitle}>{i.title}</Text>
                       </View>
@@ -271,10 +271,10 @@ const s = StyleSheet.create({
   card: { flex: 1, overflow: "hidden", borderRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.softGrey },
   head4: { gap: space.s4, padding: space.s16 },
   head4Open: { paddingBottom: 0 },   // the panel below brings its own 8pt
-  head4Map: { paddingBottom: space.s12 },   // the map sits 8 in from the card's left, right and bottom
+  head4Map: { paddingBottom: space.s16 },   // 16 between the location text and the map; the map sits 8 in from the card's left, right and bottom
   map: { margin: space.s8, marginTop: 0 },
   move: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: space.s8, paddingTop: space.s8, paddingHorizontal: space.s8, paddingBottom: space.s16 },   // pushed to the right, 8pt from the card's edges
-  moveAfterMap: { paddingTop: space.s8 },   // the map above leaves 8pt, so 16pt in all between the map and this row
+  moveAfterMap: { paddingTop: 0 },   // the map above already leaves its own 8pt
   trash: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.alarmRed, alignItems: "center", justifyContent: "center" },
   titleRow: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   itemTitle: { ...type.label, flex: 1, fontSize: 17, color: color.obsidian },
