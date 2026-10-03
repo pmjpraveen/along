@@ -196,7 +196,7 @@ export default function Trip() {
                     {placeOf(i) && <View style={s.map}><MapPreview place={placeOf(i)!} /></View>}
                     {moving === i.id && (
                       <View style={s.move}>
-                        <DateField compact label={`New day for ${i.title}`} value={i.day_date} onChange={(day) => move(i.id, i.version, day)} />
+                        <DateField compact dark label={`New day for ${i.title}`} value={i.day_date} onChange={(day) => move(i.id, i.version, day)} />
                         <Pressable accessibilityRole="button" accessibilityLabel="Delete plan" onPress={() => { setMoving(null); setRemoving(i); }} hitSlop={space.s4} style={s.trash}>
                           <Trash2 size={18} color={color.paper} strokeWidth={1.75} />
                         </Pressable>
@@ -272,7 +272,7 @@ const s = StyleSheet.create({
   head4: { gap: space.s4, padding: space.s16 },
   head4Map: { paddingBottom: space.s12 },   // the map sits 8 in from the card's left, right and bottom
   map: { margin: space.s8, marginTop: 0 },
-  move: { flexDirection: "row", alignItems: "center", gap: space.s12, paddingHorizontal: space.s16, paddingBottom: space.s16 },
+  move: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: space.s8, padding: space.s8 },   // pushed to the right, 8pt from the card's edges
   trash: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.brandBlack, alignItems: "center", justifyContent: "center" },
   titleRow: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   itemTitle: { ...type.label, flex: 1, fontSize: 17, color: color.obsidian },
