@@ -1,4 +1,5 @@
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
+import { WaveLine } from "../../../../src/components/WaveLine";
 import { PinnedBack, useContentTop, useScrollY } from "../../../../src/components/PinnedBack";
 import Animated from "react-native-reanimated";
 import { Skeleton } from "../../../../src/components/Skeleton";
@@ -62,9 +63,9 @@ export default function Activity() {
           days.map((d) => (
             <View key={d.heading}>
               <View style={s.dayRow} accessibilityRole="header" accessible accessibilityLabel={d.heading}>
-                <View style={s.rule} />
+                <WaveLine />
                 <Text maxFontSizeMultiplier={1.3} style={s.day}>{d.heading}</Text>
-                <View style={s.rule} />
+                <WaveLine />
               </View>
               {d.events.map((e, i) => {
                 const fresh = isNew(e.created_at, since);
@@ -98,7 +99,6 @@ const s = StyleSheet.create({
   heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian },
   gap: { gap: space.s8 },
   dayRow: { flexDirection: "row", alignItems: "center", gap: space.s16, marginTop: space.s8, marginBottom: space.s8 },
-  rule: { flex: 1, height: 1, backgroundColor: color.borderNeutral },
   day: { ...type.fieldMessage, color: color.slate },
   itemLast: { borderBottomWidth: 0 },   // no divider under the last entry of a day (or of the page)
   item: { flexDirection: "row", alignItems: "flex-start", gap: space.s16, paddingVertical: space.s16, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
