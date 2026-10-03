@@ -4,6 +4,7 @@ import Lenis from "lenis";
 import { Logo } from "./components/Logo";
 import { GuestMock, MemoryMock, PlanMock, SettleMock, SplitMock, StampMock } from "./components/Mocks";
 import { ProgressiveBlur, ScrollHeadline, StickyStack } from "./components/Skiper";
+import { HeroPhones } from "./components/HeroPhones";
 
 const APP_STORE = "https://apps.apple.com/app/id6817977368";
 const PLAY_STORE = "https://play.google.com/store/apps/details?id=xyz.getalong.app";
@@ -72,18 +73,14 @@ export function App() {
       </header>
 
       <main>
-        <section className="relative flex min-h-[92vh] flex-col items-center justify-center px-5 pb-10 pt-32 text-center">
+        <section className="relative overflow-hidden px-5 pt-28 text-center md:pt-36">
           <Reveal><span className="rounded-full bg-soft px-4 py-1.5 text-xs font-medium text-body">For groups on a trip · iOS and Android</span></Reveal>
           <Reveal delay={0.08}>
-            <h1 className="mx-auto mt-6 max-w-4xl text-[clamp(2.8rem,9vw,7rem)] font-medium leading-[0.98] tracking-[-0.05em]">Plan the trip. <span className="text-body">Split the costs.</span> Keep the memories.</h1>
+            <h1 className="mx-auto mt-6 max-w-5xl text-[clamp(3.2rem,11vw,9.5rem)] font-medium leading-[0.94] tracking-[-0.055em]">Plan the trip. <span className="text-body">Split the costs.</span> Keep the memories.</h1>
           </Reveal>
-          <Reveal delay={0.16}><p className="mx-auto mt-6 max-w-xl text-lg leading-relaxed text-body">along is where your group plans together, knows exactly who owes whom, and holds on to the whole trip afterwards.</p></Reveal>
-          <Reveal delay={0.24} className="mt-9"><StoreButtons /></Reveal>
-          <motion.div aria-hidden className="mt-14 flex gap-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.6 }}>
-            {["card-0", "card-1", "card-2", "card-3", "card-4", "card-5"].map((c, i) => (
-              <motion.span key={c} className="h-3 w-12 rounded-full sm:w-20" style={{ background: `var(--color-${c})` }} animate={{ scaleX: [1, 1.12, 1] }} transition={{ repeat: Infinity, duration: 3.2, delay: i * 0.18, ease: "easeInOut" }} />
-            ))}
-          </motion.div>
+          <Reveal delay={0.16}><p className="mx-auto mt-7 max-w-2xl text-xl leading-relaxed text-body md:text-2xl">along is where your group plans together, knows exactly who owes whom, and holds on to the whole trip afterwards.</p></Reveal>
+          <Reveal delay={0.24} className="mt-10 flex justify-center"><StoreButtons /></Reveal>
+          <HeroPhones />
         </section>
 
         <section className="py-[18vh]"><ScrollHeadline lines={["everything the trip", "needs, in one place"]} /></section>
