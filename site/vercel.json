@@ -1,1 +1,6 @@
-{ "rewrites": [{ "source": "/join/:token", "destination": "/join/index.html" }] }
+{
+  "framework": "vite",
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist",
+  "rewrites": [{ "source": "/join/:token", "destination": "/join/index.html" }]
+}
