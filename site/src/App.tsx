@@ -145,13 +145,13 @@ export function App() {
 
         <section className="px-3 sm:px-5">
           <Reveal>
-            <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-[#4da3ef] px-6 py-14 text-white sm:px-12 md:py-20">
+            <div className="mx-auto max-w-6xl overflow-hidden rounded-[2rem] bg-ink px-6 py-14 text-white sm:px-12 md:py-20">
               <h2 className="max-w-3xl text-[clamp(2.6rem,7vw,5.5rem)] font-normal leading-[0.98] tracking-[-0.055em]">Everything for the trip. Nothing in the way.</h2>
               <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {four.map((f, i) => (
                   <motion.div key={f.t} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: i * 0.08, ease: [0.23, 1, 0.32, 1] }} className="rounded-3xl p-6" style={{ background: f.bg }}>
                     <h3 className="text-2xl font-medium tracking-tight">{f.t}</h3>
-                    <p className="mt-3 leading-relaxed text-white/85">{f.d}</p>
+                    <p className="mt-3 leading-relaxed text-white/75">{f.d}</p>
                   </motion.div>
                 ))}
               </div>
@@ -226,7 +226,6 @@ export function App() {
             <a href="mailto:alongtravel.app@gmail.com" className="hover:text-ink">alongtravel.app@gmail.com</a>
           </nav>
         </div>
-        <p className="mt-6 text-xs">Layout inspired by oneplan.space. Scroll effects adapted from <a className="underline" href="https://skiper-ui.com">Skiper UI</a>, animated with <a className="underline" href="https://motion.dev">motion.dev</a>.</p>
       </footer>
     </>
   );
