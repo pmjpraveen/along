@@ -1,4 +1,6 @@
 import { useFocusEffect, useRouter } from "expo-router";
+import { PinnedBack, useContentTop, useScrollY } from "../src/components/PinnedBack";
+import Animated from "react-native-reanimated";
 import { Skeleton } from "../src/components/Skeleton";
 import { ChevronLeft } from "../src/icons";
 import { useCallback, useState } from "react";
@@ -19,6 +21,8 @@ import { color, radius, space, type } from "../src/theme/tokens";
 // adds a nudge on top of what is listed here. What to be told about is chosen in Profile, under Settings.
 export default function Notifications() {
   const { top, bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const [state, setState] = useState<InboxResult | null>(null);
   const load = useCallback(async () => setState(await loadInbox()), []);
@@ -42,11 +46,8 @@ export default function Notifications() {
   const days = state?.ok ? groupByDayHeading(state.items, new Date()) : [];
   return (
     <View style={s.screen}>
-      <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull}
-        contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-        </Pressable>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull}
+        contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: bottom + space.s24 }]}>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Notifications</Text>
 
         {state === null ? (
@@ -72,7 +73,8 @@ export default function Notifications() {
             </View>
           ))
         )}
-      </ScrollView>
+      </Animated.ScrollView>
+      <PinnedBack onPress={back} scrollY={scrollY} />
     </View>
   );
 }

@@ -1,4 +1,6 @@
 import { useRouter } from "expo-router";
+import { PinnedBack, useContentTop, useScrollY } from "../src/components/PinnedBack";
+import Animated from "react-native-reanimated";
 import { Skeleton } from "../src/components/Skeleton";
 import { ChevronLeft } from "../src/icons";
 import { useCallback, useEffect, useState } from "react";
@@ -24,6 +26,8 @@ const STAMP_W = 140;   // half of this shows; the other half is cut off by the c
 const PEEK = 20;
 export default function TripHistory() {
   const { top, bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const { width } = useWindowDimensions();
   const tile = (width - space.s20 * 2 - space.s24) / 2;   // two cards across
@@ -35,10 +39,7 @@ export default function TripHistory() {
 
   return (
     <View style={s.screen}>
-      <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-        </Pressable>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: bottom + space.s24 }]}>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Completed trips</Text>
         {state === null ? (
           <Skeleton label="Loading your trips" variant="cards" />
@@ -80,7 +81,8 @@ export default function TripHistory() {
             })}
           </View>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
+      <PinnedBack onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} scrollY={scrollY} />
     </View>
   );
 }

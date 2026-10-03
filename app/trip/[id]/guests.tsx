@@ -1,4 +1,6 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { PinnedBack, useContentTop, useScrollY } from "../../../src/components/PinnedBack";
+import Animated from "react-native-reanimated";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft } from "../../../src/icons";
@@ -20,6 +22,8 @@ import { color, radius, space, type } from "../../../src/theme/tokens";
 export default function Guests() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const [members, setMembers] = useState<Member[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -49,10 +53,7 @@ export default function Guests() {
 
   return (
     <View style={s.screen}>
-      <ScrollView refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + 120 }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-        </Pressable>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: bottom + 120 }]}>
         <View style={s.head}>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Guests</Text>
           <Text style={s.sub}>Friends who aren't on along yet. Send an invite so they can join the trip.</Text>
@@ -72,7 +73,8 @@ export default function Guests() {
             </View>
           ))}</View>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
+      <PinnedBack onPress={back} scrollY={scrollY} />
       {isOwner && (
         <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
           <PrimaryButton label="Add guest" onPress={add} />

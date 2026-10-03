@@ -1,4 +1,6 @@
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
+import { PinnedBack, useContentTop, useScrollY } from "../../../../src/components/PinnedBack";
+import Animated from "react-native-reanimated";
 import { Skeleton } from "../../../../src/components/Skeleton";
 import { ChevronLeft } from "../../../../src/icons";
 import { useCallback, useRef, useState } from "react";
@@ -20,6 +22,8 @@ import { color, font, radius, space, type } from "../../../../src/theme/tokens";
 export default function Activity() {
   const { id } = useGlobalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const [state, setState] = useState<FeedResult | null>(null);
   const [since, setSince] = useState<string | null>(null);
@@ -41,11 +45,8 @@ export default function Activity() {
   const days = state?.ok ? groupByDayHeading(state.events, now) : [];
   return (
     <View style={s.screen}>
-      <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull}
-        contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s64 + space.s32 }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-        </Pressable>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull}
+        contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: bottom + space.s64 + space.s32 }]}>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Activity</Text>
 
         {state === null ? (
@@ -83,7 +84,8 @@ export default function Activity() {
             </View>
           ))
         )}
-      </ScrollView>
+      </Animated.ScrollView>
+      <PinnedBack onPress={back} scrollY={scrollY} />
     </View>
   );
 }

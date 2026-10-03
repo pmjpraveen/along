@@ -1,4 +1,6 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
+import { PinnedBack, useContentTop, useScrollY } from "../../../src/components/PinnedBack";
+import Animated from "react-native-reanimated";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft } from "../../../src/icons";
@@ -23,6 +25,8 @@ import { color, radius, space, type } from "../../../src/theme/tokens";
 export default function ExpenseDetail() {
   const { id, expenseId } = useLocalSearchParams<{ id: string; expenseId: string }>();
   const { top, bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const [state, setState] = useState<ExpenseViewResult | null>(null);
   const load = useCallback(async () => setState(await loadExpenseView(id, expenseId)), [id, expenseId]);
@@ -34,10 +38,8 @@ export default function ExpenseDetail() {
   const parts = x ? moneyParts(x.amountMinor, x.currency.exponent, x.currency.code) : null;
 
   return (
-    <ScrollView refreshControl={pull} style={s.screen} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
-        <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-      </Pressable>
+    <View style={{ flex: 1 }}>
+    <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} refreshControl={pull} style={s.screen} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: bottom + space.s24 }]}>
       {state === null ? (
         <Skeleton label="Loading expense" variant="expenseDetail" />
       ) : !x ? (
@@ -84,7 +86,9 @@ export default function ExpenseDetail() {
           {x.canEdit && <PrimaryButton label="Edit expense" onPress={() => router.push({ pathname: "/trip/[id]/add-expense", params: { id, expenseId: x.id } })} />}
         </>
       )}
-    </ScrollView>
+    </Animated.ScrollView>
+    <PinnedBack onPress={back} scrollY={scrollY} />
+    </View>
   );
 }
 

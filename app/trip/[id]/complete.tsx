@@ -1,4 +1,6 @@
 import { Alert } from "../../../src/components/Alert";
+import { PinnedBack, useContentTop, useScrollY } from "../../../src/components/PinnedBack";
+import Animated from "react-native-reanimated";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { haptic } from "../../../src/haptics";
@@ -20,6 +22,8 @@ import { color, radius, space, type } from "../../../src/theme/tokens";
 export default function Complete() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const [summary, setSummary] = useState<SummaryResult | null>(null);
   const [busy, setBusy] = useState(false);
@@ -56,10 +60,7 @@ export default function Complete() {
   ) : null;
   return (
     <View style={s.screen}>
-      <ScrollView refreshControl={pull} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: (footer ? 160 : space.s24) + bottom }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-        </Pressable>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} refreshControl={pull} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: (footer ? 160 : space.s24) + bottom }]}>
         <View style={s.head}>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>{done ? "Trip completed" : "Complete this trip?"}</Text>
           {s0 && (
@@ -102,7 +103,8 @@ export default function Complete() {
             {error && <Alert variant="negative">{error}</Alert>}
           </>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
+      <PinnedBack onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} scrollY={scrollY} />
       {footer && <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>{footer}</View>}
     </View>
   );

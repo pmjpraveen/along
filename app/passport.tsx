@@ -1,4 +1,6 @@
 import { useFocusEffect, useRouter } from "expo-router";
+import { PinnedBack, useContentTop, useScrollY } from "../src/components/PinnedBack";
+import Animated from "react-native-reanimated";
 import { Skeleton } from "../src/components/Skeleton";
 import { ChevronLeft } from "../src/icons";
 import { useCallback, useState } from "react";
@@ -17,6 +19,8 @@ import { color, radius, space, type } from "../src/theme/tokens";
 // My travel stamps: an arrival and a departure for each trip I completed, most recent first, two to a row. Tap one to reopen that trip's summary.
 export default function Passport() {
   const { top, bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const [state, setState] = useState<StampsResult | null>(null);
   const load = useCallback(async () => { setState(await loadStamps()); }, []);
@@ -25,10 +29,8 @@ export default function Passport() {
   const stamps = state?.ok ? state.stamps : [];
 
   return (
-    <ScrollView style={s.screen} contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
-      <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/profile"))} hitSlop={space.s4} style={s.round}>
-        <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-      </Pressable>
+    <View style={{ flex: 1 }}>
+    <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={s.screen} contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: bottom + space.s24 }]}>
       <View style={s.head}>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Travel stamps</Text>
         <Text maxFontSizeMultiplier={1.4} style={s.body}>An arrival and a departure for every finished trip.</Text>
@@ -55,7 +57,9 @@ export default function Passport() {
           })}
         </View>
       )}
-    </ScrollView>
+    </Animated.ScrollView>
+    <PinnedBack onPress={() => (router.canGoBack() ? router.back() : router.replace("/profile"))} scrollY={scrollY} />
+    </View>
   );
 }
 

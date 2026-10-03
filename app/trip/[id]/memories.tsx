@@ -1,4 +1,6 @@
 import { Alert } from "../../../src/components/Alert";
+import { PinnedBack, useContentTop, useScrollY } from "../../../src/components/PinnedBack";
+import Animated from "react-native-reanimated";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Avatar } from "../../../src/components/Avatar";
@@ -21,6 +23,8 @@ const mint = () => `${Date.now()}-${Math.random().toString(36).slice(2)}`;
 export default function Memories() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const [state, setState] = useState<MemoriesResult | null>(null);
   const [note, setNote] = useState("");
@@ -67,10 +71,7 @@ export default function Memories() {
 
   return (
     <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-        </Pressable>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} keyboardShouldPersistTaps="handled" contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: bottom + space.s24 }]}>
         <View style={s.head}>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Memories</Text>
           <Text maxFontSizeMultiplier={1.4} style={s.body}>Photos and notes from the trip, shared with everyone on it.</Text>
@@ -114,7 +115,8 @@ export default function Memories() {
             </View>
           ))
         )}
-      </ScrollView>
+      </Animated.ScrollView>
+      <PinnedBack onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} scrollY={scrollY} />
     </KeyboardAvoidingView>
   );
 }

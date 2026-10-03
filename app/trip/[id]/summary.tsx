@@ -3,7 +3,9 @@ import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { ChevronLeft, ImageIcon, MapPin, Receipt, Scale, Trash2 } from "../../../src/icons";
 import { useCallback, useState } from "react";
-import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import Animated, { Extrapolation, interpolate, useAnimatedStyle } from "react-native-reanimated";
+import { useScrollY } from "../../../src/components/PinnedBack";
+import { StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadTripSummary, SummaryResult } from "../../../src/api/passport";
@@ -70,11 +72,14 @@ export default function Summary() {
   const money = (minor: number) => (sm ? formatMinor(minor, sm.exponent, sm.currency) : "");
   const { band } = look;
   const navH = top + space.s16 + 48 + space.s12;
+  const { scrollY, onScroll } = useScrollY();
+  // The row's own colour appears once the page scrolls up under it; at rest and while pulling, the band behind shows through.
+  const navBg = useAnimatedStyle(() => ({ opacity: interpolate(scrollY.value, [0, 12], [0, 1], Extrapolation.CLAMP) }));
 
   // The top is the trip page's: the trip's colour behind the cover photo, the date pill, the name tag, the place and who came.
   return (
     <View style={s.screen}>
-      <ScrollView refreshControl={pull} style={s.scroll} contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: bottom + space.s24 }}>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} refreshControl={pull} style={s.scroll} contentInsetAdjustmentBehavior="never" contentContainerStyle={{ paddingBottom: bottom + space.s24 }}>
         <View style={[s.head, { paddingTop: navH }, band ? { backgroundColor: band, paddingBottom: space.s24 } : null]}>
           {/* Pulling down to refresh drags the page down: this extends the band above it so the gap shows the trip's colour, not white. */}
           {band ? <View pointerEvents="none" style={[s.bandAbove, { backgroundColor: band }]} /> : null}
@@ -138,13 +143,14 @@ export default function Summary() {
             )}
           </View>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
       <Dialog visible={confirming} onClose={() => setConfirming(false)} title="Delete this trip?" subheader="This can't be undone"
         body={deleteError ?? "The trip and everything on it, its plans, expenses, payments and photos, will be erased for everyone. This can't be recovered."}
         actionLabel={deleting ? "Deleting…" : "Delete trip"} actionType="destructive" onAction={remove} actionBusy={deleting}
         secondaryLabel="Keep the trip" onSecondary={() => setConfirming(false)} />
       {/* The back button stays put on the trip's colour while the rest scrolls under it. */}
-      <View style={[s.nav, { height: navH, paddingTop: top + space.s16, backgroundColor: band ?? color.paper }]}>
+      <View style={[s.nav, { height: navH, paddingTop: top + space.s16 }]}>
+        <Animated.View pointerEvents="none" style={[StyleSheet.absoluteFill, { backgroundColor: band ?? color.paper }, navBg]} />
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>

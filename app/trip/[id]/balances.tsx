@@ -1,4 +1,6 @@
 import { Alert } from "../../../src/components/Alert";
+import { PinnedBack, useContentTop, useScrollY } from "../../../src/components/PinnedBack";
+import Animated from "react-native-reanimated";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { Avatar } from "../../../src/components/Avatar";
 import { ChevronLeft } from "../../../src/icons";
@@ -18,6 +20,8 @@ import { color, font, radius, space, type } from "../../../src/theme/tokens";
 export default function Balances() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const [state, setState] = useState<BalancesResult | null>(null);
   const load = useCallback(async () => setState(await loadBalances(id)), [id]);
@@ -43,10 +47,7 @@ export default function Balances() {
 
   return (
     <View style={s.screen}>
-      <ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-        </Pressable>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={s.scroll} contentInsetAdjustmentBehavior="never" refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: bottom + space.s24 }]}>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Balances</Text>
         {state === null ? (
           <Skeleton label="Loading balances" variant="balances" />
@@ -92,7 +93,8 @@ export default function Balances() {
             </View>
           </>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
+      <PinnedBack onPress={back} scrollY={scrollY} />
     </View>
   );
 }

@@ -1,4 +1,6 @@
 import { useFocusEffect, useRouter } from "expo-router";
+import { PinnedBack, useContentTop, useScrollY } from "../src/components/PinnedBack";
+import Animated from "react-native-reanimated";
 import { Skeleton } from "../src/components/Skeleton";
 import { Bell, Camera, ChevronLeft, Coins, ImagePlus, Pencil, FileText, Globe, LogOut, Shield, Trash2 } from "../src/icons";
 
@@ -37,6 +39,8 @@ const MRZ_LENGTH = 200;
 
 export default function Profile() {
   const { top, bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const [state, setState] = useState<StampsResult | null>(null);
   const me = useProfile((s) => s.me);
@@ -124,10 +128,7 @@ export default function Profile() {
 
   return (
     <View style={s.screen}>
-      <ScrollView style={s.scroll} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-        </Pressable>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} style={s.scroll} refreshControl={pull} contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: bottom + space.s24 }]}>
 
         <View style={s.avatar}>
           <Pressable accessibilityRole="button" accessibilityLabel="Change profile picture" onPress={() => (me?.avatarUrl ? open("photo") : changePhoto())} hitSlop={space.s8}>
@@ -210,7 +211,8 @@ export default function Profile() {
           <ListItem title="Delete account" subtitle="Shared expenses stay on trips" leading={icon(Trash2, true)} destructive trailing="chevron" onPress={() => setConfirmDelete(true)} />
         </View>
         <Text accessibilityLabel={appVersionLabel()} maxFontSizeMultiplier={1.3} style={s.version}>{appVersionLabel()}</Text>
-      </ScrollView>
+      </Animated.ScrollView>
+      <PinnedBack onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} scrollY={scrollY} />
       <BottomSheet visible={sheet === "photo"} onClose={() => setSheet(null)} title="Profile picture"
         onClosed={() => { if (pickAfterClose.current) { pickAfterClose.current = false; changePhoto(); } }}>
         <SheetRows>

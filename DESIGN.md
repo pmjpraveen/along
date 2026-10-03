@@ -362,6 +362,8 @@ Paper, 28 top radius, 24 padding, a 36 by 4 Pebble grabber, and a Forest Ink scr
 
 **Icons** come from `src/icons.ts`, never from `lucide-react-native` directly: the package's main file loads all ~1900 icons at startup. Add the icon to that file first.
 
+**Pinned back button:** pages with a scrolling body keep the back button fixed at the top (`PinnedBack` in `src/components/PinnedBack.tsx`); only the content moves, including on a pull to refresh. The row behind the button turns solid once content scrolls up under it. The trip pages do the same with their coloured band, which also shows above the page while pulling.
+
 **Haptics** tick once under the finger for a different chip, a radio, a checkbox or a switch; success and warning tick on save, delete and failure. Never on scroll, never the only feedback.
 
 **Motion**: all durations, springs and easings live in `src/theme/motion.ts`. A sheet opens and closes with a settle (no bounce); only a flick earns the bouncier spring. Toasts fade in 150 ms, hold 2.2 s and fade out. The glint on the Start new trip button plays twice, the passport cover's three times, and only while the screen is in front. Animate only transform and opacity, never tween money, and honour Reduce Motion everywhere (crossfade or instant change instead of movement). The rest follows the animation rules in CLAUDE.md.
