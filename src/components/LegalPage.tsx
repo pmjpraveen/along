@@ -5,7 +5,7 @@ import { Pressable } from "./Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { LegalDoc } from "../domain/legal";
 import { longDate } from "../domain/trip";
-import { color, radius, space, type } from "../theme/tokens";
+import { color, radius, space, type, track } from "../theme/tokens";
 
 // A plain reading page: back button, title, the date it was last updated, then headed paragraphs.
 export function LegalPage({ doc }: { doc: LegalDoc }) {
@@ -36,6 +36,6 @@ const s = StyleSheet.create({
   heading: { ...type.pageTitle, color: color.brandBlack },
   updated: { ...type.fieldMessage, color: color.charcoal },
   section: { gap: space.s8, marginTop: space.s8 },
-  h: { ...type.sheetTitle, fontSize: 20, lineHeight: 26, letterSpacing: -0.3, color: color.brandBlack },
+  h: { ...type.sheetTitle, fontSize: 20, lineHeight: 26, letterSpacing: track(20), color: color.brandBlack },
   body: { ...type.fieldValue, color: color.charcoal },
 });

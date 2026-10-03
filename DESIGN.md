@@ -127,7 +127,7 @@ Imported from the Wise UI Kit "colours" page. `src/theme/tokens.ts` exports what
 - **Weights:** Light 300, Regular 400, Medium 500 only. No SemiBold, Bold, or Black anywhere. Geist Sans is free and open source (SIL Open Font License). The `.ttf` files are bundled from `assets/fonts/`, since a device cannot read fonts installed on the developer's Mac
 - **Sizes:** 12, 14, 16, 18, 20, 24, 28, 32, 40, 56
 - **Line height:** 1.0 to 1.5 in general; never below 0.95, even on display, so ascenders survive Dynamic Type
-- **Letter spacing:** tight at large sizes (-0.035em at 56 down to -0.01em at 20), neutral at 16, slightly positive at 12 to 14. Do not track body or caption sizes negatively
+- **Letter spacing:** -2% of the font size at every size (`track(fontSize)` in `src/theme/tokens.ts`), including body and captions. Only stamps and all-caps hero text track wider
 - **Numerals:** amounts use `fontVariant: ['tabular-nums']`; Geist Sans ships tabular figures
 - **Role:** Medium for display, headings, amounts, labels, buttons, and tabs; Regular for body and captions; Light reserved for large decorative numerals only (never body text). Hierarchy comes from size and tracking
 
@@ -142,19 +142,19 @@ Imported from the Wise UI Kit "colours" page. `src/theme/tokens.ts` exports what
 
 | Role | Weight | Size | Line Height | Letter Spacing | Token |
 |------|--------|------|-------------|----------------|-------|
-| micro | Medium | 12 | 16 | +0.12 | `type.micro` |
-| caption | Regular | 14 | 20 | +0.07 | `type.caption` |
-| body | Regular | 16 | 24 | 0 | `type.body` |
-| body-lg | Regular | 18 | 26 | -0.09 | `type.bodyLg` |
-| label | Medium | 16 | 20 | 0 | `type.label` |
-| label-sm | Medium | 14 | 20 | 0 | `type.labelSm` |
-| title | Medium | 20 | 26 | -0.20 | `type.title` |
-| heading-sm | Medium | 24 | 28 | -0.36 | `type.headingSm` |
+| micro | Medium | 12 | 16 | -0.24 | `type.micro` |
+| caption | Regular | 14 | 20 | -0.28 | `type.caption` |
+| body | Regular | 16 | 24 | -0.32 | `type.body` |
+| body-lg | Regular | 18 | 26 | -0.36 | `type.bodyLg` |
+| label | Medium | 16 | 20 | -0.32 | `type.label` |
+| label-sm | Medium | 14 | 20 | -0.28 | `type.labelSm` |
+| title | Medium | 20 | 26 | -0.4 | `type.title` |
+| heading-sm | Medium | 24 | 28 | -0.48 | `type.headingSm` |
 | heading | Medium | 28 | 32 | -0.56 | `type.heading` |
-| heading-lg | Medium | 32 | 32 | -0.96 | `type.headingLg` |
-| display | Medium | 56 | 54 | -1.96 | `type.display` |
-| amount | Medium | 18 | 24 | 0 | `type.amount` |
-| amount-xl | Medium | 40 | 44 | -0.80 | `type.amountXl` |
+| heading-lg | Medium | 32 | 32 | -0.64 | `type.headingLg` |
+| display | Medium | 56 | 54 | -1.12 | `type.display` |
+| amount | Medium | 18 | 24 | -0.36 | `type.amount` |
+| amount-xl | Medium | 40 | 44 | -0.8 | `type.amountXl` |
 
 Letter spacing is in points. Dynamic Type stays on: body and caption scale up to 1.4x, buttons and labels to 1.3x, display, heading-lg, and amount-xl to 1.15x (`maxFontSizeMultiplier`). Containers use `minHeight`, never a fixed height around text.
 
@@ -474,20 +474,20 @@ export const font = {
 } as const;
 
 export const type = {
-  micro:      { fontFamily: font.medium,  fontSize: 12, lineHeight: 16, letterSpacing: 0.12 },
-  caption:    { fontFamily: font.regular, fontSize: 14, lineHeight: 20, letterSpacing: 0.07 },
-  body:       { fontFamily: font.regular, fontSize: 16, lineHeight: 24, letterSpacing: 0 },
-  bodyLg:     { fontFamily: font.regular, fontSize: 18, lineHeight: 26, letterSpacing: -0.09 },
-  label:      { fontFamily: font.medium,  fontSize: 16, lineHeight: 20, letterSpacing: 0 },
-  labelSm:    { fontFamily: font.medium,  fontSize: 14, lineHeight: 20, letterSpacing: 0 },
-  title:      { fontFamily: font.medium,  fontSize: 20, lineHeight: 26, letterSpacing: -0.20 },
-  headingSm:  { fontFamily: font.medium,  fontSize: 24, lineHeight: 28, letterSpacing: -0.36 },
+  micro:      { fontFamily: font.medium,  fontSize: 12, lineHeight: 16, letterSpacing: -0.24 },
+  caption:    { fontFamily: font.regular, fontSize: 14, lineHeight: 20, letterSpacing: -0.28 },
+  body:       { fontFamily: font.regular, fontSize: 16, lineHeight: 24, letterSpacing: -0.32 },
+  bodyLg:     { fontFamily: font.regular, fontSize: 18, lineHeight: 26, letterSpacing: -0.36 },
+  label:      { fontFamily: font.medium,  fontSize: 16, lineHeight: 20, letterSpacing: -0.32 },
+  labelSm:    { fontFamily: font.medium,  fontSize: 14, lineHeight: 20, letterSpacing: -0.28 },
+  title:      { fontFamily: font.medium,  fontSize: 20, lineHeight: 26, letterSpacing: -0.4 },
+  headingSm:  { fontFamily: font.medium,  fontSize: 24, lineHeight: 28, letterSpacing: -0.48 },
   heading:    { fontFamily: font.medium,  fontSize: 28, lineHeight: 32, letterSpacing: -0.56 },
-  headingLg:  { fontFamily: font.medium,  fontSize: 32, lineHeight: 32, letterSpacing: -0.96 },
-  display:    { fontFamily: font.medium,  fontSize: 56, lineHeight: 54, letterSpacing: -1.96 },
-  amount:     { fontFamily: font.medium,  fontSize: 18, lineHeight: 24, letterSpacing: 0,
+  headingLg:  { fontFamily: font.medium,  fontSize: 32, lineHeight: 32, letterSpacing: -0.64 },
+  display:    { fontFamily: font.medium,  fontSize: 56, lineHeight: 54, letterSpacing: -1.12 },
+  amount:     { fontFamily: font.medium,  fontSize: 18, lineHeight: 24, letterSpacing: -0.36,
                 fontVariant: ['tabular-nums'] as const },
-  amountXl:   { fontFamily: font.medium,  fontSize: 40, lineHeight: 44, letterSpacing: -0.80,
+  amountXl:   { fontFamily: font.medium,  fontSize: 40, lineHeight: 44, letterSpacing: -0.8,
                 fontVariant: ['tabular-nums'] as const },
 } as const;
 

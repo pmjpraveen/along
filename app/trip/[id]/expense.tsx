@@ -18,7 +18,7 @@ import { METHOD_LABEL, shareBp } from "../../../src/domain/expense";
 import { formatMinor, moneyParts } from "../../../src/domain/money";
 import { formatPercent } from "../../../src/domain/split";
 import { formatDate } from "../../../src/domain/trip";
-import { color, radius, space, type } from "../../../src/theme/tokens";
+import { color, radius, space, type, track } from "../../../src/theme/tokens";
 
 // One expense: the total, who paid and who added it, and how it was split: each person's share, its percentage of the total, and (for
 // percentage and share splits) the value that was entered. The person who added it, or the trip owner, can edit it.
@@ -97,8 +97,8 @@ const s = StyleSheet.create({
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
   head: { alignItems: "center", gap: space.s8 },
-  title: { ...type.sheetTitle, fontSize: 24, lineHeight: 30, letterSpacing: -0.4, textAlign: "center", color: color.obsidian },
-  total: { ...type.display, fontSize: 40, lineHeight: 48, letterSpacing: -1.2, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  title: { ...type.sheetTitle, fontSize: 24, lineHeight: 30, letterSpacing: track(24), textAlign: "center", color: color.obsidian },
+  total: { ...type.display, fontSize: 40, lineHeight: 48, letterSpacing: track(40), color: color.obsidian, fontVariant: ["tabular-nums"] },
   frac: { color: color.slate },
   meta: { ...type.fieldValue, color: color.charcoal },
   card: { padding: space.s20, gap: space.s12, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.neutralWash },
@@ -110,8 +110,8 @@ const s = StyleSheet.create({
   section: { ...type.fieldValue, color: color.charcoal },
   person: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 64, paddingVertical: space.s12, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
   personText: { flex: 1, gap: 2 },
-  name: { ...type.label, fontSize: 17, color: color.obsidian },
+  name: { ...type.label, fontSize: 17, letterSpacing: track(17), color: color.obsidian },
   sub: { ...type.fieldMessage, color: color.slate },
-  share: { ...type.label, fontSize: 17, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  share: { ...type.label, fontSize: 17, letterSpacing: track(17), color: color.obsidian, fontVariant: ["tabular-nums"] },
   gap: { gap: space.s8 },
 });

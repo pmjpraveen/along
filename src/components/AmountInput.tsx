@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { StyleSheet, Text, TextInput, View } from "react-native";
-import { color, radius, space, type } from "../theme/tokens";
+import { color, radius, space, type, track } from "../theme/tokens";
 
 type Props = { label: string; value: string; onChange: (v: string) => void; exponent: number; symbol: string; invalid?: boolean; compact?: boolean; suffix?: boolean };
 
@@ -41,13 +41,13 @@ const s = StyleSheet.create({
   focused: { borderWidth: 3, borderColor: color.brandBlack, paddingHorizontal: 14 },
   invalid: { borderWidth: 3, borderColor: color.alarmRed, paddingHorizontal: 14 },
   // Display face at input sizes, with normal tracking and no fixed line height (the display values are meant for 56pt and squash digits here).
-  symbol: { fontFamily: type.display.fontFamily, fontSize: 24, color: color.charcoal },
-  symbolCompact: { fontFamily: type.fieldValue.fontFamily, fontSize: type.fieldValue.fontSize, color: color.obsidian },
+  symbol: { fontFamily: type.display.fontFamily, fontSize: 24, letterSpacing: track(24), color: color.charcoal },
+  symbolCompact: { fontFamily: type.fieldValue.fontFamily, fontSize: type.fieldValue.fontSize, letterSpacing: type.fieldValue.letterSpacing, color: color.obsidian },
   field: { flex: 1, justifyContent: "center" },
   placeholderBox: { position: "absolute", top: 0, bottom: 0, left: 0, right: 0, justifyContent: "center" },
-  placeholder: { fontFamily: type.display.fontFamily, fontSize: 32, letterSpacing: -0.3, color: color.slate, fontVariant: ["tabular-nums"] },
-  input: { fontFamily: type.display.fontFamily, fontSize: 32, height: 52, paddingVertical: 0, letterSpacing: -0.3, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  placeholder: { fontFamily: type.display.fontFamily, fontSize: 32, letterSpacing: track(32), color: color.slate, fontVariant: ["tabular-nums"] },
+  input: { fontFamily: type.display.fontFamily, fontSize: 32, height: 52, paddingVertical: 0, letterSpacing: track(32), color: color.obsidian, fontVariant: ["tabular-nums"] },
   // The ordinary input look: the same face and size as every other field.
-  inputCompact: { fontFamily: type.fieldValue.fontFamily, fontSize: type.fieldValue.fontSize, height: 28, letterSpacing: 0 },
-  placeholderCompact: { fontFamily: type.fieldValue.fontFamily, fontSize: type.fieldValue.fontSize, letterSpacing: 0, color: color.pebble },
+  inputCompact: { fontFamily: type.fieldValue.fontFamily, fontSize: type.fieldValue.fontSize, height: 28, letterSpacing: type.fieldValue.letterSpacing },
+  placeholderCompact: { fontFamily: type.fieldValue.fontFamily, fontSize: type.fieldValue.fontSize, letterSpacing: type.fieldValue.letterSpacing, color: color.pebble },
 });

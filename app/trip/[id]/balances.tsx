@@ -17,7 +17,7 @@ import { BalancesResult, loadBalances } from "../../../src/api/balances";
 import { Button, TextButton } from "../../../src/components/Buttons";
 import { describeBalance, describeTransfer, simplifyDebts } from "../../../src/domain/balance";
 import { useTripRealtime } from "../../../src/hooks/useTripRealtime";
-import { color, font, radius, space, type } from "../../../src/theme/tokens";
+import { color, font, radius, space, type, track } from "../../../src/theme/tokens";
 
 // Shown once the last payment is recorded: a check settles in with a gentle spring and a fade (just a fade with Reduce Motion).
 function AllSettled() {
@@ -140,7 +140,7 @@ const s = StyleSheet.create({
   gap: { gap: space.s8 },
   mine: { gap: space.s4, padding: space.s20, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
   mineLabel: { ...type.fieldValue, color: color.charcoal },
-  mineText: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.brandBlack, fontVariant: ["tabular-nums"] },
+  mineText: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: track(30), color: color.brandBlack, fontVariant: ["tabular-nums"] },
   section: { ...type.fieldValue, fontFamily: font.medium, color: color.obsidian, marginTop: space.s16 },
   row: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 72, paddingVertical: space.s12, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
   settled: { flexDirection: "row", alignItems: "center", gap: space.s16, paddingVertical: space.s8 },

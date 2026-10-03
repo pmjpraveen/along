@@ -8,7 +8,7 @@ import { useReducedMotion } from "../hooks/useReducedMotion";
 import { EASE_IN_OUT, motion } from "../theme/motion";
 import { X } from "../icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { color, radius, space, type } from "../theme/tokens";
+import { color, radius, space, type, track } from "../theme/tokens";
 import { Button, ButtonType } from "./Buttons";
 
 type Props = {
@@ -103,7 +103,7 @@ const s = StyleSheet.create({
   scrim: { flex: 1, backgroundColor: color.scrim },
   card: { backgroundColor: color.paper, borderRadius: radius.sheet, borderCurve: "continuous", padding: space.s20, gap: space.s16 },
   head: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s12 },
-  title: { ...type.sheetTitle, flex: 1, fontSize: 22, lineHeight: 28, letterSpacing: -0.3, color: color.brandBlack },
+  title: { ...type.sheetTitle, flex: 1, fontSize: 22, lineHeight: 28, letterSpacing: track(22), color: color.brandBlack },
   close: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.softGrey },
   copy: { gap: space.s8 },
   actions: { gap: space.s8, marginTop: space.s8 },

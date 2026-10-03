@@ -15,7 +15,7 @@ export async function loadItinerary(tripId: string): Promise<ItineraryResult> {
     const [trip, items, people, names] = await Promise.all([
       supabase.from("trips").select("name, start_date, end_date").eq("id", tripId).single(),
       supabase.from("itinerary_items_flagged")
-        .select("id, version, title, type, day_date, start_time, end_time, sort_order, is_outside_trip_range, location_text, location_url, latitude, longitude, formatted_address").eq("trip_id", tripId),
+        .select("id, version, title, type, day_date, start_time, end_time, sort_order, is_outside_trip_range, location_text, location_url, latitude, longitude, formatted_address, description").eq("trip_id", tripId),
       supabase.from("itinerary_participants").select("itinerary_item_id, trip_member_id").eq("trip_id", tripId),
       supabase.from("trip_members").select("id, display_name").eq("trip_id", tripId),
     ]);

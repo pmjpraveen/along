@@ -20,7 +20,7 @@ import { formatMinor, moneyParts } from "../../../../src/domain/money";
 import { useTripRealtime } from "../../../../src/hooks/useTripRealtime";
 import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
 import { discardQueued, useQueue } from "../../../../src/offline/sync";
-import { color, mix, radius, shadow, space, type } from "../../../../src/theme/tokens";
+import { color, mix, radius, shadow, space, type, track } from "../../../../src/theme/tokens";
 import { Card } from "../../../../src/components/Card";
 
 // The trip's money: what the trip has cost in total and who is in it, then every expense as a row (category, name, what it means for
@@ -152,24 +152,24 @@ const s = StyleSheet.create({
   scroll: { flex: 1 },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
-  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian, marginTop: 0 },
+  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: track(30), color: color.obsidian, marginTop: 0 },
   gap: { gap: space.s8 },
   strips: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
   summary: { borderRadius: radius.xLarge, borderCurve: "continuous", overflow: "hidden", paddingBottom: space.s8, paddingHorizontal: space.s8, ...shadow.itemLight },
   tripRow: { flexDirection: "row", alignItems: "center", gap: space.s8, paddingHorizontal: space.s16, paddingVertical: space.s16 },
-  tripName: { ...type.label, flex: 1, fontSize: 16, lineHeight: 22, color: color.obsidian },
+  tripName: { ...type.label, flex: 1, fontSize: 16, letterSpacing: track(16), lineHeight: 22, color: color.obsidian },
   inner: { gap: space.s8, padding: space.s16, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.paper },
   innerLabel: { ...type.fieldValue, color: color.charcoal },
-  total: { ...type.display, fontSize: 40, lineHeight: 48, letterSpacing: -1.2, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  total: { ...type.display, fontSize: 40, lineHeight: 48, letterSpacing: track(40), color: color.obsidian, fontVariant: ["tabular-nums"] },
   frac: { color: color.slate },
   balance: { ...type.fieldMessage, color: color.charcoal },
   section: { ...type.fieldValue, color: color.charcoal, marginTop: space.s16 },
   tx: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 72, paddingVertical: space.s16, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
   pressed: { backgroundColor: color.neutralWash },
   txText: { flex: 1, gap: 2 },
-  title: { ...type.label, fontSize: 17, lineHeight: 24, color: color.obsidian },
+  title: { ...type.label, fontSize: 17, letterSpacing: track(17), lineHeight: 24, color: color.obsidian },
   sub: { ...type.fieldMessage, color: color.slate },
-  amount: { ...type.label, fontSize: 17, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  amount: { ...type.label, fontSize: 17, letterSpacing: track(17), color: color.obsidian, fontVariant: ["tabular-nums"] },
   queued: { borderStyle: "dashed", borderColor: color.slate },
   queuedRow: { flexDirection: "row", justifyContent: "space-between", gap: space.s12 },
   body: { ...type.fieldValue, color: color.charcoal },

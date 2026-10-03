@@ -9,7 +9,7 @@ import { AlongLogo } from "../src/components/AlongLogo";
 import { DEV_PEOPLE, devLoginEnabled, signInAsDev } from "../src/api/devAuth";
 import { OutlinedButton, TextButton } from "../src/components/Buttons";
 import { Pressable } from "../src/components/Pressable";
-import { color, font, radius, space, type } from "../src/theme/tokens";
+import { color, font, radius, space, type, track } from "../src/theme/tokens";
 
 const FRIENDS = require("../assets/illustrations/friends.jpg");   // 1200 x 800
 
@@ -96,13 +96,13 @@ const s = StyleSheet.create({
   hero: { flex: 1, alignItems: "center", gap: space.s32 },
   logo: { marginTop: space.s8 },
   copy: { alignItems: "center", gap: space.s8, paddingHorizontal: space.s12, marginTop: space.s24 },
-  heading: { fontFamily: font.medium, fontSize: 24, lineHeight: 30, letterSpacing: -0.4, textAlign: "center", color: color.brandBlack },
-  body: { ...type.body, fontSize: 17, lineHeight: 24, textAlign: "center", color: color.slate },
+  heading: { fontFamily: font.medium, fontSize: 24, lineHeight: 30, letterSpacing: track(24), textAlign: "center", color: color.brandBlack },
+  body: { ...type.body, fontSize: 17, letterSpacing: track(17), lineHeight: 24, textAlign: "center", color: color.slate },
   google: {
     minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: space.s12,
     borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.brandBlack,
   },
-  googleLabel: { ...type.buttonLarge, fontSize: 17, color: color.paper },
+  googleLabel: { ...type.buttonLarge, fontSize: 17, letterSpacing: track(17), color: color.paper },
   legal: { ...type.fieldMessage, textAlign: "center", color: color.slate, marginTop: space.s12 },
   link: { color: color.brandBlack, textDecorationLine: "underline" },
   dev: { gap: space.s8, marginTop: space.s16 },

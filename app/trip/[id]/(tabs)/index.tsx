@@ -27,7 +27,7 @@ import { CARD_COLORS, formatDate, formatRange } from "../../../../src/domain/tri
 import { mapsOpenUrl, mapsSearchUrl, parseMapsUrl, Place } from "../../../../src/domain/maps";
 import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
 import { TripNameTag } from "../../../../src/components/TripNameTag";
-import { color, font, mix, radius, space, type, pillOn } from "../../../../src/theme/tokens";
+import { color, font, mix, radius, space, type, pillOn, track } from "../../../../src/theme/tokens";
 
 // The pin for an item: its stored coordinates, or, for items saved before the link could be read, whatever the saved link says.
 const placeOf = (i: Item): Place | null =>
@@ -194,11 +194,12 @@ export default function Trip() {
                         <Text maxFontSizeMultiplier={1.4} numberOfLines={2} style={s.placeText}>{placeLabel(i)}</Text>
                       </Pressable>
                     ) : null}
+                    {i.description ? <Text maxFontSizeMultiplier={1.4} style={s.note}>{i.description}</Text> : null}
                     </View>
                     {placeOf(i) && <View style={s.map}><MapPreview place={placeOf(i)!} /></View>}
                     {moving === i.id && (
                       <View style={[s.move, placeOf(i) && s.moveAfterMap]}>
-                        <DateField compact dark label={`New day for ${i.title}`} value={i.day_date} onChange={(day) => move(i.id, i.version, day)} />
+                        <DateField compact dark label={`New day for ${i.title}`} value={i.day_date} min={ok.trip.start_date} max={ok.trip.end_date} onChange={(day) => move(i.id, i.version, day)} />
                         <Pressable accessibilityRole="button" accessibilityLabel="Delete plan" onPress={() => removePlan(i)} hitSlop={space.s4} style={s.trash}>
                           <Trash2 size={18} color={color.paper} strokeWidth={1.75} />
                         </Pressable>
@@ -257,7 +258,7 @@ const s = StyleSheet.create({
   title: { alignItems: "center", gap: space.s8 },
   cover: { width: 104 },   // the white border is on the photo itself
   datePill: { paddingHorizontal: space.s8, paddingVertical: 2, borderRadius: 6, borderCurve: "continuous" },
-  dateText: { fontFamily: font.medium, fontSize: 12, lineHeight: 16, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  dateText: { fontFamily: font.medium, fontSize: 12, letterSpacing: track(12), lineHeight: 16, color: color.obsidian, fontVariant: ["tabular-nums"] },
   summary: { ...type.fieldValue, color: color.charcoal },
   bar: { position: "absolute", top: 0, left: 0, right: 0, zIndex: 4, paddingHorizontal: space.s20, paddingTop: space.s16, paddingBottom: space.s12, backgroundColor: color.paper },
   edge: { position: "absolute", left: 0, right: 0, bottom: 0, height: 1, backgroundColor: color.borderNeutral },
@@ -281,8 +282,9 @@ const s = StyleSheet.create({
   more: { width: 32, height: 32, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center" },
   trash: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.alarmRed, alignItems: "center", justifyContent: "center" },
   titleRow: { flexDirection: "row", alignItems: "center", gap: space.s8 },
-  itemTitle: { ...type.label, flex: 1, fontSize: 17, color: color.obsidian },
+  itemTitle: { ...type.label, flex: 1, fontSize: 17, letterSpacing: track(17), color: color.obsidian },
   place: { flexDirection: "row", alignItems: "center", gap: space.s4 },
+  note: { ...type.fieldMessage, color: color.charcoal },
   placeText: { ...type.fieldMessage, flexShrink: 1, color: color.charcoal },
   gap: { gap: space.s8 },
   dayList: { gap: space.s16 },

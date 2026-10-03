@@ -17,7 +17,7 @@ import { placement } from "../src/domain/passportPage";
 import { shapeFor } from "../src/domain/stampShape";
 import { CARD_COLORS, formatRange } from "../src/domain/trip";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
-import { color, font, mix, radius, shadow, space, type, pillOn } from "../src/theme/tokens";
+import { color, font, mix, radius, shadow, space, type, pillOn, track } from "../src/theme/tokens";
 
 // Completed trips, most recent first. Each is a coloured card (six colours handed out in order, oldest first) with its photo peeking over the
 // top edge, the arrival stamp (top right) and departure stamp (bottom left) faint behind the text, the dates, the name on a tilted dark tag and the place. Opens the trip's summary.
@@ -92,7 +92,7 @@ const s = StyleSheet.create({
   scroll: { flex: 1 },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
-  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian },
+  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: track(30), color: color.obsidian },
   gap: { gap: space.s8 },
   list: { flexDirection: "row", flexWrap: "wrap", columnGap: space.s24, rowGap: space.s24 },
   // The photo sits behind the card, inset 16 each side, and shows only its top 20pt above the card's edge.
@@ -104,7 +104,7 @@ const s = StyleSheet.create({
   stampBottom: { bottom: -2 },
   meta: { alignItems: "center", gap: space.s8, alignSelf: "stretch" },
   datePill: { paddingHorizontal: space.s8, paddingVertical: 2, borderRadius: 6, borderCurve: "continuous" },
-  dateText: { fontFamily: font.medium, fontSize: 12, lineHeight: 16, color: color.obsidian, fontVariant: ["tabular-nums"] },
-  place: { fontFamily: font.medium, fontSize: 12, lineHeight: 16, textAlign: "center", color: color.obsidian },
+  dateText: { fontFamily: font.medium, fontSize: 12, letterSpacing: track(12), lineHeight: 16, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  place: { fontFamily: font.medium, fontSize: 12, letterSpacing: track(12), lineHeight: 16, textAlign: "center", color: color.obsidian },
   body: { ...type.fieldValue, color: color.charcoal },
 });

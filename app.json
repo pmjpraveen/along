@@ -43,7 +43,14 @@
           }
         }
       ],
-      "@react-native-community/datetimepicker"
+      "@react-native-community/datetimepicker",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "along listens only while you tap the mic, to turn what you say into text.",
+          "speechRecognitionPermission": "along uses speech recognition to turn what you say into text."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

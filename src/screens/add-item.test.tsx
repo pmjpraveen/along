@@ -110,3 +110,20 @@ test("a place picked from the suggestions shows its map snippet, and the field l
   expect(mockCreate.mock.calls[0][0].location).toEqual({ text: "Baga Beach", url: null, place: { lat: 15.55, lng: 73.75, name: "Baga Beach" } });
   jest.useRealTimers();
 });
+
+test("US-03 the mic asks for permission, then starts listening for the message", async () => {
+  const { ExpoSpeechRecognitionModule } = jest.requireMock("expo-speech-recognition");
+  await render(<AddItem />);
+  await fireEvent.press(screen.getByRole("button", { name: "Dictate message" }));
+  await waitFor(() => expect(ExpoSpeechRecognitionModule.start).toHaveBeenCalledWith(expect.objectContaining({ interimResults: true })));
+});
+
+test("US-03 a refused microphone permission says how to allow it and starts nothing", async () => {
+  const { ExpoSpeechRecognitionModule } = jest.requireMock("expo-speech-recognition");
+  ExpoSpeechRecognitionModule.start.mockClear();
+  ExpoSpeechRecognitionModule.requestPermissionsAsync = async () => ({ granted: false });
+  await render(<AddItem />);
+  await fireEvent.press(screen.getByRole("button", { name: "Dictate message" }));
+  expect(await screen.findByText(/Allow the microphone/)).toBeTruthy();
+  expect(ExpoSpeechRecognitionModule.start).not.toHaveBeenCalled();
+});

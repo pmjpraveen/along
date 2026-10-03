@@ -3,7 +3,7 @@ import { ChevronLeft, ChevronRight } from "../icons";
 import { StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
 import { addMonths, dayLabel, isoOf, monthGrid, monthsFrom, monthTitle, nextRange, parseIso, Range, isWeekendColumn, rangeRole, WEEKDAYS, Ym } from "../domain/calendar";
-import { color, font, radius, shadow, space, type } from "../theme/tokens";
+import { color, font, radius, shadow, space, type, track } from "../theme/tokens";
 
 type Props = {
   value: string;                      // selected ISO date, or "" for none
@@ -110,7 +110,7 @@ const s = StyleSheet.create({
   row: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: space.s24, paddingVertical: 3 },
   cell: { width: 36, height: 36, alignItems: "center", justifyContent: "center", borderRadius: radius.xLarge , borderCurve: "continuous"},
   weekday: { ...type.buttonLarge, color: color.obsidian, fontVariant: ["tabular-nums"] },
-  weekend: { ...type.body, fontSize: 16, lineHeight: 24, letterSpacing: -0.08, color: color.charcoal, fontVariant: ["tabular-nums"] },
+  weekend: { ...type.body, fontSize: 16, lineHeight: 24, letterSpacing: track(16), color: color.charcoal, fontVariant: ["tabular-nums"] },
   selected: { backgroundColor: color.dateFill },
   selectedText: { color: color.paper },
   blocked: { opacity: 0.3 },

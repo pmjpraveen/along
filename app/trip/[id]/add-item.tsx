@@ -1,7 +1,8 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { toast } from "../../../src/stores/toast";
 import { haptic } from "../../../src/haptics";
-import { X } from "../../../src/icons";
+import { Mic, Square, X } from "../../../src/icons";
+import { useDictation } from "../../../src/hooks/useDictation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
@@ -31,6 +32,7 @@ export default function AddItem() {
   const [days, setDays] = useState<string[]>([]);
   const [time, setTime] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const dictation = useDictation(message, (t) => setMessage(t.slice(0, 500)));
   const [errors, setErrors] = useState<{ title?: string; day?: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -112,7 +114,14 @@ export default function AddItem() {
           <FieldLabel>Time</FieldLabel>
           <TimeField label="Time" value={time} onChange={setTime} />
         </View>
-        <TextField label="Message" placeholder="Notes for the group, e.g. Bring sunscreen" value={message} onChangeText={setMessage} multiline maxLength={500} autoCapitalize="sentences" style={{ minHeight: 140 }} />
+        <View style={s.field}>
+          <TextField label="Message" placeholder="Notes for the group, e.g. Bring sunscreen" value={message} onChangeText={setMessage} multiline maxLength={500} autoCapitalize="sentences" style={{ minHeight: 140, paddingRight: 64 }}
+            status={dictation.error ? "error" : undefined} message={dictation.error ?? undefined} />
+          {dictation.available && <Pressable accessibilityRole="button" accessibilityLabel={dictation.listening ? "Stop dictating" : "Dictate message"} accessibilityState={{ selected: dictation.listening }}
+            onPress={() => { haptic.tap(); dictation.toggle(); }} style={[s.mic, dictation.listening && s.micOn]}>
+            {dictation.listening ? <Square size={18} color={color.paper} strokeWidth={2} /> : <Mic size={20} color={color.iconInk} strokeWidth={1.75} />}
+          </Pressable>}
+        </View>
         {formError && <Alert variant="negative">{formError}</Alert>}
       </ScrollView>
       <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
@@ -131,5 +140,7 @@ const s = StyleSheet.create({
   chipScroll: { flexGrow: 0 },
   chips: { gap: space.s8 },
   field: { gap: space.s8 },
+  mic: { position: "absolute", right: space.s8, top: 36, width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
+  micOn: { backgroundColor: color.brandBlack },
   footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },
 });

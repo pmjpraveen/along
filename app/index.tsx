@@ -20,7 +20,7 @@ import { formatRange, ongoingFirst } from "../src/domain/trip";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
 import { useMyNotificationsRealtime } from "../src/hooks/useTripRealtime";
 import { useSession } from "../src/stores/session";
-import { color, font, radius, space, type } from "../src/theme/tokens";
+import { color, font, radius, space, type, track } from "../src/theme/tokens";
 
 const PHASE: Record<TripCard["phase"], string> = { draft: "Draft", upcoming: "Upcoming", active: "Ongoing", completed: "Completed", archived: "Archived" };
 const PHASE_BADGE: Record<TripCard["phase"], BadgeVariant> = { draft: "info", upcoming: "info", active: "neutral", completed: "info", archived: "info" };
@@ -143,7 +143,7 @@ const s = StyleSheet.create({
   top: { flexDirection: "row", alignItems: "center", gap: space.s8, marginBottom: space.s8 },
   greeting: { flex: 1 },
   hi: { ...type.fieldMessage, color: color.obsidian },
-  name: { ...type.sheetTitle, fontSize: 20, lineHeight: 26, letterSpacing: -0.3, color: color.obsidian },
+  name: { ...type.sheetTitle, fontSize: 20, lineHeight: 26, letterSpacing: track(20), color: color.obsidian },
   round: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper, borderWidth: 1, borderColor: color.borderNeutral, alignItems: "center", justifyContent: "center" },
   roundSmall: { width: 32, height: 32, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper, borderWidth: 1, borderColor: color.borderNeutral, alignItems: "center", justifyContent: "center" },
   dot: { position: "absolute", top: 8, right: 10, width: 9, height: 9, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.alarmRed },
@@ -153,15 +153,15 @@ const s = StyleSheet.create({
   badge: { position: "absolute", bottom: space.s12, left: space.s12, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper },
   meta: { alignItems: "center", gap: space.s8 },
   datePill: { paddingHorizontal: space.s8, paddingVertical: 2, borderRadius: 6, borderCurve: "continuous", backgroundColor: color.neutralSolid },
-  dateText: { fontFamily: font.medium, fontSize: 12, lineHeight: 16, color: color.charcoal, fontVariant: ["tabular-nums"] },
-  place: { fontFamily: font.medium, fontSize: 12, lineHeight: 16, textAlign: "center", color: color.obsidian },
+  dateText: { fontFamily: font.medium, fontSize: 12, letterSpacing: track(12), lineHeight: 16, color: color.charcoal, fontVariant: ["tabular-nums"] },
+  place: { fontFamily: font.medium, fontSize: 12, letterSpacing: track(12), lineHeight: 16, textAlign: "center", color: color.obsidian },
   footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: space.s20, paddingTop: space.s48 },
   blurStep: { position: "absolute", left: 0, right: 0, bottom: 0 },
   gap: { gap: space.s8 },
   contentEmpty: { flexGrow: 1 },
   empty: { flex: 1, alignItems: "center", justifyContent: "center", gap: space.s8 },
   emptyImage: { width: 150, height: 150, marginBottom: space.s4 },
-  emptyTitle: { ...type.sheetTitle, fontSize: 24, lineHeight: 30, letterSpacing: -0.4, textAlign: "center", color: color.obsidian },
+  emptyTitle: { ...type.sheetTitle, fontSize: 24, lineHeight: 30, letterSpacing: track(24), textAlign: "center", color: color.obsidian },
   emptyBody: { ...type.fieldValue, textAlign: "center", color: color.slate },
   emptyAction: { alignSelf: "stretch", marginTop: space.s16, gap: space.s12 },
 });

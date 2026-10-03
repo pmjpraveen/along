@@ -74,19 +74,22 @@ export const shadow = {
 // Only Light 300, Regular 400 and Medium 500 are used; the display moments use Medium.
 export const font = { light: "GeistSans-Light", regular: "GeistSans-Regular", medium: "GeistSans-Medium" } as const;
 
+// Every size is set 2% tighter than its natural width (letterSpacing is in points, so 2% of the font size). Stamps and all-caps hero text track wider on purpose.
+export const track = (fontSize: number) => Math.round(-0.02 * fontSize * 100) / 100;
+
 export const type = {
   // Button labels (Figma "Body large bold" / "Body default bold"). The design system uses Inter SemiBold; Geist Medium is the closest weight we ship.
-  buttonLarge: { fontFamily: font.medium, fontSize: 16, lineHeight: 24, letterSpacing: 0.08 },
+  buttonLarge: { fontFamily: font.medium, fontSize: 16, lineHeight: 24, letterSpacing: track(16) },
   // Input fields (Figma "Body default bold" label, "Body large" value, "Body default" message).
-  fieldLabel: { fontFamily: font.medium, fontSize: 14, lineHeight: 22, letterSpacing: 0.175 },
-  fieldValue: { fontFamily: font.regular, fontSize: 16, lineHeight: 24, letterSpacing: -0.08 },
-  fieldMessage: { fontFamily: font.regular, fontSize: 14, lineHeight: 22, letterSpacing: 0.14 },
-  sheetTitle: { fontFamily: font.medium, fontSize: 28, lineHeight: 32, letterSpacing: -0.56 },
-  buttonSmall: { fontFamily: font.medium, fontSize: 14, lineHeight: 22, letterSpacing: 0.175 },
-  body: { fontFamily: font.regular, fontSize: 18, lineHeight: 26, letterSpacing: -0.09 },
-  label: { fontFamily: font.medium, fontSize: 16, lineHeight: 20 },
-  pageTitle: { fontFamily: font.medium, fontSize: 32, lineHeight: 38, letterSpacing: -0.8 },   // the title at the top of every page
-  display: { fontFamily: font.medium, fontSize: 56, lineHeight: 54, letterSpacing: -1.96 },
+  fieldLabel: { fontFamily: font.medium, fontSize: 14, lineHeight: 22, letterSpacing: track(14) },
+  fieldValue: { fontFamily: font.regular, fontSize: 16, lineHeight: 24, letterSpacing: track(16) },
+  fieldMessage: { fontFamily: font.regular, fontSize: 14, lineHeight: 22, letterSpacing: track(14) },
+  sheetTitle: { fontFamily: font.medium, fontSize: 28, lineHeight: 32, letterSpacing: track(28) },
+  buttonSmall: { fontFamily: font.medium, fontSize: 14, lineHeight: 22, letterSpacing: track(14) },
+  body: { fontFamily: font.regular, fontSize: 18, lineHeight: 26, letterSpacing: track(18) },
+  label: { fontFamily: font.medium, fontSize: 16, lineHeight: 20, letterSpacing: track(16) },
+  pageTitle: { fontFamily: font.medium, fontSize: 32, lineHeight: 38, letterSpacing: track(32) },   // the title at the top of every page
+  display: { fontFamily: font.medium, fontSize: 56, lineHeight: 54, letterSpacing: track(56) },
 } as const;
 
 // The darker pill behind a trip's dates: the trip's card colour darkened about 10%.

@@ -11,9 +11,9 @@ jest.mock("../api/members", () => ({ listMembers: async () => ({ ok: true, membe
 jest.mock("../api/invites", () => ({ createInviteLink: jest.fn() }));
 jest.mock("../api/trips", () => ({ loadTripSettings: jest.fn(), loadTripStatus: async () => ({ ok: true, status: "published", completedAt: null, name: "Goa", destination: "Goa", coverUrl: null, cardColor: 0 }) }));
 jest.mock("../components/DateField", () => ({
-  DateField: ({ label, onChange }: { label: string; onChange: (d: string) => void }) => {
+  DateField: ({ label, onChange, min, max }: { label: string; onChange: (d: string) => void; min?: string; max?: string }) => {
     const { Pressable, Text } = require("react-native");
-    return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => onChange("2026-12-04")}><Text>pick</Text></Pressable>;
+    return <Pressable accessibilityRole="button" accessibilityLabel={label} onPress={() => onChange("2026-12-04")}><Text>{`pick ${min}..${max}`}</Text></Pressable>;
   },
 }));
 jest.mock("../components/MapPreview", () => ({
@@ -37,6 +37,19 @@ test("3.4 plain text location displays exactly as typed with no map preview", as
   await render(<Itinerary />);
   expect(await screen.findByText("Fish Curry Place, Goa")).toBeTruthy();
   expect(screen.queryByText("MAP PREVIEW")).toBeNull();
+});
+
+test("3.4 the message written when adding a plan shows on its card", async () => {
+  load({ description: "Bring sunscreen" });
+  await render(<Itinerary />);
+  expect(await screen.findByText("Bring sunscreen")).toBeTruthy();
+});
+
+test("3.5 the day picker for moving a plan only offers the trip's own days", async () => {
+  load({});
+  await render(<Itinerary />);
+  await fireEvent.press(await screen.findByRole("button", { name: "Options for Lunch" }));
+  expect(await screen.findByText("pick 2026-12-01..2026-12-05")).toBeTruthy();
 });
 
 test("3.3 an item with resolved coordinates shows the map preview", async () => {

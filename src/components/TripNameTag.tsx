@@ -1,11 +1,11 @@
 import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { color, font, space } from "../theme/tokens";
+import { color, font, space, track } from "../theme/tokens";
 
 const R = 8;
 // Home uses the regular size; the Completed trips cards use the smaller one from their design.
-const REGULAR = { padX: 12, padY: 4, text: { fontSize: 17, lineHeight: 24 } } as const;
-const SMALL = { padX: 8, padY: 3, text: { fontSize: 15, lineHeight: 20 } } as const;
+const REGULAR = { padX: 12, padY: 4, text: { fontSize: 17, lineHeight: 24, letterSpacing: track(17) } } as const;
+const SMALL = { padX: 8, padY: 3, text: { fontSize: 15, lineHeight: 20, letterSpacing: track(15) } } as const;
 
 // A trip's name on a dark tag (at most two lines; a longer name ends in an ellipsis), tilted by `tilt` degrees (the grid tilts the left column one way and the right the other). When the name is too long for one line it wraps, and the black follows the words as one merged shape: each line's
 // band hugs its text and touches the next, and only the corners that stick out are rounded. Lines are measured with a hidden copy of the text.
@@ -39,7 +39,7 @@ export function TripNameTag({ name, maxWidth, tilt, small }: { name: string; max
 const s = StyleSheet.create({
   wrap: { alignItems: "center" },
   tag: { maxWidth: "100%", borderCurve: "continuous", backgroundColor: color.brandBlack },
-  text: { fontFamily: font.medium, letterSpacing: -0.1, textAlign: "center", color: color.paper },
+  text: { fontFamily: font.medium, textAlign: "center", color: color.paper },
   shrink: { flexShrink: 1 },
   measure: { position: "absolute", opacity: 0 },
 });

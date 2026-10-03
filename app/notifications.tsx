@@ -16,7 +16,7 @@ import { clock12, groupByDayHeading } from "../src/domain/feed";
 import { describeParts, Notification, notificationActor, routeFor } from "../src/domain/notifications";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
 import { useMyNotificationsRealtime } from "../src/hooks/useTripRealtime";
-import { color, radius, space, type } from "../src/theme/tokens";
+import { color, radius, space, type, track } from "../src/theme/tokens";
 
 // The in-app notification centre, laid out like a trip's History: newest first under a heading per day. It works without push: push only
 // adds a nudge on top of what is listed here. What to be told about is chosen in Profile, under Settings.
@@ -85,7 +85,7 @@ const s = StyleSheet.create({
   scroll: { flex: 1 },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
-  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian },
+  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: track(30), color: color.obsidian },
   gap: { gap: space.s8 },
   dayRow: { flexDirection: "row", alignItems: "center", gap: space.s16, marginTop: space.s8, marginBottom: space.s8 },
   day: { ...type.fieldMessage, color: color.slate },

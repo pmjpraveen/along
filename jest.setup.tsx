@@ -12,6 +12,12 @@ jest.mock("react-native-maps", () => {
   return { __esModule: true, default: ({ children }: { children?: unknown }) => <View>{children as never}</View>, Marker: () => null };
 });
 
+// Speech recognition is native.
+jest.mock("expo-speech-recognition", () => ({
+  ExpoSpeechRecognitionModule: { start: jest.fn(), stop: jest.fn(), requestPermissionsAsync: async () => ({ granted: true }) },
+  useSpeechRecognitionEvent: () => {},
+}));
+
 // Haptics are native.
 jest.mock("expo-haptics", () => ({
   impactAsync: () => Promise.resolve(), selectionAsync: () => Promise.resolve(), notificationAsync: () => Promise.resolve(),

@@ -9,7 +9,7 @@ import { acceptInvite, claimGuestProfile, InvitePreview, previewInvite } from ".
 import { PrimaryButton, TextButton } from "../../src/components/Buttons";
 import { CARD_COLORS, formatRange } from "../../src/domain/trip";
 import { useSession } from "../../src/stores/session";
-import { color, font, mix, radius, space, type, pillOn } from "../../src/theme/tokens";
+import { color, font, mix, radius, space, type, pillOn, track } from "../../src/theme/tokens";
 
 // Signed-out visitors keep the token and go through sign-in; Home sends them back here. The trip preview is story 2.4.
 export default function Join() {
@@ -93,7 +93,7 @@ const s = StyleSheet.create({
   gap: { gap: space.s8 },
   card: { alignItems: "center", gap: space.s8, padding: space.s24, borderRadius: radius.sheet, borderCurve: "continuous" },
   datePill: { paddingHorizontal: space.s8, paddingVertical: 2, borderRadius: 6, borderCurve: "continuous" },
-  dateText: { fontFamily: font.medium, fontSize: 12, lineHeight: 16, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  dateText: { fontFamily: font.medium, fontSize: 12, letterSpacing: track(12), lineHeight: 16, color: color.obsidian, fontVariant: ["tabular-nums"] },
   place: { ...type.fieldValue, color: color.brandBlack },
   note: { ...type.fieldMessage, color: color.charcoal, textAlign: "center" },
   body: { ...type.fieldValue, color: color.charcoal },

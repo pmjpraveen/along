@@ -26,7 +26,7 @@ import { haptic } from "../../../src/haptics";
 import { toast } from "../../../src/stores/toast";
 import { formatMinor } from "../../../src/domain/money";
 import { CARD_COLORS, formatRange } from "../../../src/domain/trip";
-import { color, font, mix, radius, space, type, pillOn } from "../../../src/theme/tokens";
+import { color, font, mix, radius, space, type, pillOn, track } from "../../../src/theme/tokens";
 
 // A finished trip at a glance: where and when, who came, what was planned, what was spent, what is still to settle, and the way into its
 // memories, balances and expenses. Read-only, and it works for any trip status.
@@ -171,7 +171,7 @@ const s = StyleSheet.create({
   title: { alignItems: "center", gap: space.s8 },
   cover: { width: 104 },
   datePill: { paddingHorizontal: space.s8, paddingVertical: 2, borderRadius: 6, borderCurve: "continuous" },
-  dateText: { fontFamily: font.medium, fontSize: 12, lineHeight: 16, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  dateText: { fontFamily: font.medium, fontSize: 12, letterSpacing: track(12), lineHeight: 16, color: color.obsidian, fontVariant: ["tabular-nums"] },
   placeText: { ...type.fieldValue, color: color.brandBlack },
   badge: { alignSelf: "center" },
   place: { flexDirection: "row", alignItems: "center", gap: space.s4 },
@@ -179,7 +179,7 @@ const s = StyleSheet.create({
   body: { ...type.fieldValue, color: color.charcoal },
   total: { gap: space.s4, padding: space.s20, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
   label: { ...type.fieldValue, color: color.charcoal },
-  big: { ...type.display, fontSize: 40, lineHeight: 46, letterSpacing: -1, color: color.brandBlack, fontVariant: ["tabular-nums"] },
+  big: { ...type.display, fontSize: 40, lineHeight: 46, letterSpacing: track(40), color: color.brandBlack, fontVariant: ["tabular-nums"] },
   line: { height: 1, backgroundColor: color.borderNeutral, marginVertical: space.s8 },
   list: { borderRadius: radius.sheet, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, overflow: "hidden" },
   hair: { height: 1, backgroundColor: color.borderNeutral, marginHorizontal: space.s16 },

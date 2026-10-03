@@ -4,7 +4,7 @@ import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
 import { FoundPlace } from "../domain/places";
 import { usePlaceSearch } from "../hooks/usePlaceSearch";
-import { color, radius, space, type } from "../theme/tokens";
+import { color, radius, space, type, track } from "../theme/tokens";
 import { FieldMessage, TextField } from "./TextField";
 
 type Props = {
@@ -59,5 +59,5 @@ const s = StyleSheet.create({
   text: { flex: 1 },
   title: { ...type.label, color: color.obsidian },
   sub: { ...type.fieldMessage, color: color.slate },
-  credit: { ...type.fieldMessage, fontSize: 11, lineHeight: 16, textAlign: "right", color: color.slate, paddingHorizontal: space.s12, paddingBottom: space.s8 },
+  credit: { ...type.fieldMessage, fontSize: 11, letterSpacing: track(11), lineHeight: 16, textAlign: "right", color: color.slate, paddingHorizontal: space.s12, paddingBottom: space.s8 },
 });

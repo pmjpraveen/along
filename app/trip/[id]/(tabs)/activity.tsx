@@ -16,7 +16,7 @@ import { TextButton } from "../../../../src/components/Buttons";
 import { clock12, describeEvent, describeParts, groupByDayHeading, isNew } from "../../../../src/domain/feed";
 import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
 import { useTripRealtime } from "../../../../src/hooks/useTripRealtime";
-import { color, font, radius, space, type } from "../../../../src/theme/tokens";
+import { color, font, radius, space, type, track } from "../../../../src/theme/tokens";
 
 // What changed in this trip, newest first, under a heading per day: joins, plans added, new expenses. Entries since the last visit are
 // marked New.
@@ -96,7 +96,7 @@ const s = StyleSheet.create({
   scroll: { flex: 1 },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
-  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.obsidian },
+  heading: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: track(30), color: color.obsidian },
   gap: { gap: space.s8 },
   dayRow: { flexDirection: "row", alignItems: "center", gap: space.s16, marginTop: space.s8, marginBottom: space.s8 },
   day: { ...type.fieldMessage, color: color.slate },

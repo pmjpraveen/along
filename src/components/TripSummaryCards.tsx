@@ -1,7 +1,7 @@
 import { StyleSheet, Text, View } from "react-native";
 import type { TripSummary } from "../api/passport";
 import { formatMinor } from "../domain/money";
-import { color, radius, space, type } from "../theme/tokens";
+import { color, radius, space, type, track } from "../theme/tokens";
 
 // The trip at a glance: who came, what was planned, what was spent, what is still to settle. Shared by the trip summary
 // and the confirmation before completing a trip, so both say the same thing.
@@ -26,7 +26,7 @@ export function TripSummaryCards({ summary }: { summary: TripSummary }) {
 
 const s = StyleSheet.create({
   card: { gap: space.s4, padding: space.s20, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
-  big: { ...type.display, fontSize: 28, lineHeight: 34, letterSpacing: -0.7, color: color.brandBlack, fontVariant: ["tabular-nums"] },
+  big: { ...type.display, fontSize: 28, lineHeight: 34, letterSpacing: track(28), color: color.brandBlack, fontVariant: ["tabular-nums"] },
   label: { ...type.fieldValue, color: color.charcoal },
   body: { ...type.fieldValue, color: color.charcoal },
 });

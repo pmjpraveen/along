@@ -14,7 +14,7 @@ import { createSettlement } from "../../../src/api/settlements";
 import { AmountInput } from "../../../src/components/AmountInput";
 import { PrimaryButton, TextButton } from "../../../src/components/Buttons";
 import { formatMinor, parseMinor } from "../../../src/domain/money";
-import { color, radius, space, type } from "../../../src/theme/tokens";
+import { color, radius, space, type, track } from "../../../src/theme/tokens";
 
 // Confirm who pays whom and how much (pre-filled from the suggested payment), then record it. Records are permanent.
 export default function Settle() {
@@ -93,7 +93,7 @@ const s = StyleSheet.create({
   pair: { flexDirection: "row", gap: space.s8 },
   gap: { gap: space.s8 },
   card: { gap: space.s12, padding: space.s20, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
-  who: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.brandBlack },
+  who: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: track(30), color: color.brandBlack },
   label: { ...type.label, color: color.charcoal },
   body: { ...type.body, color: color.slate },
   error: { ...type.label, color: color.alarmRed },

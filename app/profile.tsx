@@ -29,7 +29,7 @@ import { TextButton } from "../src/components/Buttons";
 import { PassportShine } from "../src/components/PassportShine";
 import { compactDate, longDate } from "../src/domain/trip";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
-import { color, font, mix, radius, space, type, passportArt } from "../src/theme/tokens";
+import { color, font, mix, radius, space, type, passportArt, track } from "../src/theme/tokens";
 
 // Me: a big avatar, my details, and my Travel Passport (a count of trips and one stamp per completed trip, most recent first).
 // Tap a stamp to reopen that trip's summary.
@@ -260,7 +260,7 @@ const s = StyleSheet.create({
   avatar: { alignItems: "center", gap: space.s12, marginVertical: space.s8 },
   camera: { position: "absolute", right: -2, bottom: -2, width: 28, height: 28, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.paper, borderWidth: 1, borderColor: color.borderNeutral, alignItems: "center", justifyContent: "center" },
   card: { padding: space.s20, gap: space.s12, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
-  name: { ...type.sheetTitle, fontSize: 26, lineHeight: 32, letterSpacing: -0.4, color: color.obsidian, textAlign: "center" },
+  name: { ...type.sheetTitle, fontSize: 26, lineHeight: 32, letterSpacing: track(26), color: color.obsidian, textAlign: "center" },
   line: { height: 1, backgroundColor: color.borderNeutral },
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s16, minHeight: 32 },
   label: { ...type.fieldValue, color: color.charcoal },
@@ -270,7 +270,7 @@ const s = StyleSheet.create({
   inset: { flex: 1, paddingHorizontal: space.s12, paddingTop: space.s8 },
   page: { flex: 1, paddingHorizontal: space.s16, paddingTop: space.s16, borderTopLeftRadius: radius.tile, borderTopRightRadius: radius.tile, borderCurve: "continuous", backgroundColor: color.paper, gap: 2 },
   mrz: { fontFamily: font.regular, fontSize: 11, lineHeight: 16, letterSpacing: 0, color: color.charcoal },
-  count: { ...type.display, fontSize: 56, lineHeight: 60, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  count: { ...type.display, fontSize: 56, letterSpacing: track(56), lineHeight: 60, color: color.obsidian, fontVariant: ["tabular-nums"] },
   // The passport card is inset 8 on the left, right and bottom, so its cover sits close to the edge; the title keeps the usual text margin.
   passportCard: { paddingTop: space.s20, paddingHorizontal: space.s8, paddingBottom: space.s8, backgroundColor: "transparent", overflow: "hidden" },
   passportTitleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: space.s12 },
@@ -283,7 +283,7 @@ const s = StyleSheet.create({
   list: { borderRadius: radius.sheet, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, overflow: "hidden" },
   hair: { height: 1, backgroundColor: color.borderNeutral, marginHorizontal: space.s16 },
   icon: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
-  flag: { fontSize: 28, width: 40, textAlign: "center" },
+  flag: { fontSize: 28, letterSpacing: track(28), width: 40, textAlign: "center" },
   body: { ...type.fieldValue, color: color.charcoal },
   version: { ...type.fieldMessage, color: color.charcoal, textAlign: "center", marginTop: space.s8 },
 });
