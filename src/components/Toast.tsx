@@ -4,7 +4,7 @@ import { Pressable } from "./Pressable";
 import Animated, { cancelAnimation, useAnimatedStyle, useSharedValue, withDelay, withSequence, withTiming } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useToast } from "../stores/toast";
-import { EASE_OUT, motion } from "../theme/motion";
+import { EASE_IN_OUT, EASE_OUT, motion } from "../theme/motion";
 import { color, radius, space, type } from "../theme/tokens";
 
 // Confirms a save quietly: a pill that fades in above the tab bar, holds, and fades out. Opacity only, announced to screen readers,
@@ -19,7 +19,7 @@ export function Toast() {
     AccessibilityInfo.announceForAccessibility(message);
     cancelAnimation(o);
     const hold = action ? motion.toastActionMs : motion.toastMs;
-    o.value = withSequence(withTiming(1, { duration: motion.fadeMs, easing: EASE_OUT }), withDelay(hold, withTiming(0, { duration: motion.fadeMs })));
+    o.value = withSequence(withTiming(1, { duration: motion.fadeMs, easing: EASE_OUT }), withDelay(hold, withTiming(0, { duration: motion.fadeMs, easing: EASE_IN_OUT })));
     setLive(!!action);
     const id = setTimeout(() => setLive(false), motion.fadeMs + hold);
     return () => clearTimeout(id);

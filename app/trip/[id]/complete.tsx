@@ -1,6 +1,10 @@
 import { Alert } from "../../../src/components/Alert";
 import { PinnedBack, useContentTop, useScrollY } from "../../../src/components/PinnedBack";
-import Animated from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import { useReducedMotion } from "../../../src/hooks/useReducedMotion";
+import { shapeFor } from "../../../src/domain/stampShape";
+import { Stamp as StampArt } from "../../../src/components/Stamp";
+import { EASE_OUT, motion } from "../../../src/theme/motion";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { haptic } from "../../../src/haptics";
@@ -16,6 +20,20 @@ import { PrimaryButton, TextButton } from "../../../src/components/Buttons";
 import { TripSummaryCards } from "../../../src/components/TripSummaryCards";
 import { formatRange } from "../../../src/domain/trip";
 import { color, radius, space, type } from "../../../src/theme/tokens";
+
+// The stamp is pressed down onto the page: a touch large and faint, then settled. With Reduce Motion it only fades in.
+function StampAward({ destination, date, tripId }: { destination: string; date: string; tripId: string }) {
+  const reduced = useReducedMotion();   // read here, not in the worklet: the UI thread cannot call plain JS functions
+  const p = useSharedValue(0);
+  useEffect(() => { p.value = withTiming(1, { duration: reduced ? motion.fadeMs : motion.stampMs, easing: EASE_OUT }); }, [p, reduced]);
+  const from = reduced ? 1 : motion.stampFrom;
+  const style = useAnimatedStyle(() => ({ opacity: p.value, transform: [{ scale: from - (from - 1) * p.value }] }));
+  return (
+    <Animated.View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[s.stampAward, style]}>
+      <StampArt compact destination={destination} date={date} kind="arrival" shape={shapeFor(tripId, "arrival")} tilt={-6} />
+    </Animated.View>
+  );
+}
 
 // Review the trip, then confirm. The owner sees who came, what was planned, what was spent and what is still to settle
 // before anything changes; nothing is deleted or locked by completing.
@@ -94,6 +112,7 @@ export default function Complete() {
                 </Text>
               </View>
             )}
+            {done && stamp && s0 && <StampAward destination={stamp.split(",")[0].trim()} date={s0.start_date} tripId={id} />}
             {done && stamp && (
               <View accessible style={s.note}>
                 <View style={s.icon}><Stamp size={20} color={color.iconInk} strokeWidth={2} /></View>
@@ -114,6 +133,7 @@ const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
   round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
+  stampAward: { width: 240, alignSelf: "center" },
   head: { gap: space.s8, marginTop: space.s8, marginBottom: space.s8 },
   heading: { ...type.pageTitle, color: color.brandBlack },
   meta: { flexDirection: "row", alignItems: "center", gap: space.s8 },

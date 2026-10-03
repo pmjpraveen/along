@@ -1,12 +1,15 @@
 import { Alert } from "../../../src/components/Alert";
 import { PinnedBack, useContentTop, useScrollY } from "../../../src/components/PinnedBack";
-import Animated from "react-native-reanimated";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
+import { haptic } from "../../../src/haptics";
+import { useReducedMotion } from "../../../src/hooks/useReducedMotion";
+import { motion } from "../../../src/theme/motion";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { Avatar } from "../../../src/components/Avatar";
-import { ChevronLeft } from "../../../src/icons";
+import { Check, ChevronLeft } from "../../../src/icons";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,6 +18,24 @@ import { Button, TextButton } from "../../../src/components/Buttons";
 import { describeBalance, describeTransfer, simplifyDebts } from "../../../src/domain/balance";
 import { useTripRealtime } from "../../../src/hooks/useTripRealtime";
 import { color, font, radius, space, type } from "../../../src/theme/tokens";
+
+// Shown once the last payment is recorded: a check settles in with a gentle spring and a fade (just a fade with Reduce Motion).
+function AllSettled() {
+  const reduced = useReducedMotion();   // read here, not in the worklet: the UI thread cannot call plain JS functions
+  const p = useSharedValue(0);
+  useEffect(() => {
+    haptic.success();
+    p.value = reduced ? withTiming(1, { duration: motion.fadeMs }) : withSpring(1, motion.settle);
+  }, [p, reduced]);
+  const from = reduced ? 1 : motion.settledFrom;
+  const badge = useAnimatedStyle(() => ({ opacity: Math.min(1, p.value * 2), transform: [{ scale: from + (1 - from) * p.value }] }));
+  return (
+    <View accessible accessibilityLiveRegion="polite" style={s.settled}>
+      <Animated.View style={[s.badge, badge]}><Check size={20} color={color.iconInk} strokeWidth={2} /></Animated.View>
+      <Text maxFontSizeMultiplier={1.4} style={s.line}>Everyone's settled up</Text>
+    </View>
+  );
+}
 
 // My net balance first, then the fewest payments that settle the group, then everyone else's net position. All derived on read.
 export default function Balances() {
@@ -41,6 +62,15 @@ export default function Balances() {
   };
   // Payments that involve me come first.
   const ordered = [...transfers].sort((a, b) => Number(b.from === mine?.memberId || b.to === mine?.memberId) - Number(a.from === mine?.memberId || a.to === mine?.memberId));
+
+  // Only a trip that had payments to make and now has none earns the moment; a trip that never owed anything does not.
+  const hadDebts = useRef(false);
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!state?.ok) return;
+    if (ordered.length > 0) { hadDebts.current = true; setSettled(false); }
+    else if (hadDebts.current) setSettled(true);
+  }, [state, ordered.length]);
 
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
   const nameOf = (m: string) => state?.ok ? state.rows.find((r) => r.memberId === m)?.name ?? "Someone" : "Someone";
@@ -82,6 +112,8 @@ export default function Balances() {
               </>
             )}
 
+            {settled && <AllSettled />}
+
             <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Everyone</Text>
             <View>
               {others.map((r) => (
@@ -111,6 +143,8 @@ const s = StyleSheet.create({
   mineText: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: -0.9, color: color.brandBlack, fontVariant: ["tabular-nums"] },
   section: { ...type.fieldValue, fontFamily: font.medium, color: color.obsidian, marginTop: space.s16 },
   row: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 72, paddingVertical: space.s12, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
+  settled: { flexDirection: "row", alignItems: "center", gap: space.s16, paddingVertical: space.s8 },
+  badge: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
   body: { ...type.fieldValue, color: color.charcoal },
   line: { ...type.fieldValue, flex: 1, color: color.obsidian, fontVariant: ["tabular-nums"] },
 });

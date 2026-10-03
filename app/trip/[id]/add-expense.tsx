@@ -7,6 +7,9 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { ChevronRight, X } from "../../../src/icons";
 import { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import Animated, { FadeIn } from "react-native-reanimated";
+import { reduceMotionNow } from "../../../src/motionPref";
+import { motion } from "../../../src/theme/motion";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createExpense, ExpenseDetail, FormData, loadExpense, loadExpenseAccess, loadExpenseForm, updateExpense } from "../../../src/api/expenses";
@@ -29,6 +32,9 @@ const METHODS: { key: Method; label: string }[] = [
 
 // Add and edit share this screen: with an expenseId it loads that expense, and Save sends the version it opened.
 // Default path: amount + title + Save. Payer is me and everyone in the trip shares equally; the payer picker is opt-in, the participant picker is opt-in too.
+// The amount fields for Custom, Percentage and Shares fade in rather than appearing at once (opacity only; none with Reduce Motion).
+const fade = () => (reduceMotionNow() ? undefined : FadeIn.duration(motion.fadeMs));
+
 export default function AddExpense() {
   const { id, expenseId } = useLocalSearchParams<{ id: string; expenseId?: string }>();
   const { top, bottom } = useSafeAreaInsets();
@@ -196,19 +202,25 @@ export default function AddExpense() {
                   spoken={`${!splitWith || splitWith.length === form.members.length ? "Everyone" : `${splitWith.length} of ${form.members.length} people`}. Change who's in`} onPress={() => setPickingSplit(true)} />
               )}
               {method === "custom" && form && (
+                <Animated.View key="custom" entering={fade()}>
                 <CustomAmounts people={form.members.filter((m) => splitWith?.includes(m.id)).map((m) => ({ id: m.id, name: m.isMe ? "You" : m.name }))}
                   values={customText} onChange={(id, t) => setCustomText({ ...customText, [id]: t })}
                   exponent={form.currency.exponent} symbol={symbol} remaining={customStatus} ok={customLeft === 0} />
+                </Animated.View>
               )}
               {method === "percentage" && form && (
+                <Animated.View key="percentage" entering={fade()}>
                 <CustomAmounts noun="Percent" people={form.members.filter((m) => splitWith?.includes(m.id)).map((m) => ({ id: m.id, name: m.isMe ? "You" : m.name }))}
                   values={percentText} onChange={(id, t) => setPercentText({ ...percentText, [id]: t })}
                   exponent={2} symbol="%" remaining={percentStatus} ok={percentStatus === "Totals 100%"} />
+                </Animated.View>
               )}
               {method === "shares" && form && (
+                <Animated.View key="shares" entering={fade()}>
                 <CustomAmounts noun="Shares" people={form.members.filter((m) => splitWith?.includes(m.id)).map((m) => ({ id: m.id, name: m.isMe ? "You" : m.name }))}
                   values={sharesText} onChange={(id, t) => setSharesText({ ...sharesText, [id]: t })} hints={shareAmounts}
                   exponent={0} symbol="×" remaining={shareTotal > 0 ? `${shareTotal} ${shareTotal === 1 ? "share" : "shares"} in total` : null} ok={shareTotal > 0} />
+                </Animated.View>
               )}
               {method === "equal" && shares && form && <Text maxFontSizeMultiplier={1.4} style={s.hint}>{shareSummary(shares, form.currency.exponent, form.currency.code)}</Text>}
               {/* Done closes the people list; it sits after the amounts, at the bottom of the split. */}

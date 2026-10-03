@@ -11,6 +11,11 @@ export const motion = {
   toastMs: 2200,      // how long a confirmation stays
   toastActionMs: 5000,   // how long one with an Undo stays, so there is time to reach it
   pressMs: 120,
+  stampMs: 500,       // the passport stamp pressing down on the completion screen, the one moment allowed past 400 ms
+  stampFrom: 1.12,    // the stamp starts this much larger and settles to 1
+  settledFrom: 0.9,   // the "everyone's settled" badge grows from this scale
+  bannerRise: 8,      // the offline strip rises this many points while fading in
+  bannerMs: 200,      // the offline strip sliding in
   splash: { holdMs: 100, turnMs: 450, zoomMs: 600 },   // the opening animation: rest, stripes swing upright, zoom all the way into the logo and straight into the app
   shine: { sweepMs: 1600, restMs: 3200, buttonSweepMs: 900, buttonRestMs: 500 },   // the glint across the passport cover and the Start new trip button
   skeleton: { pulseMs: 800, low: 0.45 },   // a loading placeholder breathes between full and this opacity, on the UI thread
