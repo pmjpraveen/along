@@ -12,6 +12,7 @@ import { Alert } from "../../../src/components/Alert";
 import { Button } from "../../../src/components/Buttons";
 import { MapPreview } from "../../../src/components/MapPreview";
 import { PlaceSearchField } from "../../../src/components/PlaceSearchField";
+import { Skeleton } from "../../../src/components/Skeleton";
 import { Chip } from "../../../src/components/Chip";
 import { FieldLabel, FieldMessage, TextField } from "../../../src/components/TextField";
 import { TimeField } from "../../../src/components/TimeField";
@@ -39,8 +40,10 @@ export default function AddItem() {
   const resolve = async () => setResolved(location.trim() ? await resolveLocation(location) : null);
 
   // The trip's days become the chips (with any chosen day that lies outside them, so it is never lost).
+  const [daysLoaded, setDaysLoaded] = useState(false);
   useEffect(() => {
     loadItinerary(id).then((r) => {
+      setDaysLoaded(true);
       if (!r.ok) return;
       const list = tripDays(r.trip.start_date, r.trip.end_date, [...r.items.map((i) => i.day_date), ...(day ? [day] : [])]);
       setDays(list);
@@ -71,6 +74,7 @@ export default function AddItem() {
         </Pressable>
         <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Plan details</Text>
 
+        {!daysLoaded && <Skeleton label="Loading days" variant="dayChips" />}
         {numbered.length > 0 && (
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipScroll} contentContainerStyle={s.chips} accessibilityRole="tablist" accessibilityLabel="Day">
             {numbered.map(({ d, n }) => {

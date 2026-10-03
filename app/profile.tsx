@@ -204,11 +204,13 @@ export default function Profile() {
         </SheetRows>
       </BottomSheet>
       <BottomSheet visible={sheet === "currency"} onClose={() => setSheet(null)} title="Preferred currency" tall header={<SearchField placeholder="Search currencies" value={query} onChangeText={setQuery} />} body="New trips start with this currency. Trips you already have keep theirs.">
+        {currencies.length === 0 ? <Skeleton label="Loading currencies" variant="switchRows" /> : (
         <SheetRows>
           {currencies.filter((c) => matches(deferred, c.name, c.code)).map((c) => (
             <ListItem key={c.code} title={c.name} subtitle={c.code} trailing="radio" checked={c.code === me?.currency} onPress={() => pickCurrency(c.code)} />
           ))}
         </SheetRows>
+        )}
       </BottomSheet>
       <BottomSheet visible={sheet === "notifications"} onClose={() => setSheet(null)} title="Notifications" body="Choose what you want to hear about.">
         {prefs === null ? <Skeleton label="Loading your choices" variant="switchRows" /> : (

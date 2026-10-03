@@ -54,9 +54,11 @@ export default function Trip() {
   const [menu, setMenu] = useState(false);
   const isOwner = members.some((m) => m.isMe && m.role === "owner");
 
+  // The header appears once its colour, cover and people have all come back, so it does not pop in piece by piece.
+  const [extras, setExtras] = useState({ look: false, people: false });
   const load = useCallback(async () => {
-    loadTripStatus(id).then((t) => { if (t.ok) { setCover(t.coverUrl); setBand(CARD_COLORS[t.cardColor] ?? null); } });
-    listMembers(id).then((r) => { if (r.ok) setMembers(r.members); });
+    loadTripStatus(id).then((t) => { if (t.ok) { setCover(t.coverUrl); setBand(CARD_COLORS[t.cardColor] ?? null); } }).finally(() => setExtras((e) => ({ ...e, look: true })));
+    listMembers(id).then((r) => { if (r.ok) setMembers(r.members); }).finally(() => setExtras((e) => ({ ...e, people: true })));
     setState(await loadItinerary(id));
   }, [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
@@ -111,7 +113,7 @@ export default function Trip() {
     <Animated.ScrollView style={s.scroll} contentInsetAdjustmentBehavior="never" automaticallyAdjustContentInsets={false} refreshControl={pull} scrollEventThrottle={16} onScroll={onScroll}
       contentContainerStyle={{ paddingBottom: bottom + space.s64 + space.s32 }}>
       <View style={[s.head, { paddingTop: navH + space.s4 }, band ? { backgroundColor: band, paddingBottom: space.s24 } : null]}>
-        {state === null ? (
+        {state === null || (state.ok && !(extras.look && extras.people)) ? (
           <Skeleton label="Loading itinerary" variant="tripHeader" />
         ) : !ok ? (
           <View style={s.gap}>

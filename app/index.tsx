@@ -66,7 +66,7 @@ export default function Home() {
         <View style={s.top}>
           <View style={s.greeting}>
             <Text maxFontSizeMultiplier={1.3} style={s.hi}>Hi,</Text>
-            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.name}>{firstName || "traveller"}</Text>
+            {me ? <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.name}>{firstName || "traveller"}</Text> : <Skeleton label="Loading your name" variant="greetingName" />}
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"} onPress={() => router.push("/notifications")} style={s.round}>
             <Bell size={20} color={color.brandBlack} strokeWidth={1.75} />

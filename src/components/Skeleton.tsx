@@ -14,7 +14,7 @@ export type SkeletonVariant =
   | "tiles" | "cards" | "visa" | "inviteCard"    // Home's two-column grid, History's wide cards, the passport page, the join preview
   | "tripHeader" | "planRows"                    // the trip page's header (cover, date, name) and its day chips with plans
   | "balances" | "expenses" | "expenseDetail" | "summaryBody" | "summaryCards"
-  | "profileName" | "profileCard"                 // the profile page's name, and its email and member-since card
+  | "dayChips" | "greetingName" | "profileName" | "profileCard"                 // the profile page's name, and its email and member-since card
   | "fields" | "memories" | "cover" | "block";
 
 const Bar = ({ w, h = 16, style }: { w: ViewStyle["width"]; h?: number; style?: ViewStyle }) => <View style={[s.fill, { width: w, height: h, borderRadius: radius.pill }, style]} />;
@@ -78,6 +78,10 @@ export function Skeleton({ label, variant = "list" }: { label: string; variant?:
       case "memories":   // a photo (4:3), a line of text and the byline
         return n(2).map((i) => (
           <Box key={i} r={radius.sheet} style={s.memory}><Box h={Math.round((width - space.s40 - space.s16) * 0.75)} r={radius.card} style={s.photo} /><Bar w="70%" style={on} /><Row><Box h={24} r={radius.pill} style={{ ...on, width: 24 }} /><Bar w="40%" h={12} style={on} /></Row></Box>));
+      case "dayChips":
+        return <Row>{n(4).map((i) => <Box key={i} h={32} r={radius.pill} style={{ width: 96 }} />)}</Row>;
+      case "greetingName":
+        return <Bar w={140} h={22} style={{ marginTop: 2 }} />;
       case "profileName":
         return <View style={s.center}><Bar w="55%" h={32} style={{ borderRadius: 8 }} /></View>;
       case "profileCard":

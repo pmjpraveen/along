@@ -42,10 +42,11 @@ export default function Summary() {
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const isOwner = members.some((m) => m.isMe && m.role === "owner");
+  const [extras, setExtras] = useState({ look: false, people: false });   // the header waits for its colour, cover and people, so it does not pop in piece by piece
   const load = useCallback(async () => {
+    loadTripStatus(id).then((t) => { if (t.ok) setLook({ cover: t.coverUrl, band: CARD_COLORS[t.cardColor] ?? null }); }).finally(() => setExtras((e) => ({ ...e, look: true })));
+    listMembers(id).then((r) => { if (r.ok) setMembers(r.members); }).finally(() => setExtras((e) => ({ ...e, people: true })));
     setState(await loadTripSummary(id));
-    loadTripStatus(id).then((t) => { if (t.ok) setLook({ cover: t.coverUrl, band: CARD_COLORS[t.cardColor] ?? null }); });
-    listMembers(id).then((r) => { if (r.ok) setMembers(r.members); });
   }, [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
   const pull = usePullToRefresh(load);
@@ -84,7 +85,7 @@ export default function Summary() {
                 shape={shapeFor(sm.trip_id, kind)} ink={placement(sm.trip_id, k).ink} tilt={k === 0 ? -8 : 6} />
             </View>
           ))}
-          {state === null ? (
+          {state === null || (state.ok && !(extras.look && extras.people)) ? (
             <Skeleton label="Loading trip summary" variant="tripHeader" />
           ) : !sm ? (
             <View style={s.gap}>
