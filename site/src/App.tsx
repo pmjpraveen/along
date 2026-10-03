@@ -223,6 +223,7 @@ export function App() {
           <nav className="flex flex-wrap gap-5">
             <a href="/privacy" className="hover:text-ink">Privacy policy</a>
             <a href="/terms" className="hover:text-ink">Terms of use</a>
+            <a href="/delete-account" className="hover:text-ink">Delete account</a>
             <a href="mailto:alongtravel.app@gmail.com" className="hover:text-ink">alongtravel.app@gmail.com</a>
           </nav>
         </div>

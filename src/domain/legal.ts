@@ -44,7 +44,7 @@ export const PRIVACY: LegalDoc = {
     ] },
     { heading: "Your choices and rights", body: [
       "You can change your picture, country, preferred currency and notification choices in Profile, and edit or remove what you added to a trip. You can log out at any time.",
-      "You can delete your account from Profile. Your name then shows as Deleted user, your sign-in, picture and push tokens are removed, and your notifications are erased. Expenses and payments you shared stay on the trip. If you own a trip that other people are still on, finish or hand it over first, because a trip needs an owner.",
+      "You can delete your account from Profile (step by step, and what happens to your data, at getalong.xyz/delete-account). Your name then shows as Deleted user, your sign-in, picture and push tokens are removed, and your notifications are erased. Expenses and payments you shared stay on the trip. If you own a trip that other people are still on, finish or hand it over first, because a trip needs an owner.",
       "You can ask us for a copy of your information, to correct it, or to delete it, and you can object to how we use it. Depending on where you live, the law may give you more rights, such as complaining to your data protection authority. We will answer within a reasonable time.",
     ] },
     { heading: "Security", body: [
