@@ -33,6 +33,14 @@ export function AnimatedSplash({ ready, onShown, onDone }: { ready: boolean; onS
   const stackH = band * STRIPES.length;
   const stackW = Math.hypot(w, h) * 1.2;   // long enough to cover the screen at any angle
 
+  // The stripes start moving the moment the splash is on screen, so the native splash hands over to motion at once and nothing sits waiting for
+  // the session and fonts. Only the final zoom into the app waits for the app to be ready (usually it already is by then).
+  const t0 = useRef(Date.now());
+  useEffect(() => {
+    if (reduced) return;
+    breath.value = withTiming(1, { duration: motion.splash.holdMs + motion.splash.turnMs + 300, easing: EASE_OUT });
+    turn.value = withDelay(motion.splash.holdMs, withTiming(1, { duration: motion.splash.turnMs, easing: EASE_IN_OUT }));
+  }, [reduced, breath, turn]);
   useEffect(() => {
     if (!ready || started.current) return;
     started.current = true;
@@ -40,10 +48,10 @@ export function AnimatedSplash({ ready, onShown, onDone }: { ready: boolean; onS
       fade.value = withDelay(motion.splash.holdMs, withTiming(0, { duration: motion.fadeMs }, (done) => { if (done) scheduleOnRN(onDone); }));
       return;
     }
-    breath.value = withTiming(1, { duration: motion.splash.holdMs + motion.splash.turnMs + 300, easing: EASE_OUT });
-    turn.value = withDelay(motion.splash.holdMs, withTiming(1, { duration: motion.splash.turnMs, easing: EASE_IN_OUT }));
-    zoom.value = withDelay(motion.splash.holdMs + motion.splash.turnMs - 150, withTiming(1, { duration: motion.splash.zoomMs, easing: EASE_ZOOM_THROUGH }, (done) => { if (done) scheduleOnRN(onDone); }));
-  }, [ready, reduced, fade, turn, zoom, onDone]);
+    const zoomAt = motion.splash.holdMs + motion.splash.turnMs - 150;
+    const wait = Math.max(0, zoomAt - (Date.now() - t0.current));
+    zoom.value = withDelay(wait, withTiming(1, { duration: motion.splash.zoomMs, easing: EASE_ZOOM_THROUGH }, (done) => { if (done) scheduleOnRN(onDone); }));
+  }, [ready, reduced, fade, zoom, onDone]);
 
   const skip = () => { cancelAnimation(breath); cancelAnimation(turn); cancelAnimation(zoom); cancelAnimation(fade); onDone(); };
 
