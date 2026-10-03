@@ -6,6 +6,7 @@ import { spring } from "../domain/gesture";
 export const motion = {
   sheet: spring(0.3, 0.8),
   settle: spring(0.4, 1),
+  exitMs: 200,        // a sheet or dialog leaving on its own (close, scrim tap) is quicker than it arrived, so the screen is usable again at once
   fadeMs: 150,        // a quick crossfade when content swaps in place (another day, a confirmation)
   toastMs: 2200,      // how long a confirmation stays
   toastActionMs: 5000,   // how long one with an Undo stays, so there is time to reach it

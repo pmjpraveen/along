@@ -2,11 +2,11 @@ import { ReactNode, useEffect, useRef, useState } from "react";
 import { scheduleOnRN } from "react-native-worklets";
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
-import Animated, { cancelAnimation, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import Animated, { cancelAnimation, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { X } from "../icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { rubberband, shouldDismiss } from "../domain/gesture";
-import { motion } from "../theme/motion";
+import { EASE_IN_OUT, motion } from "../theme/motion";
 import { color, radius, space, type } from "../theme/tokens";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { Button, ButtonType } from "./Buttons";
@@ -17,7 +17,7 @@ export function SheetRows({ children }: { children: ReactNode }) {
   return <View style={s.rows}>{children}</View>;
 }
 
-const PRESENT_MS = 450;   // longer than iOS takes to present a transparent Modal
+const PRESENT_MS = 300;   // longer than iOS takes to present a transparent Modal
 
 type Props = {
   visible: boolean;
@@ -57,6 +57,8 @@ export function BottomSheet({ visible, onClose, onClosed, title, body, children,
   const settle = (to: number, velocity: number, done?: () => void) => {
     if (reduceMotion) { y.value = to; done?.(); return; }
     // Opening and closing on their own settle without bounce; only a flick (a velocity) earns the bouncier sheet spring.
+    // Leaving on its own is a short ease-out instead of a spring (a spring takes a long time to settle); a flick still carries its velocity.
+    if (to !== 0 && velocity === 0) { y.value = withTiming(to, { duration: motion.exitMs, easing: EASE_IN_OUT }, (finished) => { if (finished && done) scheduleOnRN(done); }); return; }
     y.value = withSpring(to, { ...(velocity === 0 ? motion.settle : motion.sheet), velocity, overshootClamping: to !== 0 }, (finished) => { if (finished && done) scheduleOnRN(done); });
   };
 

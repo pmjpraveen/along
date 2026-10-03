@@ -1,11 +1,11 @@
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { Modal, Platform, Pressable, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
-import Animated, { cancelAnimation, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
+import Animated, { cancelAnimation, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import { rubberband, shouldDismiss } from "../domain/gesture";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { motion } from "../theme/motion";
+import { EASE_IN_OUT, motion } from "../theme/motion";
 import { X } from "../icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { color, radius, space, type } from "../theme/tokens";
@@ -23,7 +23,7 @@ type Props = {
 // subheader and body, content, then one primary button. Scrim tap, close button and the back gesture all dismiss it.
 // It moves like the sheets do: a spring from the bottom edge that can be grabbed at any moment (drag it down to dismiss, with a flick
 // carrying on out), a scrim that fades with its position, and with Reduce Motion a plain fade.
-const PRESENT_MS = 450;   // iOS can hang if a Modal is hidden mid-presentation, so an early close waits out the rest
+const PRESENT_MS = 300;   // iOS can hang if a Modal is hidden mid-presentation, so an early close waits out the rest
 export function Dialog({ visible, onClose, title, subheader, body, children, actionLabel, onAction, actionBusy, actionType = "primary", secondaryLabel, onSecondary }: Props) {
   const { bottom } = useSafeAreaInsets();
   const reduceMotion = useReducedMotion();
@@ -40,6 +40,8 @@ export function Dialog({ visible, onClose, title, subheader, body, children, act
 
   const settle = (to: number, velocity: number, done?: () => void) => {
     if (reduceMotion) { y.value = to; done?.(); return; }
+    // Leaving on its own is a short ease-out instead of a spring (a spring takes a long time to settle); a flick still carries its velocity.
+    if (to !== 0 && velocity === 0) { y.value = withTiming(to, { duration: motion.exitMs, easing: EASE_IN_OUT }, (finished) => { if (finished && done) scheduleOnRN(done); }); return; }
     y.value = withSpring(to, { ...(velocity === 0 ? motion.settle : motion.sheet), velocity, overshootClamping: to !== 0 }, (finished) => { if (finished && done) scheduleOnRN(done); });
   };
   useEffect(() => {
