@@ -11,6 +11,7 @@ export const motion = {
   pressMs: 120,
   splash: { holdMs: 700, turnMs: 950, zoomMs: 1300 },   // the opening animation: rest, stripes swing upright, zoom all the way into the logo and straight into the app
   shine: { sweepMs: 1600, restMs: 3200, buttonSweepMs: 900, buttonRestMs: 500 },   // the glint across the passport cover and the Start new trip button
+  skeleton: { pulseMs: 800, low: 0.45 },   // a loading placeholder breathes between full and this opacity, on the UI thread
   pressScale: 0.98,   // a touch dips the control to this size at once
 } as const;
 

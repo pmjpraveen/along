@@ -1,9 +1,14 @@
 import { ReactNode } from "react";
+import { useEffect } from "react";
 import { StyleSheet, useWindowDimensions, View, ViewStyle } from "react-native";
+import Animated, { cancelAnimation, useAnimatedStyle, useSharedValue, withRepeat, withTiming } from "react-native-reanimated";
+import { useReducedMotion } from "../hooks/useReducedMotion";
+import { EASE_IN_OUT, motion } from "../theme/motion";
 import { color, radius, space } from "../theme/tokens";
 
 // What each screen shows while its data loads: grey shapes laid out like the real content (same sizes, same order, same spacing), so the page
-// does not jump when the data lands. Static on purpose (no looping motion); the label tells screen readers what is loading.
+// does not jump when the data lands. The whole placeholder breathes (opacity only, on the UI thread) so it reads as loading; with Reduce Motion
+// on it holds still. The label tells screen readers what is loading.
 export type SkeletonVariant =
   | "list" | "switchRows" | "guestRows"          // avatar rows, plain rows, avatar rows with a button
   | "tiles" | "cards" | "visa" | "inviteCard"    // Home's two-column grid, History's wide cards, the passport page, the join preview
@@ -20,6 +25,14 @@ const Row = ({ children, style }: { children: ReactNode; style?: ViewStyle }) =>
 
 export function Skeleton({ label, variant = "list" }: { label: string; variant?: SkeletonVariant }) {
   const { width } = useWindowDimensions();
+  const reduced = useReducedMotion();
+  const pulse = useSharedValue(1);
+  useEffect(() => {
+    if (reduced) { pulse.value = 1; return; }
+    pulse.value = withRepeat(withTiming(motion.skeleton.low, { duration: motion.skeleton.pulseMs, easing: EASE_IN_OUT }), -1, true);
+    return () => cancelAnimation(pulse);
+  }, [reduced, pulse]);
+  const breathe = useAnimatedStyle(() => ({ opacity: pulse.value }));
   const tile = (width - space.s20 * 2 - space.s12) / 2;   // Home's two columns
   const n = (count: number) => Array.from({ length: count }, (_, i) => i);
 
@@ -72,7 +85,7 @@ export function Skeleton({ label, variant = "list" }: { label: string; variant?:
     }
   })();
 
-  return <View accessible accessibilityLabel={label} accessibilityRole="progressbar" accessibilityState={{ busy: true }} style={s.wrap}>{body}</View>;
+  return <Animated.View accessible accessibilityLabel={label} accessibilityRole="progressbar" accessibilityState={{ busy: true }} style={[s.wrap, breathe]}>{body}</Animated.View>;
 }
 
 const s = StyleSheet.create({
