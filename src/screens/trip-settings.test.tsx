@@ -75,13 +75,18 @@ test("a stale version is refused with a message, and nothing else is sent", asyn
   expect(mockColor).not.toHaveBeenCalled();
 });
 
-test("choosing a currency sends it once and reloads", async () => {
+test("choosing a currency turns Save changes on, and saving sends it once and reloads", async () => {
   mockCurrency.mockResolvedValue({ ok: true });
   await render(<TripSettings />);
   await fireEvent.press(await screen.findByRole("button", { name: /^Trip currency/ }));
   await fireEvent.press(await screen.findByRole("radio", { name: /US dollar/ }));
+  expect(mockCurrency).not.toHaveBeenCalled();
+  expect((await screen.findByRole("button", { name: /Trip currency/ })).props.accessibilityLabel).toMatch(/USD/);
+  await fireEvent.press(screen.getByRole("button", { name: "Save changes" }));
   await waitFor(() => expect(mockCurrency).toHaveBeenCalledWith("t1", "USD"));
   expect(mockCurrency).toHaveBeenCalledTimes(1);
+  expect(mockDetails).not.toHaveBeenCalled();
+  await waitFor(() => expect(mockLoad).toHaveBeenCalledTimes(2));
 });
 
 test("once expenses exist the currency is locked and cannot be opened", async () => {
@@ -97,6 +102,7 @@ test("a rejected currency change shows the reason", async () => {
   await render(<TripSettings />);
   await fireEvent.press(await screen.findByRole("button", { name: /^Trip currency/ }));
   await fireEvent.press(await screen.findByRole("radio", { name: /US dollar/ }));
+  await fireEvent.press(screen.getByRole("button", { name: "Save changes" }));
   expect(await screen.findByRole("alert")).toHaveTextContent(/can't change once expenses/);
 });
 

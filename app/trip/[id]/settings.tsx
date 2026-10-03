@@ -21,7 +21,7 @@ import { FieldLabel, TextField } from "../../../src/components/TextField";
 import { CARD_COLORS, formatDate, formatRange } from "../../../src/domain/trip";
 import { color, radius, space, type } from "../../../src/theme/tokens";
 
-type Draft = { name: string; destination: string; description: string; cardColor: number };
+type Draft = { name: string; destination: string; description: string; cardColor: number; start: string; end: string; currency: string };
 
 // Trip details, for the trip's owner, as one plain list of fields: the name, a comment, the card colour, the dates, the currency (until money is
 // involved) and where the trip is going. Text and colour are edited in place and saved together with the one Save button, which only
@@ -43,7 +43,7 @@ export default function TripSettings() {
   const load = useCallback(async () => {
     const r = await loadTripSettings(id);
     setState(r);
-    if (r.ok) setForm({ name: r.settings.name, destination: r.settings.destination, description: r.settings.description, cardColor: r.settings.cardColor });
+    if (r.ok) setForm({ name: r.settings.name, destination: r.settings.destination, description: r.settings.description, cardColor: r.settings.cardColor, start: r.settings.start, end: r.settings.end, currency: r.settings.currency });
   }, [id]);
   useFocusEffect(useCallback(() => { load(); }, [load]));
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
@@ -54,7 +54,9 @@ export default function TripSettings() {
   const editable = owner && !over;
   const textDirty = !!x && !!form && (form.name !== x.name || form.destination !== x.destination || form.description !== x.description);
   const colorDirty = !!x && !!form && form.cardColor !== x.cardColor;
-  const dirty = textDirty || colorDirty;
+  const datesDirty = !!x && !!form && (form.start !== x.start || form.end !== x.end);
+  const currencyDirty = !!x && !!form && form.currency !== x.currency;
+  const dirty = textDirty || colorDirty || datesDirty || currencyDirty;
 
   const save = async () => {
     if (!x || !form || saving || !dirty) return;
@@ -66,28 +68,25 @@ export default function TripSettings() {
     // The text goes first: it checks the version that was read, and picking a colour changes the version.
     const text = textDirty ? await updateTripDetails(id, x.version, { name: form.name, destination: form.destination, description: form.description }) : { ok: true as const };
     const colour = text.ok && colorDirty ? await setTripCardColor(id, form.cardColor) : { ok: true as const };
+    const when = text.ok && colour.ok && datesDirty ? await updateTripDates(id, form.start, form.end) : { ok: true as const };
+    const money = text.ok && colour.ok && when.ok && currencyDirty ? await setTripCurrency(id, form.currency) : { ok: true as const };
     setSaving(false);
-    if (!text.ok) { haptic.warn(); setError(text.message); return; }
-    if (!colour.ok) { haptic.warn(); setError(colour.message); await load(); return; }
+    const failed = [text, colour, when, money].find((r) => !r.ok);
+    if (failed && !failed.ok) { haptic.warn(); setError(failed.message); if (text.ok) await load(); return; }
     haptic.success();
     toast("Trip updated");
     await load();
   };
-  const dates = async () => {
+  // Dates and currency are chosen in a sheet and kept in the draft with everything else; Save changes sends them.
+  const dates = () => {
     setDatesOpen(false);
-    setError(null);
-    const res = await updateTripDates(id, range.start, range.end);
-    if (!res.ok) setError(res.message);
-    await load();
+    if (form) setForm({ ...form, start: range.start, end: range.end });
   };
-  const currency = async (code: string) => {
+  const currency = (code: string) => {
     setPicker(false);
-    setError(null);
-    const res = await setTripCurrency(id, code);
-    if (!res.ok) setError(res.message);
-    await load();
+    if (form) setForm({ ...form, currency: code });
   };
-  const currencyName = x?.currencies.find((c) => c.code === x.currency)?.name;
+  const currencyName = x?.currencies.find((c) => c.code === form?.currency)?.name;
   const canPickCurrency = editable && !x?.hasMoney;
 
   return (
@@ -134,18 +133,18 @@ export default function TripSettings() {
 
             <View style={s.field}>
               <FieldLabel disabled={!editable}>Trip dates</FieldLabel>
-              <Pressable accessibilityRole="button" accessibilityLabel={`Trip dates, ${formatDate(x.start)} to ${formatDate(x.end)}`} disabled={!editable}
-                onPress={() => { setRange({ start: x.start, end: x.end }); setDatesOpen(true); }} style={[s.pick, !editable && s.pickOff]}>
-                <Text maxFontSizeMultiplier={1.4} style={[s.pickValue, s.pickFlex]}>{formatRange(x.start, x.end)}</Text>
+              <Pressable accessibilityRole="button" accessibilityLabel={`Trip dates, ${formatDate(form?.start ?? x.start)} to ${formatDate(form?.end ?? x.end)}`} disabled={!editable}
+                onPress={() => { setRange({ start: form?.start ?? x.start, end: form?.end ?? x.end }); setDatesOpen(true); }} style={[s.pick, !editable && s.pickOff]}>
+                <Text maxFontSizeMultiplier={1.4} style={[s.pickValue, s.pickFlex]}>{formatRange(form?.start ?? x.start, form?.end ?? x.end)}</Text>
                 {editable && <ChevronRight size={20} color={color.brandBlack} strokeWidth={1.75} />}
               </Pressable>
             </View>
 
             <View style={s.field}>
               <FieldLabel disabled={!canPickCurrency}>Trip currency</FieldLabel>
-              <Pressable accessibilityRole="button" accessibilityLabel={`Trip currency, ${x.currency}${x.hasMoney ? ", locked once expenses are added" : ""}`} disabled={!canPickCurrency}
+              <Pressable accessibilityRole="button" accessibilityLabel={`Trip currency, ${form?.currency ?? x.currency}${x.hasMoney ? ", locked once expenses are added" : ""}`} disabled={!canPickCurrency}
                 onPress={() => { setQuery(""); setPicker(true); }} style={[s.pick, !canPickCurrency && s.pickOff]}>
-                <Text maxFontSizeMultiplier={1.4} style={[s.pickValue, s.pickFlex]}>{currencyName ? `${x.currency} · ${currencyName}` : x.currency}</Text>
+                <Text maxFontSizeMultiplier={1.4} style={[s.pickValue, s.pickFlex]}>{currencyName ? `${form?.currency ?? x.currency} · ${currencyName}` : (form?.currency ?? x.currency)}</Text>
                 {canPickCurrency && <ChevronRight size={20} color={color.brandBlack} strokeWidth={1.75} />}
               </Pressable>
               {x.hasMoney && <Text maxFontSizeMultiplier={1.4} style={s.hint}>Locked once expenses are added, so amounts always stay in one currency.</Text>}
@@ -166,7 +165,7 @@ export default function TripSettings() {
             <BottomSheet visible={picker} onClose={() => setPicker(false)} title="Currency" tall header={<SearchField placeholder="Search currencies" value={query} onChangeText={setQuery} />} body="Amounts aren't converted, so choose this before adding any expenses.">
               <SheetRows>
                 {x.currencies.filter((c) => matches(deferred, c.name, c.code)).map((c) => (
-                  <ListItem key={c.code} title={c.name} subtitle={c.code} trailing="radio" checked={c.code === x.currency} onPress={() => currency(c.code)} />
+                  <ListItem key={c.code} title={c.name} subtitle={c.code} trailing="radio" checked={c.code === (form?.currency ?? x.currency)} onPress={() => currency(c.code)} />
                 ))}
               </SheetRows>
             </BottomSheet>
