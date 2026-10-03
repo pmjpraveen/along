@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { Skeleton } from "../src/components/Skeleton";
-import { Bell, Camera, ChevronLeft, Coins, ImagePlus, Pencil, FileText, Globe, LogOut, Shield, Trash2 } from "lucide-react-native";
+import { Bell, Camera, ChevronLeft, Coins, ImagePlus, Pencil, FileText, Globe, LogOut, Shield, Trash2 } from "../src/icons";
 
 const GOLD = passportArt.gold;   // the gold used for embossing on a passport cover
 import * as ImagePicker from "expo-image-picker";

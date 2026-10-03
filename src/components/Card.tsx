@@ -1,7 +1,7 @@
 import { ReactNode, useState } from "react";
 import { StyleProp, StyleSheet, View, ViewStyle } from "react-native";
 import { Pressable } from "./Pressable";
-import { Check } from "lucide-react-native";
+import { Check } from "../icons";
 import { color, radius, rowState, space } from "../theme/tokens";
 
 // Figma "Card": neutral wash fill, no border. Pressed darkens the fill; focus and selected add a 2px Forest Ink ring

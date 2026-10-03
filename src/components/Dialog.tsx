@@ -6,7 +6,7 @@ import { scheduleOnRN } from "react-native-worklets";
 import { rubberband, shouldDismiss } from "../domain/gesture";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { motion } from "../theme/motion";
-import { X } from "lucide-react-native";
+import { X } from "../icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { color, radius, space, type } from "../theme/tokens";
 import { Button, ButtonType } from "./Buttons";

@@ -1,7 +1,7 @@
 import { Alert } from "../../../src/components/Alert";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { Avatar } from "../../../src/components/Avatar";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft } from "../../../src/icons";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useState } from "react";

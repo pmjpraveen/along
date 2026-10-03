@@ -1,7 +1,7 @@
 import { ReactNode } from "react";
 import { StyleSheet, Switch, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
-import { Check, ChevronRight, Pencil } from "lucide-react-native";
+import { Check, ChevronRight, Pencil } from "../icons";
 import { color, radius, rowState, space, type } from "../theme/tokens";
 import { haptic } from "../haptics";
 import { Button } from "./Buttons";

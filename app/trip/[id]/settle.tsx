@@ -3,7 +3,7 @@ import { toast } from "../../../src/stores/toast";
 import { haptic } from "../../../src/haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft } from "../../../src/icons";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { Avatar } from "../../../src/components/Avatar";

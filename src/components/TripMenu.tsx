@@ -1,5 +1,5 @@
 import { useRouter } from "expo-router";
-import { Flag, Settings, Share2, Trash2 } from "lucide-react-native";
+import { Flag, Settings, Share2, Trash2 } from "../icons";
 import { useRef, useState } from "react";
 import { Share, StyleSheet, View } from "react-native";
 import { createInviteLink } from "../api/invites";

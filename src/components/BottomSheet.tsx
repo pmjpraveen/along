@@ -3,7 +3,7 @@ import { scheduleOnRN } from "react-native-worklets";
 import { KeyboardAvoidingView, Modal, Platform, Pressable, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
 import Animated, { cancelAnimation, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
-import { X } from "lucide-react-native";
+import { X } from "../icons";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { rubberband, shouldDismiss } from "../domain/gesture";
 import { motion } from "../theme/motion";

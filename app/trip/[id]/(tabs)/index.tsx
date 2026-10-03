@@ -2,7 +2,7 @@ import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
 import { Skeleton } from "../../../../src/components/Skeleton";
 import { Chip } from "../../../../src/components/Chip";
 import { TripMenu } from "../../../../src/components/TripMenu";
-import { ChevronLeft, MapPin, MoreHorizontal, Trash2, Users } from "lucide-react-native";
+import { ChevronLeft, MapPin, MoreHorizontal, Trash2, Users } from "../../../../src/icons";
 import { useCallback, useMemo, useState } from "react";
 import { Linking, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../../../../src/components/Pressable";

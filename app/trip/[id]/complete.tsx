@@ -3,7 +3,7 @@ import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { haptic } from "../../../src/haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { Check, ChevronLeft, Info, MapPin, Stamp } from "lucide-react-native";
+import { Check, ChevronLeft, Info, MapPin, Stamp } from "../../../src/icons";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";

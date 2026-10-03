@@ -1,4 +1,4 @@
-import { MapPin } from "lucide-react-native";
+import { MapPin } from "../icons";
 import { useState } from "react";
 import { ActivityIndicator, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";

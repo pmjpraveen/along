@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Check } from "lucide-react-native";
+import { Check } from "../icons";
 import { Image, StyleSheet, Text, View } from "react-native";
 import { initialsOf } from "../domain/initials";
 import { color, font, radius } from "../theme/tokens";

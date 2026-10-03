@@ -4,7 +4,7 @@ import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Avatar } from "../../../src/components/Avatar";
 import * as ImagePicker from "expo-image-picker";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft } from "lucide-react-native";
+import { ChevronLeft } from "../../../src/icons";
 import { useCallback, useRef, useState } from "react";
 import { Image, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";

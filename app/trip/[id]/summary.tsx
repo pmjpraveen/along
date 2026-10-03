@@ -1,7 +1,7 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
-import { ChevronLeft, ImageIcon, MapPin, Receipt, Scale, Trash2 } from "lucide-react-native";
+import { ChevronLeft, ImageIcon, MapPin, Receipt, Scale, Trash2 } from "../../../src/icons";
 import { useCallback, useState } from "react";
 import { ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";

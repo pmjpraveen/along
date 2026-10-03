@@ -7,7 +7,7 @@ import { Pressable } from "../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { loadMyProfile } from "../src/api/profile";
 import { createTrip, uploadCover } from "../src/api/trips";
-import { Image as ImageIcon, X } from "lucide-react-native";
+import { Image as ImageIcon, X } from "../src/icons";
 import { Button } from "../src/components/Buttons";
 import { PlaceSearchField } from "../src/components/PlaceSearchField";
 import { FieldLabel, FieldMessage, TextField } from "../src/components/TextField";

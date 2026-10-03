@@ -1,6 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
-import { Check } from "lucide-react-native";
+import { Check } from "../icons";
 import type { Member } from "../api/members";
 import { Avatar } from "./Avatar";
 import { Badge } from "./Badge";

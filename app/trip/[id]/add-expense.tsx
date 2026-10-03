@@ -4,7 +4,7 @@ import { toast } from "../../../src/stores/toast";
 import { Chip } from "../../../src/components/Chip";
 import { haptic } from "../../../src/haptics";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronRight, X } from "lucide-react-native";
+import { ChevronRight, X } from "../../../src/icons";
 import { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";

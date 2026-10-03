@@ -1,4 +1,4 @@
-import { Search, X } from "lucide-react-native";
+import { Search, X } from "../icons";
 import { useState } from "react";
 import { StyleSheet, TextInput, View } from "react-native";
 import { color, radius, space, type } from "../theme/tokens";

@@ -1,6 +1,6 @@
 import { Redirect, useFocusEffect, useRouter } from "expo-router";
 import { Skeleton } from "../src/components/Skeleton";
-import { Bell, History } from "lucide-react-native";
+import { Bell, History } from "../src/icons";
 import { useCallback, useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../src/components/Pressable";

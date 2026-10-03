@@ -1,7 +1,7 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { toast } from "../../../src/stores/toast";
 import { haptic } from "../../../src/haptics";
-import { X } from "lucide-react-native";
+import { X } from "../../../src/icons";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";

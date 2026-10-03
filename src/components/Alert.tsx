@@ -2,7 +2,7 @@ import { ReactNode, useEffect, useState } from "react";
 
 import { StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
-import { CircleAlert, CircleCheck, CircleX, Info, X } from "lucide-react-native";
+import { CircleAlert, CircleCheck, CircleX, Info, X } from "../icons";
 import { color, radius, space, type } from "../theme/tokens";
 import { Button } from "./Buttons";
 

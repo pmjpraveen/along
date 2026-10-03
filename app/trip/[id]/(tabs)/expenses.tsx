@@ -1,6 +1,6 @@
 import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
 import { Skeleton } from "../../../../src/components/Skeleton";
-import { Backpack, ChevronLeft } from "lucide-react-native";
+import { Backpack, ChevronLeft } from "../../../../src/icons";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../../src/components/Pressable";

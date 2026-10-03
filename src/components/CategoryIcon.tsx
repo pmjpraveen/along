@@ -1,4 +1,4 @@
-import { BedDouble, Car, Compass, Fuel, Receipt, ShoppingBag, ShoppingBasket, Ticket, Utensils } from "lucide-react-native";
+import { BedDouble, Car, Compass, Fuel, Receipt, ShoppingBag, ShoppingBasket, Ticket, Utensils } from "../icons";
 import { StyleSheet, View } from "react-native";
 import { color, radius } from "../theme/tokens";
 

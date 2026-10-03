@@ -1,4 +1,4 @@
-import { CalendarPlus, Plus, Receipt, UserPlus } from "lucide-react-native";
+import { CalendarPlus, Plus, Receipt, UserPlus } from "../icons";
 import { useRef } from "react";
 import { create } from "zustand";
 import { Platform, StyleSheet, View } from "react-native";
