@@ -47,7 +47,7 @@ export default function Notifications() {
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
-        <Text accessibilityRole="header" style={s.heading}>Notifications</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Notifications</Text>
 
         {state === null ? (
           <Skeleton label="Loading notifications" />
@@ -57,13 +57,13 @@ export default function Notifications() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : state.items.length === 0 ? (
-          <Text style={s.body}>All quiet for now. Joins, plan changes, expenses and payments from your trips will show up here.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>All quiet for now. Joins, plan changes, expenses and payments from your trips will show up here.</Text>
         ) : (
           days.map((d) => (
             <View key={d.heading}>
               <View style={s.dayRow} accessibilityRole="header" accessible accessibilityLabel={d.heading}>
                 <View style={s.rule} />
-                <Text style={s.day}>{d.heading}</Text>
+                <Text maxFontSizeMultiplier={1.3} style={s.day}>{d.heading}</Text>
                 <View style={s.rule} />
               </View>
               {d.events.map((n) => (

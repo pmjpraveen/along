@@ -15,7 +15,7 @@ import { placement } from "../src/domain/passportPage";
 import { shapeFor } from "../src/domain/stampShape";
 import { CARD_COLORS, formatRange } from "../src/domain/trip";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
-import { color, font, mix, radius, shadow, space, type, textScale } from "../src/theme/tokens";
+import { color, font, mix, radius, shadow, space, type } from "../src/theme/tokens";
 
 // Completed trips, most recent first. Each is a coloured card (six colours handed out in order, oldest first) with its photo peeking over the
 // top edge, the arrival stamp (top right) and departure stamp (bottom left) faint behind the text, the dates, the name on a tilted dark tag and the place. Opens the trip's summary.
@@ -39,7 +39,7 @@ export default function TripHistory() {
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
-        <Text accessibilityRole="header" style={s.heading}>Completed trips</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Completed trips</Text>
         {state === null ? (
           <Skeleton label="Loading your trips" variant="cards" />
         ) : !state.ok ? (
@@ -48,7 +48,7 @@ export default function TripHistory() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : past.length === 0 ? (
-          <Text style={s.body}>No finished trips yet. When you wrap one up, it'll live here.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>No finished trips yet. When you wrap one up, it'll live here.</Text>
         ) : (
           <View style={s.list}>
             {past.map((t) => {
@@ -69,9 +69,9 @@ export default function TripHistory() {
                       </View>
                     ))}
                     <View style={s.meta}>
-                      <View style={[s.datePill, { backgroundColor: mix(bg, "#000000", 0.105) }]}><Text maxFontSizeMultiplier={textScale.dense} style={s.dateText}>{formatRange(t.start_date, t.end_date)}</Text></View>
+                      <View style={[s.datePill, { backgroundColor: mix(bg, "#000000", 0.105) }]}><Text maxFontSizeMultiplier={1.3} style={s.dateText}>{formatRange(t.start_date, t.end_date)}</Text></View>
                       <TripNameTag name={t.name} maxWidth={tile - space.s16 * 2} tilt={-2} />
-                      <Text maxFontSizeMultiplier={textScale.dense} style={s.place}>{t.destination_name}</Text>
+                      <Text maxFontSizeMultiplier={1.3} style={s.place}>{t.destination_name}</Text>
                     </View>
                   </View>
                   </View>

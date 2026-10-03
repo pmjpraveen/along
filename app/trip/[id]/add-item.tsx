@@ -86,7 +86,7 @@ export default function AddItem() {
         <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
           <X size={22} color={color.iconInk} strokeWidth={2} />
         </Pressable>
-        <Text accessibilityRole="header" style={s.heading}>Plan details</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Plan details</Text>
 
         {!daysLoaded && <Skeleton label="Loading days" variant="dayChips" />}
         {numbered.length > 0 && (

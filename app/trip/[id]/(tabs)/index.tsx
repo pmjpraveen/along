@@ -27,7 +27,7 @@ import { CARD_COLORS, formatDate, formatRange } from "../../../../src/domain/tri
 import { mapsOpenUrl, mapsSearchUrl, parseMapsUrl, Place } from "../../../../src/domain/maps";
 import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
 import { TripNameTag } from "../../../../src/components/TripNameTag";
-import { color, font, mix, radius, space, type, textScale } from "../../../../src/theme/tokens";
+import { color, font, mix, radius, space, type } from "../../../../src/theme/tokens";
 
 // The pin for an item: its stored coordinates, or, for items saved before the link could be read, whatever the saved link says.
 const placeOf = (i: Item): Place | null =>
@@ -136,10 +136,10 @@ export default function Trip() {
           <View style={s.title}>
             <View style={s.cover}><TripCover uri={cover} destination={ok.trip.name} ratio={1} ring /></View>
             <View style={[s.datePill, { backgroundColor: band ? mix(band, "#000000", 0.105) : color.neutralSolid }]}>
-              <Text maxFontSizeMultiplier={textScale.dense} style={s.dateText}>{formatRange(ok.trip.start_date, ok.trip.end_date)}</Text>
+              <Text maxFontSizeMultiplier={1.3} style={s.dateText}>{formatRange(ok.trip.start_date, ok.trip.end_date)}</Text>
             </View>
             <View accessibilityRole="header" accessibilityLabel={ok.trip.name}><TripNameTag name={ok.trip.name} maxWidth={width - space.s20 * 2} tilt={-2} /></View>
-            <Text style={s.summary}>
+            <Text maxFontSizeMultiplier={1.4} style={s.summary}>
               {ok.items.length} {ok.items.length === 1 ? "activity" : "activities"} · {days.length} {days.length === 1 ? "day" : "days"}
             </Text>
             {members.length > 0 && <AvatarGroup people={members.map((m) => ({ name: m.display_name, uri: m.avatarUrl, guest: m.membership_type === "guest" }))} size={48} max={4} />}
@@ -154,7 +154,7 @@ export default function Trip() {
         {state === null && <Skeleton label="Loading plans" variant="planRows" />}
         {ok && ok.items.length === 0 && (
           <View style={s.gap}>
-            <Text style={s.text}>No plans yet. Add the first thing your group will do.</Text>
+            <Text maxFontSizeMultiplier={1.4} style={s.text}>No plans yet. Add the first thing your group will do.</Text>
             <PrimaryButton label="Add a plan" onPress={() => add(ok.trip.start_date)} />
           </View>
         )}
@@ -164,14 +164,14 @@ export default function Trip() {
             <Animated.View key={selected} entering={reduced ? undefined : FadeIn.duration(motion.fadeMs)} style={s.dayList}>
             {items.length === 0 ? (
               <View style={s.gap}>
-                <Text style={s.text}>Nothing planned for this day yet.</Text>
+                <Text maxFontSizeMultiplier={1.4} style={s.text}>Nothing planned for this day yet.</Text>
                 <PrimaryButton label="Add a plan" onPress={() => add(selected)} />
               </View>
             ) : (
               items.map((i) => (
                 <View key={i.id} style={s.row}>
                   <View style={s.time}>
-                    <Text style={s.timeText}>{i.start_time ? i.start_time.slice(0, 5) : "Any time"}</Text>
+                    <Text maxFontSizeMultiplier={1.3} style={s.timeText}>{i.start_time ? i.start_time.slice(0, 5) : "Any time"}</Text>
                     <View style={s.tick} />
                   </View>
                   <Pressable accessibilityRole="button" accessibilityLabel={i.title} accessibilityHint="Long press to move to another day"
@@ -179,7 +179,7 @@ export default function Trip() {
                     onLongPress={() => setMoving(i.id)} delayLongPress={350} style={s.card}>
                     <View style={[s.head4, placeOf(i) && s.head4Map, moving === i.id && !placeOf(i) && s.head4Open]}>
                       <View style={s.titleRow}>
-                      <Text style={[s.itemTitle, s.grow]}>{i.title}</Text>
+                      <Text maxFontSizeMultiplier={1.4} style={[s.itemTitle, s.grow]}>{i.title}</Text>
                       <Pressable accessibilityRole="button" accessibilityLabel={`Options for ${i.title}`} accessibilityState={{ expanded: moving === i.id }} hitSlop={space.s8}
                         onPress={() => setMoving(moving === i.id ? null : i.id)} style={s.more}>
                         <MoreHorizontal size={18} color={color.iconInk} strokeWidth={2} />
@@ -190,7 +190,7 @@ export default function Trip() {
                       <Pressable accessibilityRole="link" accessibilityLabel={`Open ${placeLabel(i)} in Maps`} hitSlop={space.s8}
                         onPress={() => Linking.openURL(placeOf(i) ? mapsOpenUrl(placeOf(i)!) : mapsSearchUrl(placeLabel(i)!))} style={s.place}>
                         <MapPin size={18} color={color.slate} strokeWidth={1.75} />
-                        <Text numberOfLines={2} style={s.placeText}>{placeLabel(i)}</Text>
+                        <Text maxFontSizeMultiplier={1.4} numberOfLines={2} style={s.placeText}>{placeLabel(i)}</Text>
                       </Pressable>
                     ) : null}
                     </View>
@@ -224,7 +224,7 @@ export default function Trip() {
     {/* The "Plans" label and the day chips: they travel with the content, then pin under the navigation row. */}
     {hasPlans && (
       <Animated.View onLayout={(e) => setBarH(Math.round(e.nativeEvent.layout.height))} style={[s.bar, barStyle]}>
-        <Text style={s.plans}>Plans</Text>
+        <Text maxFontSizeMultiplier={1.3} style={s.plans}>Plans</Text>
         <ScrollView horizontal contentInsetAdjustmentBehavior="never" automaticallyAdjustContentInsets={false} showsHorizontalScrollIndicator={false} style={s.chipScroll} contentContainerStyle={s.chips} accessibilityRole="tablist" accessibilityLabel="Days">
           {days.map((d, n) => {
             const on = d === selected;

@@ -30,7 +30,7 @@ export function Avatar({ name = "", uri, size = 40, icon, guest = false, selecte
         icon ? s.iconCircle : null, guest && s.guest, selected && s.selected]}>
         {uri ? <Image testID="avatar-photo" accessibilityIgnoresInvertColors source={{ uri }} style={{ width: size, height: size }} />
           : icon ? icon
-          : size >= 24 ? <Text style={[s.initials, { fontSize: Math.round(size * 0.4), lineHeight: Math.round(size * 0.5) }]}>{initialsOf(name)}</Text> : null}
+          : size >= 24 ? <Text maxFontSizeMultiplier={1.2} style={[s.initials, { fontSize: Math.round(size * 0.4), lineHeight: Math.round(size * 0.5) }]}>{initialsOf(name)}</Text> : null}
       </View>
       {badge && (
         <View style={[s.chip, { width: chip, height: chip, borderRadius: chip / 2 , borderCurve: "continuous"}]}>
@@ -63,7 +63,7 @@ export function AvatarGroup({ people, size = 40, max = 3 }: { people: Person[]; 
       {more > 0 && (
         <View style={[s.ring, { borderRadius: size, borderCurve: "continuous", marginLeft: -Math.round(size * 0.2) }]}>
           <View style={[s.circle, { width: size, height: size }]}>
-            <Text style={[s.initials, { fontSize: Math.round(size * 0.4), lineHeight: Math.round(size * 0.5) }]}>+{more}</Text>
+            <Text maxFontSizeMultiplier={1.2} style={[s.initials, { fontSize: Math.round(size * 0.4), lineHeight: Math.round(size * 0.5) }]}>+{more}</Text>
           </View>
         </View>
       )}

@@ -36,12 +36,12 @@ export function PlaceSearchField({ label, placeholder, value, onChangeText, onPi
               style={({ pressed }) => [s.row, i > 0 && s.rule, pressed && s.pressed]}>
               <MapPin size={18} color={color.slate} strokeWidth={1.75} />
               <View style={s.text}>
-                <Text numberOfLines={1} style={s.title}>{p.title}</Text>
-                {!!p.subtitle && <Text numberOfLines={1} style={s.sub}>{p.subtitle}</Text>}
+                <Text maxFontSizeMultiplier={1.4} numberOfLines={1} style={s.title}>{p.title}</Text>
+                {!!p.subtitle && <Text maxFontSizeMultiplier={1.4} numberOfLines={1} style={s.sub}>{p.subtitle}</Text>}
               </View>
             </Pressable>
           ))}
-          <Text style={s.credit}>Search by OpenStreetMap</Text>
+          <Text maxFontSizeMultiplier={1.3} style={s.credit}>Search by OpenStreetMap</Text>
         </View>
       )}
     </View>

@@ -15,7 +15,7 @@ export function SegmentedControl<T extends string>({ options, value, onChange, a
         return (
           <Pressable key={o.value} accessibilityRole="tab" accessibilityState={{ selected: on }} onPress={() => on || (haptic.select(), onChange(o.value))}
             style={[s.item, on && s.on]}>
-            <Text style={[s.label, { fontFamily: on ? font.medium : font.regular }]}>{o.label}</Text>
+            <Text maxFontSizeMultiplier={1.3} style={[s.label, { fontFamily: on ? font.medium : font.regular }]}>{o.label}</Text>
           </Pressable>
         );
       })}

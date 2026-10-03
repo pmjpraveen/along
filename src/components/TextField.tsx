@@ -8,7 +8,7 @@ const ICON: Record<FieldStatus, AlertVariant> = { error: "negative", positive: "
 
 // Label above a field: 14/22 medium Obsidian, or the tertiary grey when the field is disabled.
 export function FieldLabel({ children, disabled }: { children: string; disabled?: boolean }) {
-  return <Text style={[s.label, disabled && s.labelOff]}>{children}</Text>;
+  return <Text maxFontSizeMultiplier={1.4} style={[s.label, disabled && s.labelOff]}>{children}</Text>;
 }
 
 // Message under a field: 14/22 in Charcoal with a status icon for positive and warning, red text with an icon for errors.
@@ -17,7 +17,7 @@ export function FieldMessage({ children, status, disabled }: { children: string;
   return (
     <View accessible={status === "error"} accessibilityRole={status === "error" ? "alert" : undefined} accessibilityLiveRegion={status === "error" ? "assertive" : "polite"} style={s.messageRow}>
       {status && <AlertIcon variant={ICON[status]} size={16} />}
-      <Text style={[s.message, status === "error" && s.messageError, disabled && s.labelOff]}>{children}</Text>
+      <Text maxFontSizeMultiplier={1.4} style={[s.message, status === "error" && s.messageError, disabled && s.labelOff]}>{children}</Text>
     </View>
   );
 }
@@ -38,7 +38,7 @@ export function TextField({ label, message, status, disabled = false, multiline,
       <FieldLabel disabled={disabled}>{label}</FieldLabel>
       <View>
       <TextInput
-        accessibilityLabel={label} editable={!disabled} multiline={multiline} placeholder={ownPlaceholder ? undefined : placeholder} placeholderTextColor={color.pebble}
+        accessibilityLabel={label} editable={!disabled} multiline={multiline} placeholder={ownPlaceholder ? undefined : placeholder} placeholderTextColor={color.pebble} maxFontSizeMultiplier={1.4}
         onFocus={(e) => { setFocused(true); onFocus?.(e); }} onBlur={(e) => { setFocused(false); onBlur?.(e); }}
         style={[
           s.field, thick ? s.thick : s.thin,
@@ -49,7 +49,7 @@ export function TextField({ label, message, status, disabled = false, multiline,
       />
       {ownPlaceholder && (
         <View pointerEvents="none" style={s.placeholderBox} importantForAccessibility="no-hide-descendants" accessibilityElementsHidden>
-          <Text numberOfLines={1} style={s.placeholder}>{placeholder}</Text>
+          <Text numberOfLines={1} maxFontSizeMultiplier={1.4} style={s.placeholder}>{placeholder}</Text>
         </View>
       )}
       </View>
@@ -68,7 +68,7 @@ const s = StyleSheet.create({
   labelOff: { color: color.slate },
   field: { borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.paper, ...valueType, color: color.obsidian },
   // A single-line input centres its text on its own; a fixed line height would push the text to the bottom of the box.
-  single: { minHeight: 48, paddingVertical: 0, textAlignVertical: "center" },
+  single: { height: 48, paddingVertical: 0, textAlignVertical: "center" },
   placeholderBox: { position: "absolute", top: 0, bottom: 0, left: 17, right: 17, justifyContent: "center" },
   placeholder: { ...valueType, color: color.pebble },
   thin: { borderWidth: 1, borderColor: color.inputBorder, paddingHorizontal: space.s16, paddingVertical: 12 },

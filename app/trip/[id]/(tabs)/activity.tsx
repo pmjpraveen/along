@@ -17,7 +17,7 @@ import { color, font, radius, space, type } from "../../../../src/theme/tokens";
 
 // What changed in this trip, newest first, under a heading per day: joins, plans added, new expenses. Entries since the last visit are
 // marked New.
-export default function Activity() {
+export default function History() {
   const { id } = useGlobalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
   const router = useRouter();
@@ -46,7 +46,7 @@ export default function Activity() {
         <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
-        <Text accessibilityRole="header" style={s.heading}>Activity</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>History</Text>
 
         {state === null ? (
           <Skeleton label="Loading history" />
@@ -56,13 +56,13 @@ export default function Activity() {
             <TextButton label="Retry" onPress={load} />
           </View>
         ) : state.events.length === 0 ? (
-          <Text style={s.body}>Nothing yet. Joins, plans and expenses will show up here as they happen.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>Nothing yet. Joins, plans and expenses will show up here as they happen.</Text>
         ) : (
           days.map((d) => (
             <View key={d.heading}>
               <View style={s.dayRow} accessibilityRole="header" accessible accessibilityLabel={d.heading}>
                 <View style={s.rule} />
-                <Text style={s.day}>{d.heading}</Text>
+                <Text maxFontSizeMultiplier={1.3} style={s.day}>{d.heading}</Text>
                 <View style={s.rule} />
               </View>
               {d.events.map((e) => {
@@ -71,12 +71,12 @@ export default function Activity() {
                   <View key={e.id} accessible accessibilityLabel={`${fresh ? "New. " : ""}${describeEvent(e)}, ${clock12(e.created_at)}`} style={s.item}>
                     <Avatar name={e.actor ?? "?"} size={40} />
                     <View style={s.text}>
-                      <Text style={s.line}>
+                      <Text maxFontSizeMultiplier={1.4} style={s.line}>
                         {describeParts(e).map((p, i) => <Text key={i} style={p.bold ? s.bold : undefined}>{p.text}</Text>)}
                       </Text>
                       {fresh && <Badge label="New" variant="success" />}
                     </View>
-                    <Text style={s.time}>{clock12(e.created_at)}</Text>
+                    <Text maxFontSizeMultiplier={1.4} style={s.time}>{clock12(e.created_at)}</Text>
                   </View>
                 );
               })}

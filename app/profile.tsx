@@ -134,16 +134,16 @@ export default function Profile() {
             <Avatar name={me?.name ?? ""} uri={me?.avatarUrl} size={72} />
             <View style={s.camera}>{me?.avatarUrl ? <Pencil size={14} color={color.iconInk} strokeWidth={2} /> : <Camera size={14} color={color.iconInk} strokeWidth={2} />}</View>
           </Pressable>
-          {me ? <Text accessibilityRole="header" style={s.name}>{me.name}</Text> : <Skeleton label="Loading your name" variant="profileName" />}
+          {me ? <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.name}>{me.name}</Text> : <Skeleton label="Loading your name" variant="profileName" />}
         </View>
 
         {!me && <Skeleton label="Loading your details" variant="profileCard" />}
         {me && (
           <View accessible style={s.card}>
             <>
-              <View style={s.row}><Text style={s.label}>Email</Text><Text style={s.value}>{me.email}</Text></View>
+              <View style={s.row}><Text maxFontSizeMultiplier={1.4} style={s.label}>Email</Text><Text maxFontSizeMultiplier={1.4} numberOfLines={1} style={s.value}>{me.email}</Text></View>
               <View style={s.line} />
-              <View style={s.row}><Text style={s.label}>Member since</Text><Text style={s.value}>{longDate(me.since)}</Text></View>
+              <View style={s.row}><Text maxFontSizeMultiplier={1.4} style={s.label}>Member since</Text><Text maxFontSizeMultiplier={1.4} style={s.value}>{longDate(me.since)}</Text></View>
             </>
           </View>
         )}
@@ -158,7 +158,7 @@ export default function Profile() {
             <View style={s.frame} />
           </View>
           <View style={[s.passportTitleRow]}>
-            <Text accessibilityRole="header" style={s.passportTitle}>Passport</Text>
+            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.passportTitle}>Passport</Text>
             <Globe size={22} color={GOLD} strokeWidth={1.5} />
           </View>
           {state === null ? (
@@ -176,7 +176,7 @@ export default function Profile() {
               <View style={s.page}>
                 <Text numberOfLines={1} ellipsizeMode="clip" maxFontSizeMultiplier={1.2} style={s.mrz}>{mrzLine(`<<${passport?.iso3 ?? "ALONG"}<<${mrzName}<<MEMBERSINCE${compactDate(me?.since ?? "")}<<`)}</Text>
                 <Text numberOfLines={1} ellipsizeMode="clip" maxFontSizeMultiplier={1.2} style={s.mrz}>{mrzLine(`TRIPS${String(stamps.length).padStart(3, "0")}`)}</Text>
-                <Text style={s.label}>Total trips</Text>
+                <Text maxFontSizeMultiplier={1.3} style={s.label}>Total trips</Text>
                 <Text maxFontSizeMultiplier={1.2} style={s.count}>{stamps.length}</Text>
               </View>
               </View>
@@ -187,7 +187,7 @@ export default function Profile() {
 
         {error && <Alert variant="negative">{error}</Alert>}
 
-        <Text accessibilityRole="header" style={s.group}>Settings</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.group}>Settings</Text>
         <View style={s.list}>
           <ListItem title="Country" subtitle={countryName(me?.country ?? null)} leading={icon(Globe)} trailing="chevron" onPress={() => open("country")} />
           <View style={s.hair} />
@@ -196,20 +196,20 @@ export default function Profile() {
           <ListItem title="Notifications" subtitle="Choose what you hear about" leading={icon(Bell)} trailing="chevron" onPress={openNotifications} />
         </View>
 
-        <Text accessibilityRole="header" style={s.group}>Support</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.group}>Support</Text>
         <View style={s.list}>
           <ListItem title="Privacy policy" leading={icon(Shield)} trailing="chevron" onPress={() => router.push("/privacy")} />
           <View style={s.hair} />
           <ListItem title="Terms of use" leading={icon(FileText)} trailing="chevron" onPress={() => router.push("/terms")} />
         </View>
 
-        <Text accessibilityRole="header" style={s.group}>Account</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.group}>Account</Text>
         <View style={s.list}>
           <ListItem title="Log out" leading={icon(LogOut)} trailing="chevron" onPress={logOut} />
           <View style={s.hair} />
           <ListItem title="Delete account" subtitle="Shared expenses stay on trips" leading={icon(Trash2, true)} destructive trailing="chevron" onPress={() => setConfirmDelete(true)} />
         </View>
-        <Text accessibilityLabel={appVersionLabel()} style={s.version}>{appVersionLabel()}</Text>
+        <Text accessibilityLabel={appVersionLabel()} maxFontSizeMultiplier={1.3} style={s.version}>{appVersionLabel()}</Text>
       </ScrollView>
       <BottomSheet visible={sheet === "photo"} onClose={() => setSheet(null)} title="Profile picture"
         onClosed={() => { if (pickAfterClose.current) { pickAfterClose.current = false; changePhoto(); } }}>
@@ -260,9 +260,9 @@ const s = StyleSheet.create({
   card: { padding: space.s20, gap: space.s12, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
   name: { ...type.sheetTitle, fontSize: 26, lineHeight: 32, letterSpacing: -0.4, color: color.obsidian, textAlign: "center" },
   line: { height: 1, backgroundColor: color.borderNeutral },
-  row: { flexDirection: "row", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", columnGap: space.s16, rowGap: space.s4, minHeight: 32 },   // at large text sizes the value drops under its label
+  row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s16, minHeight: 32 },
   label: { ...type.fieldValue, color: color.charcoal },
-  value: { ...type.fieldValue, flexGrow: 1, textAlign: "right", color: color.obsidian },
+  value: { ...type.fieldValue, flexShrink: 1, color: color.obsidian },
   section: { ...type.fieldValue, color: color.obsidian },
   cover: { height: 172, borderRadius: radius.card, borderCurve: "continuous", overflow: "hidden" },
   inset: { flex: 1, paddingHorizontal: space.s12, paddingTop: space.s8 },

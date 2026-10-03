@@ -1,5 +1,5 @@
 import { StyleSheet, Text, View } from "react-native";
-import { color, font, radius, space, tint, textScale } from "../theme/tokens";
+import { color, font, radius, space, tint } from "../theme/tokens";
 
 export type BadgeVariant = "error" | "info" | "success" | "warning" | "neutral";
 
@@ -18,7 +18,7 @@ export function Badge({ variant = "info", label, align = "start" }: Props) {
   const look = LOOK[variant];
   return (
     <View accessible accessibilityLabel={label} style={[s.box, { backgroundColor: look.bg, alignSelf: align === "center" ? "center" : "flex-start" }]}>
-      <Text maxFontSizeMultiplier={textScale.dense} style={[s.label, { color: look.text }]}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={[s.label, { color: look.text }]}>{label}</Text>
     </View>
   );
 }

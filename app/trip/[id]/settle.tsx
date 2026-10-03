@@ -55,7 +55,7 @@ export default function Settle() {
       <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
         <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
       </Pressable>
-      <Text accessibilityRole="header" style={s.heading}>Settle up</Text>
+      <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Settle up</Text>
       {!bal ? (
         <Skeleton label="Loading" variant="fields" />
       ) : !bal.ok ? (
@@ -70,13 +70,13 @@ export default function Settle() {
               <Avatar name={nameOf(from)?.name ?? ""} guest={nameOf(from)?.guest} size={48} />
               <Avatar name={nameOf(to)?.name ?? ""} guest={nameOf(to)?.guest} size={48} />
             </View>
-            <Text style={s.who}>{label(from)} {label(from) === "You" ? "pay" : "pays"} {label(to)}</Text>
+            <Text maxFontSizeMultiplier={1.4} style={s.who}>{label(from)} {label(from) === "You" ? "pay" : "pays"} {label(to)}</Text>
           </View>
           <View style={s.gap}>
-            <Text style={s.label}>Amount</Text>
+            <Text maxFontSizeMultiplier={1.4} style={s.label}>Amount</Text>
             <AmountInput label="Amount" value={text} onChange={setText} exponent={bal.currency.exponent} symbol={symbol} invalid={!!error} />
           </View>
-          <Text style={s.body}>This records money that's already been paid. Once saved, it can't be changed.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>This records money that's already been paid. Once saved, it can't be changed.</Text>
           {error && <Alert variant="negative">{error}</Alert>}
           <PrimaryButton label={busy ? "Recording…" : "Confirm payment"} onPress={save} />
         </>

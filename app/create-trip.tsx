@@ -56,7 +56,7 @@ export default function CreateTrip() {
         <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
           <X size={22} color={color.iconInk} strokeWidth={2} />
         </Pressable>
-        <Text accessibilityRole="header" style={s.heading}>Start new trip</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Start new trip</Text>
 
         {cover ? (
           // Once a photo is chosen the wide card gives way to a square thumbnail; tapping it picks a different photo.
@@ -66,7 +66,7 @@ export default function CreateTrip() {
         ) : (
           <Pressable accessibilityRole="button" accessibilityLabel="Add image" onPress={pickCover} style={s.cover}>
             <View style={s.coverIcon}><ImageIcon size={24} color={color.forestInk} strokeWidth={1.75} /></View>
-            <Text style={s.coverText}>Add Image</Text>
+            <Text maxFontSizeMultiplier={1.3} style={s.coverText}>Add Image</Text>
           </Pressable>
         )}
 

@@ -28,10 +28,10 @@ export function Toast() {
   if (!n) return null;
   return (
     <Animated.View pointerEvents={action && live ? "box-none" : "none"} style={[s.wrap, { bottom: bottom + 96 }, style]}>
-      <Text style={s.text}>{message}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={s.text}>{message}</Text>
       {action && live && (
         <Pressable accessibilityRole="button" accessibilityLabel={action.label} hitSlop={space.s12} onPress={() => { setLive(false); useToast.setState({ action: undefined }); action.onPress(); }}>
-          <Text style={s.action}>{action.label}</Text>
+          <Text maxFontSizeMultiplier={1.3} style={s.action}>{action.label}</Text>
         </Pressable>
       )}
     </Animated.View>

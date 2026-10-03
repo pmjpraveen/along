@@ -41,8 +41,8 @@ export default function SignInEmail() {
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
         <View style={s.head}>
-          <Text accessibilityRole="header" style={s.heading}>Sign in with email</Text>
-          <Text style={s.body}>Enter the email and password for your account.</Text>
+          <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Sign in with email</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>Enter the email and password for your account.</Text>
         </View>
         <TextField label="Email" placeholder="you@example.com" value={email} onChangeText={(v) => { setEmail(v); setEmailError(null); }} status={emailError ? "error" : undefined} message={emailError ?? undefined} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" textContentType="username" autoFocus />
         <TextField label="Password" value={password} onChangeText={(v) => { setPassword(v); setPasswordError(null); }} status={passwordError ? "error" : undefined} message={passwordError ?? undefined} secureTextEntry autoCapitalize="none" textContentType="password" onSubmitEditing={submit} />

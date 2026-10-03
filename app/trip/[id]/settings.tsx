@@ -96,8 +96,8 @@ export default function TripSettings() {
           <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
         </Pressable>
         <View style={s.head}>
-          <Text accessibilityRole="header" style={s.heading}>Trip details</Text>
-          {!!x && <Text numberOfLines={1} style={s.subtitle}>{x.name}</Text>}
+          <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Trip details</Text>
+          {!!x && <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={s.subtitle}>{x.name}</Text>}
         </View>
 
         {state === null ? (
@@ -118,7 +118,7 @@ export default function TripSettings() {
             <TextField label="Trip comment" placeholder="A note for the group" value={form.description} onChangeText={(v) => setForm({ ...form, description: v })}
               disabled={!editable} autoCapitalize="sentences" maxLength={200} />
             <View style={s.colourRow}>
-              <Text style={s.colourLabel}>Card colour</Text>
+              <Text maxFontSizeMultiplier={1.3} style={s.colourLabel}>Card colour</Text>
               <View accessibilityRole="radiogroup" accessibilityLabel="Card colour" style={s.swatches}>
                 {CARD_COLORS.map((c, i) => {
                   const on = form.cardColor === i;
@@ -135,7 +135,7 @@ export default function TripSettings() {
               <FieldLabel disabled={!editable}>Trip dates</FieldLabel>
               <Pressable accessibilityRole="button" accessibilityLabel={`Trip dates, ${formatDate(form?.start ?? x.start)} to ${formatDate(form?.end ?? x.end)}`} disabled={!editable}
                 onPress={() => { setRange({ start: form?.start ?? x.start, end: form?.end ?? x.end }); setDatesOpen(true); }} style={[s.pick, !editable && s.pickOff]}>
-                <Text style={[s.pickValue, s.pickFlex]}>{formatRange(form?.start ?? x.start, form?.end ?? x.end)}</Text>
+                <Text maxFontSizeMultiplier={1.4} style={[s.pickValue, s.pickFlex]}>{formatRange(form?.start ?? x.start, form?.end ?? x.end)}</Text>
                 {editable && <ChevronRight size={20} color={color.brandBlack} strokeWidth={1.75} />}
               </Pressable>
             </View>
@@ -144,10 +144,10 @@ export default function TripSettings() {
               <FieldLabel disabled={!canPickCurrency}>Trip currency</FieldLabel>
               <Pressable accessibilityRole="button" accessibilityLabel={`Trip currency, ${form?.currency ?? x.currency}${x.hasMoney ? ", locked once expenses are added" : ""}`} disabled={!canPickCurrency}
                 onPress={() => { setQuery(""); setPicker(true); }} style={[s.pick, !canPickCurrency && s.pickOff]}>
-                <Text style={[s.pickValue, s.pickFlex]}>{currencyName ? `${form?.currency ?? x.currency} · ${currencyName}` : (form?.currency ?? x.currency)}</Text>
+                <Text maxFontSizeMultiplier={1.4} style={[s.pickValue, s.pickFlex]}>{currencyName ? `${form?.currency ?? x.currency} · ${currencyName}` : (form?.currency ?? x.currency)}</Text>
                 {canPickCurrency && <ChevronRight size={20} color={color.brandBlack} strokeWidth={1.75} />}
               </Pressable>
-              {x.hasMoney && <Text style={s.hint}>Locked once expenses are added, so amounts always stay in one currency.</Text>}
+              {x.hasMoney && <Text maxFontSizeMultiplier={1.4} style={s.hint}>Locked once expenses are added, so amounts always stay in one currency.</Text>}
             </View>
 
             {editable ? (

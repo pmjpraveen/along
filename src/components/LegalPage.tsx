@@ -16,13 +16,13 @@ export function LegalPage({ doc }: { doc: LegalDoc }) {
       <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))} hitSlop={space.s4} style={s.round}>
         <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
       </Pressable>
-      <Text accessibilityRole="header" style={s.heading}>{doc.title}</Text>
-      <Text style={s.updated}>Last updated {longDate(doc.updated)}</Text>
-      <Text style={s.body}>{doc.intro}</Text>
+      <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>{doc.title}</Text>
+      <Text maxFontSizeMultiplier={1.4} style={s.updated}>Last updated {longDate(doc.updated)}</Text>
+      <Text maxFontSizeMultiplier={1.4} style={s.body}>{doc.intro}</Text>
       {doc.sections.map((sec) => (
         <View key={sec.heading} style={s.section}>
-          <Text accessibilityRole="header" style={s.h}>{sec.heading}</Text>
-          {sec.body.map((p) => <Text key={p} style={s.body}>{p}</Text>)}
+          <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.h}>{sec.heading}</Text>
+          {sec.body.map((p) => <Text key={p} maxFontSizeMultiplier={1.4} style={s.body}>{p}</Text>)}
         </View>
       ))}
     </ScrollView>

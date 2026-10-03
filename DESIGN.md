@@ -358,8 +358,6 @@ Paper, 28 top radius, 24 padding, a 36 by 4 Pebble grabber, and a Forest Ink scr
 | Loading (button) | Label replaced by a small spinner, width unchanged |
 | Error | Alarm Red text and icon on a Cream background (the message clears itself after 5 seconds), or a 3px red input border with the message under it |
 
-**Text size:** text follows the system setting with no cap (no `maxFontSizeMultiplier`), and every box that holds text (chips, inputs, buttons, rows) has a `minHeight` and grows with it; only the passport's decorative code lines, stamps and calendar day numbers are capped. The trip's tabs are Trip, Expenses and Activity.
-
 **Haptics** tick once under the finger for a different chip, a radio, a checkbox or a switch; success and warning tick on save, delete and failure. Never on scroll, never the only feedback.
 
 **Motion**: all durations, springs and easings live in `src/theme/motion.ts`. A sheet opens and closes with a settle (no bounce); only a flick earns the bouncier spring. Toasts fade in 150 ms, hold 2.2 s and fade out. The glint on the Start new trip button plays twice, the passport cover's three times, and only while the screen is in front. Animate only transform and opacity, never tween money, and honour Reduce Motion everywhere (crossfade or instant change instead of movement). The rest follows the animation rules in CLAUDE.md.

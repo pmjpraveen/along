@@ -55,8 +55,8 @@ export function Alert({ variant = "neutral", title, children, actionLabel, onAct
       <AlertIcon variant={variant} />
       <View style={[s.content, card && s.contentCard]}>
         <View style={s.texts}>
-          {title && <Text style={[s.title, critical && s.onRed]}>{title}</Text>}
-          <Text style={[card && !critical ? s.cardText : s.text, critical && [s.text, s.onRed]]}>{children}</Text>
+          {title && <Text maxFontSizeMultiplier={1.4} style={[s.title, critical && s.onRed]}>{title}</Text>}
+          <Text maxFontSizeMultiplier={1.4} style={[card && !critical ? s.cardText : s.text, critical && [s.text, s.onRed]]}>{children}</Text>
         </View>
         {hasAction && (
           critical

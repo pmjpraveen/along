@@ -9,13 +9,13 @@ export function Chip({ label, accessibilityLabel, role, selected, onPress }: { l
   return (
     <Pressable accessibilityRole={role} accessibilityLabel={accessibilityLabel ?? label} accessibilityState={{ selected }} hitSlop={{ top: 6, bottom: 6 }} onPress={() => { if (!selected) haptic.select(); onPress(); }}
       style={[s.chip, selected && s.on]}>
-      <Text style={[s.label, selected && s.labelOn]}>{label}</Text>
+      <Text maxFontSizeMultiplier={1.3} style={[s.label, selected && s.labelOn]}>{label}</Text>
     </Pressable>
   );
 }
 
 const s = StyleSheet.create({
-  chip: { minHeight: 32, paddingVertical: 4, paddingHorizontal: space.s16, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.softGrey, opacity: 0.85 },
+  chip: { height: 32, paddingHorizontal: space.s16, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center", backgroundColor: color.softGrey, opacity: 0.85 },
   on: { backgroundColor: color.iconInk, opacity: 1 },
   label: { ...type.buttonSmall, color: color.iconInk },
   labelOn: { color: color.paper },

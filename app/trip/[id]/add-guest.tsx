@@ -44,7 +44,7 @@ export default function AddGuest() {
         <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
           <X size={22} color={color.iconInk} strokeWidth={2} />
         </Pressable>
-        <Text accessibilityRole="header" style={s.heading}>Add a guest</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Add a guest</Text>
         <View style={s.chips}>
           <Chip role="radio" label="New guest" selected={mode === "guest"} onPress={() => { setMode("guest"); setError(null); }} />
           <Chip role="radio" label="Already on along" selected={mode === "member"} onPress={() => { setMode("member"); setError(null); }} />

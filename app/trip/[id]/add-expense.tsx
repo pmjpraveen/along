@@ -150,7 +150,7 @@ export default function AddExpense() {
         <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
           <X size={22} color={color.iconInk} strokeWidth={2} />
         </Pressable>
-        <Text accessibilityRole="header" style={s.heading}>{expenseId ? "Edit expense" : "Add expense"}</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>{expenseId ? "Edit expense" : "Add expense"}</Text>
         {loadError ? (
           <View style={s.field}>
             <Alert variant="negative" persist>{loadError}</Alert>
@@ -210,7 +210,7 @@ export default function AddExpense() {
                   values={sharesText} onChange={(id, t) => setSharesText({ ...sharesText, [id]: t })} hints={shareAmounts}
                   exponent={0} symbol="×" remaining={shareTotal > 0 ? `${shareTotal} ${shareTotal === 1 ? "share" : "shares"} in total` : null} ok={shareTotal > 0} />
               )}
-              {method === "equal" && shares && form && <Text style={s.hint}>{shareSummary(shares, form.currency.exponent, form.currency.code)}</Text>}
+              {method === "equal" && shares && form && <Text maxFontSizeMultiplier={1.4} style={s.hint}>{shareSummary(shares, form.currency.exponent, form.currency.code)}</Text>}
               {/* Done closes the people list; it sits after the amounts, at the bottom of the split. */}
               {pickingSplit && <TextButton label="Done" onPress={() => setPickingSplit(false)} />}
             </View>
@@ -252,7 +252,7 @@ function PickRow({ label, value, spoken, onPress }: { label: string; value: stri
     <View style={s.pickWrap}>
       <FieldLabel>{label}</FieldLabel>
       <Pressable accessibilityRole="button" accessibilityLabel={spoken} onPress={onPress} style={s.pick}>
-        <Text style={s.pickValue}>{value}</Text>
+        <Text maxFontSizeMultiplier={1.4} style={s.pickValue}>{value}</Text>
         <ChevronRight size={20} color={color.iconInk} strokeWidth={1.75} />
       </Pressable>
     </View>

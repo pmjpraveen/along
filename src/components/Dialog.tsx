@@ -23,15 +23,15 @@ export function Dialog({ visible, onClose, title, subheader, body, children, act
         <Pressable accessibilityRole="button" accessibilityLabel={`Close ${title}`} onPress={onClose} style={s.scrim} />
         <View style={s.card}>
           <View style={s.head}>
-            <Text accessibilityRole="header" style={s.title}>{title}</Text>
+            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.title}>{title}</Text>
             <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={onClose} hitSlop={space.s8} style={s.close}>
               <X size={16} color={color.iconInk} strokeWidth={2.5} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
             </Pressable>
           </View>
           {(subheader || body) && (
             <View style={s.copy}>
-              {subheader && <Text style={s.subheader}>{subheader}</Text>}
-              {body && <Text style={s.body}>{body}</Text>}
+              {subheader && <Text maxFontSizeMultiplier={1.4} style={s.subheader}>{subheader}</Text>}
+              {body && <Text maxFontSizeMultiplier={1.4} style={s.body}>{body}</Text>}
             </View>
           )}
           {children}

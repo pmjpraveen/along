@@ -20,7 +20,7 @@ import { formatRange, ongoingFirst } from "../src/domain/trip";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
 import { useMyNotificationsRealtime } from "../src/hooks/useTripRealtime";
 import { useSession } from "../src/stores/session";
-import { color, font, radius, space, type, textScale } from "../src/theme/tokens";
+import { color, font, radius, space, type } from "../src/theme/tokens";
 
 const PHASE: Record<TripCard["phase"], string> = { draft: "Draft", upcoming: "Upcoming", active: "Ongoing", completed: "Completed", archived: "Archived" };
 const PHASE_BADGE: Record<TripCard["phase"], BadgeVariant> = { draft: "info", upcoming: "info", active: "neutral", completed: "info", archived: "info" };
@@ -65,8 +65,8 @@ export default function Home() {
       <ScrollView style={s.scroll} refreshControl={pull} contentContainerStyle={[s.content, empty && s.contentEmpty, { paddingTop: top + space.s8, paddingBottom: empty ? bottom + space.s16 : bottom + space.s64 + space.s48 }]}>
         <View style={s.top}>
           <View style={s.greeting}>
-            <Text style={s.hi}>Hi,</Text>
-            {me ? <Text accessibilityRole="header" style={s.name}>{firstName || "traveller"}</Text> : <Skeleton label="Loading your name" variant="greetingName" />}
+            <Text maxFontSizeMultiplier={1.3} style={s.hi}>Hi,</Text>
+            {me ? <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.name}>{firstName || "traveller"}</Text> : <Skeleton label="Loading your name" variant="greetingName" />}
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel={unread > 0 ? `Notifications, ${unread} unread` : "Notifications"} onPress={() => router.push("/notifications")} style={s.round}>
             <Bell size={20} color={color.brandBlack} strokeWidth={1.75} />
@@ -78,7 +78,7 @@ export default function Home() {
         </View>
 
         {!empty && (        <View style={s.sectionRow}>
-          <Text accessibilityRole="header" style={s.section}>Planning</Text>
+          <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Planning</Text>
           <Pressable accessibilityRole="button" accessibilityLabel="Trip history" onPress={() => router.push("/history")} style={s.roundSmall} hitSlop={space.s8}>
             <History size={18} color={color.brandBlack} strokeWidth={1.75} />
           </Pressable>
@@ -95,8 +95,8 @@ export default function Home() {
         ) : empty ? (
           <View style={s.empty}>
             <Image accessible accessibilityRole="image" accessibilityLabel="A traveller sitting on a bag, reading a map" accessibilityIgnoresInvertColors source={NO_TRIPS} style={s.emptyImage} resizeMode="contain" />
-            <Text accessibilityRole="header" style={s.emptyTitle}>No trips planned</Text>
-            <Text style={s.emptyBody}>{hasFinished ? "All your trips are wrapped up. Start a new one, or look back at the old ones." : "Pick a place, invite your friends and start planning."}</Text>
+            <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.emptyTitle}>No trips planned</Text>
+            <Text maxFontSizeMultiplier={1.4} style={s.emptyBody}>{hasFinished ? "All your trips are wrapped up. Start a new one, or look back at the old ones." : "Pick a place, invite your friends and start planning."}</Text>
             <View style={s.emptyAction}>
               <Button label="Start new trip" shine={shine} onPress={() => router.push("/create-trip")} />
               {hasFinished && <Button label="See completed trips" type="secondary" onPress={() => router.push("/history")} />}
@@ -112,9 +112,9 @@ export default function Home() {
                   <View style={s.badge}><Badge variant={PHASE_BADGE[t.phase]} label={PHASE[t.phase]} /></View>
                 </View>
                 <View style={s.meta}>
-                  <View style={s.datePill}><Text maxFontSizeMultiplier={textScale.dense} style={s.dateText}>{formatRange(t.start_date, t.end_date)}</Text></View>
+                  <View style={s.datePill}><Text maxFontSizeMultiplier={1.3} style={s.dateText}>{formatRange(t.start_date, t.end_date)}</Text></View>
                   <TripNameTag key={t.name} name={t.name} maxWidth={tile} tilt={i % 2 === 0 ? -2 : 2} />
-                  <Text maxFontSizeMultiplier={textScale.dense} style={s.place}>{t.destination_name}</Text>
+                  <Text maxFontSizeMultiplier={1.3} style={s.place}>{t.destination_name}</Text>
                 </View>
               </Pressable>
             ))}

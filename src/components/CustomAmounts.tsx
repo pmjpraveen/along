@@ -17,8 +17,8 @@ export function CustomAmounts({ people, values, onChange, exponent, symbol, rema
       {people.map((p) => (
         <View key={p.id} style={s.row}>
           <View style={s.who}>
-            <Text numberOfLines={1} style={s.name}>{p.name}</Text>
-            {hints?.[p.id] && <Text style={s.hint}>{hints[p.id]}</Text>}
+            <Text maxFontSizeMultiplier={1.4} numberOfLines={1} style={s.name}>{p.name}</Text>
+            {hints?.[p.id] && <Text maxFontSizeMultiplier={1.4} style={s.hint}>{hints[p.id]}</Text>}
           </View>
           <View style={s.input}>
             <AmountInput label={`${noun} for ${p.name}`} value={values[p.id] ?? ""} onChange={(t) => onChange(p.id, t)} exponent={exponent} symbol={symbol} suffix={symbol === "%"} compact />
@@ -27,7 +27,7 @@ export function CustomAmounts({ people, values, onChange, exponent, symbol, rema
       ))}
       {remaining && !ok && (
         <View accessible accessibilityRole="alert" style={s.status}>
-          <Text style={s.statusText}>{remaining}</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.statusText}>{remaining}</Text>
         </View>
       )}
     </View>

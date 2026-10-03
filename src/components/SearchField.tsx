@@ -12,7 +12,7 @@ export function SearchField({ value, onChangeText, placeholder }: { value: strin
     <View style={[s.field, focused ? s.focus : s.thin]}>
       <Search size={20} color={color.iconInk} strokeWidth={1.75} accessibilityElementsHidden importantForAccessibility="no-hide-descendants" />
       <TextInput accessibilityLabel="Search" value={value} onChangeText={onChangeText} placeholder={placeholder} placeholderTextColor={color.pebble}
-        autoCorrect={false} autoCapitalize="none" returnKeyType="search"
+        autoCorrect={false} autoCapitalize="none" returnKeyType="search" maxFontSizeMultiplier={1.4}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)} style={s.input} />
       {value.length > 0 && (
         <Pressable accessibilityRole="button" accessibilityLabel="Clear search" onPress={() => onChangeText("")} hitSlop={space.s8} style={s.clear}>
@@ -25,9 +25,9 @@ export function SearchField({ value, onChangeText, placeholder }: { value: strin
 
 const { lineHeight: _lh, ...valueType } = type.fieldValue;
 const s = StyleSheet.create({
-  field: { flexDirection: "row", alignItems: "center", gap: space.s12, minHeight: 48, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.paper },
+  field: { flexDirection: "row", alignItems: "center", gap: space.s12, height: 48, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.paper },
   thin: { borderWidth: 1, borderColor: color.inputBorder, paddingHorizontal: space.s16 },
   focus: { borderWidth: 3, borderColor: color.brandBlack, paddingHorizontal: 14 },
-  input: { flex: 1, minHeight: 48, paddingVertical: 0, ...valueType, color: color.obsidian },
+  input: { flex: 1, height: 48, paddingVertical: 0, ...valueType, color: color.obsidian },
   clear: { width: 24, height: 24, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
 });
