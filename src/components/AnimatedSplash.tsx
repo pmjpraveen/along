@@ -1,11 +1,14 @@
 import { useEffect, useRef } from "react";
 import { Pressable, StyleSheet, useWindowDimensions, View } from "react-native";
-import Animated, { cancelAnimation, interpolate, useAnimatedStyle, useSharedValue, withDelay, withSequence, withTiming } from "react-native-reanimated";
+import Animated, { cancelAnimation, interpolate, useAnimatedProps, useAnimatedStyle, useSharedValue, withDelay, withSequence, withTiming } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { EASE_IN_OUT, EASE_OUT, EASE_ZOOM_THROUGH, motion } from "../theme/motion";
 import { color, splashStripes } from "../theme/tokens";
-import { AlongLogo, LOGO_RATIO } from "./AlongLogo";
+import Svg, { G } from "react-native-svg";
+import { LOGO_H_UNITS, LOGO_W_UNITS, LogoPaths } from "./AlongLogo";
+
+const AnimatedG = Animated.createAnimatedComponent(G);
 
 // The opening moment, from the brand animation: the logo sits on six tilted colour stripes; the stripes swing upright and widen to fill
 // the screen, then the whole thing zooms all the way into the logo. It speeds up into the logo and cuts straight to the app (Home or sign-in) at the end, with no pause. The first frame matches the native splash image exactly, so the
@@ -59,7 +62,12 @@ export function AnimatedSplash({ ready, onShown, onDone }: { ready: boolean; onS
     transform: [{ rotate: `${interpolate(turn.value, [0, 1], [TILT, -90])}deg` }, { scaleY: interpolate(turn.value, [0, 1], [1, END_SCALE_Y]) }],
   }));
   const stripesZoom = useAnimatedStyle(() => ({ transform: [{ scale: interpolate(zoom.value, [0, 1], [1, ZOOM_STRIPES]) }] }));
-  const logoZoom = useAnimatedStyle(() => ({ transform: [{ scale: (1 + BREATH * breath.value) * interpolate(zoom.value, [0, 1], [1, ZOOM_LOGO]) }] }));
+  // The logo is a vector drawn full-screen and scaled inside the SVG, so every frame of the zoom is redrawn sharp. Scaling a small, already-drawn
+  // view instead would stretch its bitmap and blur it.
+  const logoProps = useAnimatedProps(() => {
+    const k = ((w * LOGO_W) / LOGO_W_UNITS) * (1 + BREATH * breath.value) * interpolate(zoom.value, [0, 1], [1, ZOOM_LOGO]);
+    return { matrix: [k, 0, 0, k, w / 2 - (k * LOGO_W_UNITS) / 2, h / 2 - (k * LOGO_H_UNITS) / 2] };
+  });
   // The last sliver of the zoom is the cut: the app is already showing underneath when the overlay is removed, so nothing waits.
   const root = useAnimatedStyle(() => ({ opacity: fade.value * interpolate(zoom.value, [0, 0.93, 1], [1, 1, 0]) }));
 
@@ -71,9 +79,9 @@ export function AnimatedSplash({ ready, onShown, onDone }: { ready: boolean; onS
             {STRIPES.map((c) => <View key={c} style={{ height: band, backgroundColor: c }} />)}
           </Animated.View>
         </Animated.View>
-        <Animated.View style={[s.logo, { top: h / 2 - (w * LOGO_W * LOGO_RATIO) / 2 }, logoZoom]} pointerEvents="none">
-          <AlongLogo width={w * LOGO_W} />
-        </Animated.View>
+        <Svg width={w} height={h} style={StyleSheet.absoluteFill} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <AnimatedG animatedProps={logoProps as never}><LogoPaths /></AnimatedG>
+        </Svg>
       </Pressable>
     </Animated.View>
   );
@@ -82,5 +90,4 @@ export function AnimatedSplash({ ready, onShown, onDone }: { ready: boolean; onS
 const s = StyleSheet.create({
   root: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: BG },
   stack: { position: "absolute" },
-  logo: { position: "absolute", left: 0, right: 0, alignItems: "center" },
 });
