@@ -73,3 +73,18 @@ export async function moveItem(itemId: string, day: string, version: number): Pr
     return { ok: false, message: OFFLINE };
   }
 }
+
+export type DeleteItemResult = { ok: true } | { ok: false; message: string };
+
+// Deletes a plan. The person who added it or the trip owner can; the server refuses anyone else.
+export async function deleteItem(itemId: string): Promise<DeleteItemResult> {
+  try {
+    const { error } = await supabase.rpc("delete_itinerary_item", { p_item: itemId });
+    if (!error) return { ok: true };
+    if (isOffline(error.message)) return { ok: false, message: OFFLINE };
+    if (error.code === "P0002") return { ok: true };   // already gone
+    return { ok: false, message: error.code === "42501" ? "Only the person who added this plan or the trip owner can delete it." : "Couldn't delete the plan. Try again." };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}

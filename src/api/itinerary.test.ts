@@ -1,4 +1,4 @@
-import { createItem, moveItem, setParticipants } from "./itinerary";
+import { createItem, deleteItem, moveItem, setParticipants } from "./itinerary";
 
 const mockRpc = jest.fn();
 jest.mock("./supabase", () => ({ supabase: { rpc: (...a: unknown[]) => mockRpc(...a) } }));
@@ -57,4 +57,14 @@ test("a plan's message is sent trimmed, and none is sent when blank", async () =
   expect(mockRpc.mock.calls[0][1]).toMatchObject({ p_description: "Bring sunscreen" });
   await createItem({ tripId: "t1", title: "Beach", type: "activity", day: "2026-12-02", startTime: null, participantIds: [], description: "   " });
   expect(mockRpc.mock.calls[1][1]).toMatchObject({ p_description: null });
+});
+
+test("deleting a plan sends the id, treats an already-deleted plan as done, and explains a refusal", async () => {
+  mockRpc.mockResolvedValueOnce({ error: null });
+  expect(await deleteItem("i1")).toEqual({ ok: true });
+  expect(mockRpc).toHaveBeenCalledWith("delete_itinerary_item", { p_item: "i1" });
+  mockRpc.mockResolvedValueOnce({ error: { message: "item not found", code: "P0002" } });
+  expect(await deleteItem("i1")).toEqual({ ok: true });
+  mockRpc.mockResolvedValueOnce({ error: { message: "x", code: "42501" } });
+  expect(await deleteItem("i1")).toEqual({ ok: false, message: "Only the person who added this plan or the trip owner can delete it." });
 });

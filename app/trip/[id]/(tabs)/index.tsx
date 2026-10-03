@@ -10,13 +10,16 @@ import Animated, { Extrapolation, FadeIn, interpolate, useAnimatedScrollHandler,
 import { useReducedMotion } from "../../../../src/hooks/useReducedMotion";
 import { motion } from "../../../../src/theme/motion";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { ItineraryResult, loadItinerary, moveItem } from "../../../../src/api/itinerary";
+import { deleteItem, ItineraryResult, loadItinerary, moveItem } from "../../../../src/api/itinerary";
 import { listMembers, Member } from "../../../../src/api/members";
 import { loadTripStatus } from "../../../../src/api/trips";
+import { Dialog } from "../../../../src/components/Dialog";
+import { toast } from "../../../../src/stores/toast";
+import { haptic } from "../../../../src/haptics";
 import { Alert } from "../../../../src/components/Alert";
 import { AvatarGroup } from "../../../../src/components/Avatar";
 import { Badge } from "../../../../src/components/Badge";
-import { PrimaryButton, TextButton } from "../../../../src/components/Buttons";
+import { Button, PrimaryButton, TextButton } from "../../../../src/components/Buttons";
 import { DateField } from "../../../../src/components/DateField";
 import { MapPreview } from "../../../../src/components/MapPreview";
 import { TripCover } from "../../../../src/components/TripCover";
@@ -71,6 +74,18 @@ export default function Trip() {
     setMoveError(null);
     const r = await moveItem(itemId, day, version);
     if (!r.ok) setMoveError(r.message);
+    await load();
+  };
+  const [removing, setRemoving] = useState<Item | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const removePlan = async () => {
+    if (!removing || deleting) return;
+    setDeleting(true);
+    setMoveError(null);
+    const r = await deleteItem(removing.id);
+    setDeleting(false);
+    setRemoving(null);
+    if (r.ok) { haptic.success(); toast("Plan deleted"); } else { haptic.warn(); setMoveError(r.message); }
     await load();
   };
   const add = (day?: string) => router.push({ pathname: "/trip/[id]/add-item", params: { id, ...(day && { day }) } });
@@ -179,7 +194,12 @@ export default function Trip() {
                     ) : null}
                     </View>
                     {placeOf(i) && <View style={s.map}><MapPreview place={placeOf(i)!} /></View>}
-                    {moving === i.id && <View style={s.move}><DateField label={`New day for ${i.title}`} value={i.day_date} onChange={(day) => move(i.id, i.version, day)} /></View>}
+                    {moving === i.id && (
+                      <View style={s.move}>
+                        <DateField label={`New day for ${i.title}`} value={i.day_date} onChange={(day) => move(i.id, i.version, day)} />
+                        <Button label="Delete plan" type="destructive" size="medium" onPress={() => { setMoving(null); setRemoving(i); }} />
+                      </View>
+                    )}
                   </Pressable>
                 </View>
               ))
@@ -214,6 +234,9 @@ export default function Trip() {
       </Animated.View>
     )}
 
+    <Dialog visible={!!removing} onClose={() => setRemoving(null)} title="Delete this plan?" subheader={removing?.title}
+      body="It disappears for everyone on the trip." actionLabel={deleting ? "Deleting…" : "Delete plan"} actionType="destructive" onAction={removePlan} actionBusy={deleting}
+      secondaryLabel="Keep the plan" onSecondary={() => setRemoving(null)} />
     <TripMenu tripId={id} isOwner={isOwner} visible={menu} onClose={() => setMenu(false)} />
     </View>
   );
@@ -247,7 +270,7 @@ const s = StyleSheet.create({
   head4: { gap: space.s4, padding: space.s16 },
   head4Map: { paddingBottom: space.s12 },   // the map sits 8 in from the card's left, right and bottom
   map: { margin: space.s8, marginTop: 0 },
-  move: { paddingHorizontal: space.s16, paddingBottom: space.s16 },
+  move: { paddingHorizontal: space.s16, paddingBottom: space.s16, gap: space.s12 },
   titleRow: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   itemTitle: { ...type.label, flex: 1, fontSize: 17, color: color.obsidian },
   place: { flexDirection: "row", alignItems: "center", gap: space.s4 },
