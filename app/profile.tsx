@@ -1,6 +1,6 @@
 import { useFocusEffect, useRouter } from "expo-router";
 import { Skeleton } from "../src/components/Skeleton";
-import { Bell, Camera, ChevronLeft, Coins, ImagePlus, FileText, Globe, LogOut, Shield, Trash2 } from "lucide-react-native";
+import { Bell, Camera, ChevronLeft, Coins, ImagePlus, Pencil, FileText, Globe, LogOut, Shield, Trash2 } from "lucide-react-native";
 
 const GOLD = "#e8cf8a";   // the gold used for embossing on a passport cover
 import * as ImagePicker from "expo-image-picker";
@@ -132,7 +132,7 @@ export default function Profile() {
         <View style={s.avatar}>
           <Pressable accessibilityRole="button" accessibilityLabel="Change profile picture" onPress={() => (me?.avatarUrl ? open("photo") : changePhoto())} hitSlop={space.s8}>
             <Avatar name={me?.name ?? ""} uri={me?.avatarUrl} size={72} />
-            <View style={s.camera}><Camera size={14} color={color.iconInk} strokeWidth={2} /></View>
+            <View style={s.camera}>{me?.avatarUrl ? <Pencil size={14} color={color.iconInk} strokeWidth={2} /> : <Camera size={14} color={color.iconInk} strokeWidth={2} />}</View>
           </Pressable>
           {me ? <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.name}>{me.name}</Text> : <Skeleton label="Loading your name" variant="profileName" />}
         </View>
