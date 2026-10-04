@@ -35,6 +35,21 @@ export async function addGuest(tripId: string, name: string): Promise<AddGuestRe
   }
 }
 
+export type RemoveGuestResult = { ok: true } | { ok: false; message: string };
+
+// The owner deletes a guest who has not joined. Their history stays; the server refuses anyone who has joined.
+export async function removeGuest(memberId: string): Promise<RemoveGuestResult> {
+  try {
+    const { error } = await supabase.rpc("remove_member", { p_member: memberId });
+    if (!error) return { ok: true };
+    if (isOffline(error.message)) return { ok: false, message: OFFLINE };
+    if (error.message === "only_guests_can_be_removed") return { ok: false, message: "Only guests who haven't joined can be deleted." };
+    return { ok: false, message: error.code === "42501" ? "Only the trip owner can delete guests." : "Couldn't delete the guest. Try again." };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}
+
 export type AddMemberResult = { ok: true; name: string } | { ok: false; message: string };
 
 // Adds someone who already uses along straight to the trip by their email, no invite link needed. The owner only.

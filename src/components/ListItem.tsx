@@ -13,10 +13,10 @@ import { Button } from "./Buttons";
 export type ListItemTrailing = "none" | "chevron" | "edit" | "checkbox" | "radio" | "switch" | "button";
 type Props = {
   title: string; subtitle?: string; overline?: string; leading?: ReactNode; trailing?: ListItemTrailing; buttonLabel?: string;
-  checked?: boolean; onPress?: () => void; inactive?: boolean; disabled?: boolean; value?: string; message?: string; destructive?: boolean;
+  checked?: boolean; onPress?: () => void; actions?: { name: string; label: string }[]; onAction?: (name: string) => void; inactive?: boolean; disabled?: boolean; value?: string; message?: string; destructive?: boolean;
 };
 
-export function ListItem({ title, subtitle, overline, leading, trailing = "none", buttonLabel, checked = false, onPress, inactive, disabled, value, message, destructive }: Props) {
+export function ListItem({ title, subtitle, overline, leading, trailing = "none", buttonLabel, checked = false, onPress, actions, onAction, inactive, disabled, value, message, destructive }: Props) {
   const body = (
     <>
       {leading}
@@ -37,7 +37,7 @@ export function ListItem({ title, subtitle, overline, leading, trailing = "none"
   if (trailing === "switch")
     return <View style={shell}>{body}<Switch accessibilityLabel={title} value={checked} onValueChange={() => { haptic.select(); onPress?.(); }} trackColor={{ true: color.brandBlack, false: color.inputBorder }} thumbColor={color.paper} ios_backgroundColor={color.inputBorder} /></View>;
   if (trailing === "button")
-    return <View accessible style={shell}>{body}<Button label={buttonLabel ?? "Change"} type="secondary" size="small" onPress={onPress ?? (() => {})} /></View>;
+    return <View accessible accessibilityActions={actions} onAccessibilityAction={(e) => onAction?.(e.nativeEvent.actionName)} style={shell}>{body}<Button label={buttonLabel ?? "Change"} type="secondary" size="small" onPress={onPress ?? (() => {})} /></View>;
   if (trailing === "none" || !onPress) return <View accessible style={shell}>{body}</View>;
   const role = trailing === "checkbox" ? "checkbox" : trailing === "radio" ? "radio" : "button";
   return (

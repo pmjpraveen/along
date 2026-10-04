@@ -545,7 +545,7 @@ Source: Figma "Section header" page (screenshot, approximate). Component: `src/c
 
 Source: Figma "Segmented control" page (screenshot, approximate). Component: `src/components/SegmentedControl.tsx`.
 
-- 2-3 alike options in a full-pill Neutral Wash track; the selected option is a white pill with Medium-weight Forest Ink text. Segments are at least 44pt tall.
+- 2-3 alike options in a full-pill Soft Grey track; the selected option is a white pill with a dark Medium label, the others a Charcoal label on the track. Segments are at least 44pt tall.
 
 ## Tab
 
