@@ -205,3 +205,10 @@ test("US-03 a member cannot open the panel on someone else's plan by long press 
   expect(screen.queryByRole("button", { name: "Edit plan" })).toBeNull();
   expect(screen.queryByRole("button", { name: "Delete plan" })).toBeNull();
 });
+
+test("US-02 tapping the people circles in the trip header opens the participants list", async () => {
+  load({});
+  await render(<Itinerary />);
+  await fireEvent.press(await screen.findByRole("button", { name: "1 person" }));
+  expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/guests", params: { id: "t1" } });
+});

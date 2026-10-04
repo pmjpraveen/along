@@ -105,7 +105,7 @@ export default function Expenses() {
                   </Text>
                 )}
                 {mine && bal?.ok && <Text maxFontSizeMultiplier={1.4} style={s.balance}>{describeBalance(mine.net, mine.name, true, bal.currency.exponent, bal.currency.code)}</Text>}
-                {!!ok.members?.length && <AvatarGroup people={ok.members} size={40} max={4} />}
+                {!!ok.members?.length && <AvatarGroup people={ok.members} size={40} max={4} onPress={() => router.push({ pathname: "/trip/[id]/guests", params: { id } })} />}
               </View>
             </View>
 

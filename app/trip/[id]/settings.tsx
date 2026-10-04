@@ -5,7 +5,9 @@ import { useCallback, useDeferredValue, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { loadTripSettings, setTripCardColor, setTripCurrency, SettingsResult, updateTripDates, updateTripDetails } from "../../../src/api/trips";
+import * as ImagePicker from "expo-image-picker";
+import { TripCover } from "../../../src/components/TripCover";
+import { loadTripSettings, setTripCardColor, setTripCurrency, SettingsResult, updateTripDates, updateTripDetails, uploadCover } from "../../../src/api/trips";
 import { SearchField } from "../../../src/components/SearchField";
 import { Alert } from "../../../src/components/Alert";
 import { Button, TextButton } from "../../../src/components/Buttons";
@@ -40,6 +42,7 @@ export default function TripSettings() {
   const [error, setError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [photoBusy, setPhotoBusy] = useState(false);
   const load = useCallback(async () => {
     const r = await loadTripSettings(id);
     setState(r);
@@ -75,6 +78,21 @@ export default function TripSettings() {
     if (failed && !failed.ok) { haptic.warn(); setError(failed.message); if (text.ok) await load(); return; }
     haptic.success();
     toast("Trip updated");
+    await load();
+  };
+  // The trip photo changes at once, like dates and currency: pick a square crop, upload it, and the trip shows it everywhere.
+  const changePhoto = async () => {
+    if (photoBusy) return;
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+    if (res.canceled || !res.assets[0]) return;
+    setError(null);
+    setPhotoBusy(true);
+    const a = res.assets[0];
+    const r = await uploadCover(id, a.uri, a.mimeType ?? "image/jpeg");
+    setPhotoBusy(false);
+    if (!r.ok) { haptic.warn(); return setError(r.message); }
+    haptic.success();
+    toast("Trip photo updated");
     await load();
   };
   // Dates and currency are chosen in a sheet and kept in the draft with everything else; Save changes sends them.
@@ -113,6 +131,13 @@ export default function TripSettings() {
             {over && <Alert variant="neutral">This trip has ended, so its name and location are locked.</Alert>}
             {error && <Alert variant="negative">{error}</Alert>}
 
+            <View style={s.photoRow}>
+              <View style={s.photo}><TripCover uri={x.coverUrl} destination={x.name} ratio={1} /></View>
+              <View style={s.photoText}>
+                <FieldLabel>Trip photo</FieldLabel>
+                {owner && <Button label={photoBusy ? "Uploading…" : x.coverUrl ? "Change photo" : "Choose photo"} type="secondary" size="small" onPress={changePhoto} />}
+              </View>
+            </View>
             <TextField label="Trip name" placeholder="Trip name" value={form.name} onChangeText={(v) => { setForm({ ...form, name: v }); setNameError(null); }}
               disabled={!editable} autoCapitalize="words" maxLength={80} status={nameError ? "error" : undefined} message={nameError ?? undefined} />
             <TextField label="Trip comment" placeholder="A note for the group" value={form.description} onChangeText={(v) => setForm({ ...form, description: v })}
@@ -189,6 +214,9 @@ const s = StyleSheet.create({
   heading: { ...type.pageTitle, color: color.brandBlack },
   subtitle: { ...type.fieldValue, color: color.slate },
   gap: { gap: space.s8 },
+  photoRow: { flexDirection: "row", alignItems: "center", gap: space.s16 },
+  photo: { width: 88 },
+  photoText: { flex: 1, alignItems: "flex-start", gap: space.s8 },
   colourRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s12, minHeight: 44 },
   colourLabel: { ...type.fieldLabel, color: color.obsidian },   // the same label as the fields above it
   swatches: { flexDirection: "row", gap: space.s8 },

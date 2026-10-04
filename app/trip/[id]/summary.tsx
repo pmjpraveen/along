@@ -111,7 +111,7 @@ export default function Summary() {
                 <Text maxFontSizeMultiplier={1.4} style={s.placeText}>{sm.destination_name}</Text>
               </View>
               {(sm.status === "completed" || sm.status === "archived") && <View style={s.badge}><Badge variant="success" label="Completed" /></View>}
-              {members.length > 0 && <AvatarGroup people={members.map((m) => ({ name: m.display_name, uri: m.avatarUrl, guest: m.membership_type === "guest" }))} size={48} max={4} />}
+              {members.length > 0 && <AvatarGroup people={members.map((m) => ({ name: m.display_name, uri: m.avatarUrl, guest: m.membership_type === "guest" }))} size={48} max={4} onPress={() => router.push({ pathname: "/trip/[id]/guests", params: { id } })} />}
             </View>
           )}
         </View>

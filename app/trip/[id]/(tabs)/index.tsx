@@ -147,7 +147,7 @@ export default function Trip() {
             <Text maxFontSizeMultiplier={1.4} style={s.summary}>
               {ok.items.length} {ok.items.length === 1 ? "activity" : "activities"} · {days.length} {days.length === 1 ? "day" : "days"}
             </Text>
-            {members.length > 0 && <AvatarGroup people={members.map((m) => ({ name: m.display_name, uri: m.avatarUrl, guest: m.membership_type === "guest" }))} size={48} max={4} />}
+            {members.length > 0 && <AvatarGroup people={members.map((m) => ({ name: m.display_name, uri: m.avatarUrl, guest: m.membership_type === "guest" }))} size={48} max={4} onPress={() => router.push({ pathname: "/trip/[id]/guests", params: { id } })} />}
           </View>
         )}
       </View>

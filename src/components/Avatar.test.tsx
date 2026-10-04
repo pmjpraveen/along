@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react-native";
+import { fireEvent, render, screen } from "@testing-library/react-native";
 import { StyleSheet, Text } from "react-native";
 import { Avatar, AVATAR_SIZES, AvatarGroup } from "./Avatar";
 import { color } from "../theme/tokens";
@@ -71,4 +71,14 @@ test("a group that fits shows no +N, and a single person reads as one person", a
   await render(<AvatarGroup people={[{ name: "Asha Rao" }]} />);
   expect(screen.queryByText(/^\+/)).toBeNull();
   expect(screen.getByLabelText("1 person")).toBeTruthy();
+});
+
+test("US-02 an avatar group with onPress is a button that opens the people list; without it, it is plain", async () => {
+  const people = [{ name: "Asha" }, { name: "Ben" }, { name: "Cy" }];
+  const onPress = jest.fn();
+  const { rerender } = await render(<AvatarGroup people={people} onPress={onPress} />);
+  await fireEvent.press(screen.getByRole("button", { name: "3 people" }));
+  expect(onPress).toHaveBeenCalledTimes(1);
+  await rerender(<AvatarGroup people={people} />);
+  expect(screen.queryByRole("button", { name: "3 people" })).toBeNull();
 });

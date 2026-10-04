@@ -6,12 +6,15 @@ const mockDates = jest.fn();
 const mockCurrency = jest.fn();
 const mockDetails = jest.fn();
 const mockColor = jest.fn();
+const mockUpload = jest.fn();
+const mockPick = jest.fn();
 const mockPush = jest.fn();
 const mockReplace = jest.fn();
 jest.mock("../api/trips", () => ({
   loadTripSettings: (...a: unknown[]) => mockLoad(...a), updateTripDates: (...a: unknown[]) => mockDates(...a), setTripCurrency: (...a: unknown[]) => mockCurrency(...a),
-  updateTripDetails: (...a: unknown[]) => mockDetails(...a), setTripCardColor: (...a: unknown[]) => mockColor(...a),
+  updateTripDetails: (...a: unknown[]) => mockDetails(...a), setTripCardColor: (...a: unknown[]) => mockColor(...a), uploadCover: (...a: unknown[]) => mockUpload(...a),
 }));
+jest.mock("expo-image-picker", () => ({ launchImageLibraryAsync: (...a: unknown[]) => mockPick(...a) }));
 jest.mock("../hooks/usePlaceSearch", () => ({ usePlaceSearch: () => ({ places: [], busy: false, error: null }) }));
 jest.mock("expo-router", () => ({
   useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush, back: jest.fn(), canGoBack: () => true, replace: mockReplace }),
@@ -134,3 +137,36 @@ test("a load failure offers retry", async () => {
   expect(await screen.findByDisplayValue("Goa trip")).toBeTruthy();
 });
 
+
+test("US-02 the owner can change the trip photo: pick a square crop, it uploads, and the settings reload", async () => {
+  mockPick.mockResolvedValue({ canceled: false, assets: [{ uri: "file:///cover.jpg", mimeType: "image/jpeg" }] });
+  mockUpload.mockResolvedValue({ ok: true });
+  await render(<TripSettings />);
+  await fireEvent.press(await screen.findByRole("button", { name: "Choose photo" }));
+  await waitFor(() => expect(mockUpload).toHaveBeenCalledWith("t1", "file:///cover.jpg", "image/jpeg"));
+  expect(mockPick).toHaveBeenCalledWith(expect.objectContaining({ aspect: [1, 1], allowsEditing: true }));
+  await waitFor(() => expect(mockLoad).toHaveBeenCalledTimes(2));
+});
+
+test("US-02 once a trip has a photo the button says Change photo, and cancelling the picker changes nothing", async () => {
+  mockLoad.mockResolvedValue(settings({ coverUrl: "https://example.com/c.jpg" }));
+  mockPick.mockResolvedValue({ canceled: true, assets: [] });
+  await render(<TripSettings />);
+  await fireEvent.press(await screen.findByRole("button", { name: "Change photo" }));
+  expect(mockUpload).not.toHaveBeenCalled();
+});
+
+test("US-02 a refused or failed upload shows the reason and keeps the settings as they were", async () => {
+  mockPick.mockResolvedValue({ canceled: false, assets: [{ uri: "file:///cover.jpg", mimeType: "image/jpeg" }] });
+  mockUpload.mockResolvedValue({ ok: false, message: "Couldn't upload the photo. Try again." });
+  await render(<TripSettings />);
+  await fireEvent.press(await screen.findByRole("button", { name: "Choose photo" }));
+  expect(await screen.findByText("Couldn't upload the photo. Try again.")).toBeTruthy();
+});
+
+test("US-02 someone who is not the owner has no photo button", async () => {
+  mockLoad.mockResolvedValue(settings({ isOwner: false }));
+  await render(<TripSettings />);
+  expect(await screen.findByDisplayValue("Goa trip")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: /photo/i })).toBeNull();
+});

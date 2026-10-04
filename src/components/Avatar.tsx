@@ -1,6 +1,7 @@
 import { ReactNode } from "react";
 import { Check } from "../icons";
 import { Image, StyleSheet, Text, View } from "react-native";
+import { Pressable } from "./Pressable";
 import { initialsOf } from "../domain/initials";
 import { color, font, radius } from "../theme/tokens";
 
@@ -49,12 +50,14 @@ export function Avatar({ name = "", uri, size = 40, icon, guest = false, selecte
 
 type Person = { name: string; uri?: string | null; guest?: boolean };
 
-// Overlapping avatars, then a "+N" circle for the rest ("text with numbers" in the design system).
-export function AvatarGroup({ people, size = 40, max = 3 }: { people: Person[]; size?: AvatarSize; max?: number }) {
+// Overlapping avatars, then a "+N" circle for the rest ("text with numbers" in the design system). With `onPress` the whole group is a button
+// (it opens the people list); the touch area is at least 44pt tall.
+export function AvatarGroup({ people, size = 40, max = 3, onPress }: { people: Person[]; size?: AvatarSize; max?: number; onPress?: () => void }) {
   const shown = people.slice(0, max);
   const more = people.length - shown.length;
-  return (
-    <View accessible accessibilityLabel={`${people.length} ${people.length === 1 ? "person" : "people"}`} style={s.group}>
+  const label = `${people.length} ${people.length === 1 ? "person" : "people"}`;
+  const faces = (
+    <>
       {shown.map((p, i) => (
         <View key={`${p.name}-${i}`} style={[s.ring, { borderRadius: size, borderCurve: "continuous", marginLeft: i === 0 ? 0 : -Math.round(size * 0.2) }]}>
           <Avatar name={p.name} uri={p.uri} guest={p.guest} size={size} />
@@ -67,8 +70,11 @@ export function AvatarGroup({ people, size = 40, max = 3 }: { people: Person[]; 
           </View>
         </View>
       )}
-    </View>
+    </>
   );
+  return onPress
+    ? <Pressable accessibilityRole="button" accessibilityLabel={label} accessibilityHint="Shows who is on the trip" hitSlop={8} onPress={onPress} style={s.group}>{faces}</Pressable>
+    : <View accessible accessibilityLabel={label} style={s.group}>{faces}</View>;
 }
 
 const s = StyleSheet.create({
