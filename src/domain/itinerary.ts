@@ -5,7 +5,7 @@ export const TYPE_LABEL: Record<ItemType, string> = {
 };
 
 export type Item = {
-  id: string; version: number; title: string; type: ItemType; day_date: string;
+  id: string; version: number; created_by_member_id?: string; title: string; type: ItemType; day_date: string;
   start_time: string | null; end_time: string | null; sort_order: number; is_outside_trip_range: boolean; participants: string[];
   location_text: string | null; location_url: string | null; latitude: number | null; longitude: number | null; formatted_address: string | null; description?: string | null;
 };

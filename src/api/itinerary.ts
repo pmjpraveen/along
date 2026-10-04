@@ -15,7 +15,7 @@ export async function loadItinerary(tripId: string): Promise<ItineraryResult> {
     const [trip, items, people, names] = await Promise.all([
       supabase.from("trips").select("name, start_date, end_date").eq("id", tripId).single(),
       supabase.from("itinerary_items_flagged")
-        .select("id, version, title, type, day_date, start_time, end_time, sort_order, is_outside_trip_range, location_text, location_url, latitude, longitude, formatted_address, description").eq("trip_id", tripId),
+        .select("id, version, created_by_member_id, title, type, day_date, start_time, end_time, sort_order, is_outside_trip_range, location_text, location_url, latitude, longitude, formatted_address, description").eq("trip_id", tripId),
       supabase.from("itinerary_participants").select("itinerary_item_id, trip_member_id").eq("trip_id", tripId),
       supabase.from("trip_members").select("id, display_name").eq("trip_id", tripId),
     ]);
@@ -28,6 +28,27 @@ export async function loadItinerary(tripId: string): Promise<ItineraryResult> {
     }
     const withPeople = (items.data ?? []).map((i) => ({ ...i, latitude: i.latitude === null ? null : Number(i.latitude), longitude: i.longitude === null ? null : Number(i.longitude), participants: who.get(i.id) ?? [] })) as Item[];
     return { ok: true, trip: trip.data as TripDates, items: withPeople };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}
+
+export type UpdateItemInput = { id: string; version: number; title: string; day: string; startTime: string | null; location?: ResolvedLocation; description?: string };
+export type UpdateItemResult = { ok: true } | { ok: false; message: string; stale?: true };
+
+// Replaces the plan's title, day, time, place and message. Sends the version the person saw; the server rejects the edit if someone changed it since.
+export async function updateItem(i: UpdateItemInput): Promise<UpdateItemResult> {
+  try {
+    const { error } = await supabase.rpc("update_itinerary_item", {
+      p_item: i.id, p_version: i.version, p_title: i.title, p_day_date: i.day, p_start_time: i.startTime,
+      p_location_text: i.location?.text || null, p_location_url: i.location?.url ?? null,
+      p_latitude: i.location?.place?.lat ?? null, p_longitude: i.location?.place?.lng ?? null,
+      p_formatted_address: i.location?.place?.name ?? null, p_description: i.description?.trim() || null,
+    });
+    if (!error) return { ok: true };
+    if (isOffline(error.message)) return { ok: false, message: OFFLINE };
+    if (error.message === "stale_version") return { ok: false, stale: true, message: "Someone else just changed this plan. Go back to see the latest, then edit again." };
+    return { ok: false, message: error.code === "42501" ? "Only the person who added this plan or the trip owner can edit it." : "Couldn't save your changes. Try again." };
   } catch {
     return { ok: false, message: OFFLINE };
   }

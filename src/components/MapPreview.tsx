@@ -1,12 +1,15 @@
 import { useState } from "react";
-import { Image, Linking, StyleSheet, Text, View } from "react-native";
+import { Image } from "expo-image";
+import { Linking, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
 import { mapsOpenUrl, Place, tilesFor, TILE } from "../domain/maps";
 import { MapPin } from "../icons";
 import { color, radius, type } from "../theme/tokens";
 
 const HEIGHT = 96;
-// OpenStreetMap asks apps to identify themselves and to credit the map.
+// OpenStreetMap blocks requests that do not identify the app (it serves an "Access blocked" picture instead of the map), and asks for the map to be
+// credited. React Native's own Image on Android drops a custom User-Agent, so the tiles are loaded with expo-image, which keeps it on both
+// platforms and also caches tiles on the phone, which the tile policy asks for.
 const HEADERS = { "User-Agent": "along-app/1.0 (https://getalong.xyz)" };
 const COPYRIGHT = "https://www.openstreetmap.org/copyright";
 
@@ -20,7 +23,7 @@ export function MapPreview({ place, address }: { place: Place; address?: string 
     <Pressable accessibilityRole="link" accessibilityLabel={`Open ${label} in Maps`} onPress={() => Linking.openURL(mapsOpenUrl(place))} style={s.frame}>
       <View testID="map-box" style={s.map} onLayout={(e) => setWidth(Math.round(e.nativeEvent.layout.width))}>
         {width > 0 && tilesFor(place, width, HEIGHT).map((t) => (
-          <Image key={t.key} testID="map-tile" source={{ uri: t.uri, headers: HEADERS }} accessible={false} style={[s.tile, { left: t.left, top: t.top }]} />
+          <Image key={t.key} testID="map-tile" source={{ uri: t.uri, headers: HEADERS }} cachePolicy="memory-disk" transition={0} accessible={false} style={[s.tile, { left: t.left, top: t.top }]} />
         ))}
         <View pointerEvents="none" style={s.pin}><MapPin size={16} color={color.paper} strokeWidth={2} /></View>
         <Pressable accessibilityRole="link" accessibilityLabel="Map data from OpenStreetMap contributors" hitSlop={8} dip={false}

@@ -7,7 +7,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { createItem, loadItinerary } from "../../../src/api/itinerary";
+import { createItem, loadItinerary, updateItem } from "../../../src/api/itinerary";
 import { resolveLocation, ResolvedLocation } from "../../../src/api/location";
 import { Alert } from "../../../src/components/Alert";
 import { Button } from "../../../src/components/Buttons";
@@ -21,10 +21,10 @@ import { tripDays, validateItem } from "../../../src/domain/itinerary";
 import { short } from "../../../src/domain/trip";
 import { color, font, radius, space, type } from "../../../src/theme/tokens";
 
-// Plan details: pick the day, then name, location, time and an optional message. The day defaults to the one you came from (or the
+// Plan details (also the edit form when opened with an itemId): pick the day, then name, location, time and an optional message. The day defaults to the one you came from (or the
 // trip's first), so the common case is a name and Save. The kind of plan defaults to "activity".
 export default function AddItem() {
-  const { id, day } = useLocalSearchParams<{ id: string; day?: string }>();
+  const { id, day, itemId } = useLocalSearchParams<{ id: string; day?: string; itemId?: string }>();
   const { bottom } = useSafeAreaInsets();
   const router = useRouter();
   const [title, setTitle] = useState("");
@@ -36,6 +36,8 @@ export default function AddItem() {
   const [errors, setErrors] = useState<{ title?: string; day?: string }>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [version, setVersion] = useState(0);   // the version of the plan being edited, sent back so a concurrent change is not overwritten
+  const [missing, setMissing] = useState(false);
   const [location, setLocation] = useState("");
   const [resolved, setResolved] = useState<ResolvedLocation | null>(null);
   // Resolve when the field loses focus so the group sees the place before saving; save re-resolves if the text changed since.
@@ -61,8 +63,23 @@ export default function AddItem() {
       const list = tripDays(r.trip.start_date, r.trip.end_date, [...r.items.map((i) => i.day_date), ...(day ? [day] : [])]);
       setDays(list);
       setDate((d) => d || list[0] || "");
+      if (!itemId) return;
+      const item = r.items.find((x) => x.id === itemId);
+      if (!item) return setMissing(true);
+      setVersion(item.version);
+      setTitle(item.title);
+      setDate(item.day_date);
+      setTime(item.start_time ? item.start_time.slice(0, 5) : null);
+      setMessage(item.description ?? "");
+      const text = item.location_text ?? item.formatted_address ?? "";
+      setLocation(text);
+      if (item.latitude !== null && item.longitude !== null) {
+        const place = { lat: item.latitude, lng: item.longitude, name: item.formatted_address ?? (text || null) };
+        picked.current = { text, lat: place.lat, lng: place.lng };
+        setResolved({ text, url: item.location_url, place });
+      } else if (text) setResolved({ text, url: item.location_url, place: null });
     });
-  }, [id, day]);
+  }, [id, day, itemId]);
   const numbered = useMemo(() => days.map((d, n) => ({ d, n: n + 1 })), [days]);
 
   const save = async () => {
@@ -76,9 +93,11 @@ export default function AddItem() {
     const pick = picked.current?.text === location.trim() ? picked.current : null;
     const loc = pick ? { text: pick.text, url: null, place: { lat: pick.lat, lng: pick.lng, name: pick.text } }
       : resolved?.text === location.trim() ? resolved : location.trim() ? await resolveLocation(location) : undefined;
-    const r = await createItem({ tripId: id, title, type: "activity", day: date, startTime: time, participantIds: [], location: loc ?? undefined, description: message });
+    const r = itemId
+      ? await updateItem({ id: itemId, version, title, day: date, startTime: time, location: loc ?? undefined, description: message })
+      : await createItem({ tripId: id, title, type: "activity", day: date, startTime: time, participantIds: [], location: loc ?? undefined, description: message });
     setBusy(false);
-    if (r.ok) { haptic.success(); toast("Plan added"); router.back(); }
+    if (r.ok) { haptic.success(); toast(itemId ? "Plan updated" : "Plan added"); router.back(); }
     else setFormError(r.message);
   };
 
@@ -88,7 +107,8 @@ export default function AddItem() {
         <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
           <X size={22} color={color.iconInk} strokeWidth={2} />
         </Pressable>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Plan details</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>{itemId ? "Edit plan" : "Plan details"}</Text>
+        {missing && <Alert variant="negative" persist>This plan is no longer there. It may have been deleted.</Alert>}
 
         {!daysLoaded && <Skeleton label="Loading days" variant="dayChips" />}
         {numbered.length > 0 && (
@@ -115,18 +135,22 @@ export default function AddItem() {
           <TimeField label="Time" value={time} onChange={setTime} />
         </View>
         <View style={s.field}>
-          <TextField label="Message" placeholder="Notes for the group, e.g. Bring sunscreen" value={message} onChangeText={setMessage} multiline maxLength={500} autoCapitalize="sentences" style={{ minHeight: 140, paddingRight: 64 }}
-            status={dictation.error ? "error" : undefined} message={dictation.error ?? undefined} />
-          {dictation.available && <Pressable accessibilityRole="button" accessibilityLabel={dictation.listening ? "Stop dictating" : "Dictate message"} accessibilityState={{ selected: dictation.listening }}
-            onPress={() => { haptic.tap(); dictation.toggle(); }} style={[s.mic, dictation.listening && s.micOn]}>
-            {dictation.listening ? <Square size={18} color={color.paper} strokeWidth={2} /> : <Mic size={20} color={color.iconInk} strokeWidth={1.75} />}
-          </Pressable>}
+          {/* The mic sits in the bottom right corner of the text box, so the box's bottom edge must be this wrapper's: the error line goes below it. */}
+          <View>
+            <TextField label="Message" placeholder="Notes for the group, e.g. Bring sunscreen" value={message} onChangeText={setMessage} multiline maxLength={500} autoCapitalize="sentences"
+              style={{ minHeight: 140, paddingBottom: 56 }} status={dictation.error ? "error" : undefined} />
+            {dictation.available && <Pressable accessibilityRole="button" accessibilityLabel={dictation.listening ? "Stop dictating" : "Dictate message"} accessibilityState={{ selected: dictation.listening }}
+              onPress={() => { haptic.tap(); dictation.toggle(); }} style={[s.mic, dictation.listening && s.micOn]}>
+              {dictation.listening ? <Square size={18} color={color.paper} strokeWidth={2} /> : <Mic size={20} color={color.iconInk} strokeWidth={1.75} />}
+            </Pressable>}
+          </View>
+          {dictation.error && <FieldMessage status="error">{dictation.error}</FieldMessage>}
         </View>
         {formError && <Alert variant="negative">{formError}</Alert>}
       </ScrollView>
       <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
         {/* Neutral until there is a name, then the one green action; pressing it early still explains what is missing. */}
-        <Button label={busy ? "Saving…" : "Save Plan"} onPress={save} type={title.trim() ? "primary" : "secondaryNeutral"} size="large" />
+        <Button label={busy ? "Saving…" : itemId ? "Save changes" : "Save Plan"} onPress={save} type={title.trim() && !missing ? "primary" : "secondaryNeutral"} size="large" />
       </View>
     </KeyboardAvoidingView>
   );
@@ -140,7 +164,7 @@ const s = StyleSheet.create({
   chipScroll: { flexGrow: 0 },
   chips: { gap: space.s8 },
   field: { gap: space.s8 },
-  mic: { position: "absolute", right: space.s8, top: 36, width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
+  mic: { position: "absolute", right: space.s8, bottom: space.s8, width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
   micOn: { backgroundColor: color.brandBlack },
   footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },
 });

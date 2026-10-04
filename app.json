@@ -6,7 +6,8 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "along",
-    "userInterfaceStyle": "automatic",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#ffffff",
     "ios": {
       "icon": "./assets/images/icon.png",
       "bundleIdentifier": "xyz.getalong.app",

@@ -5,9 +5,11 @@ import Itinerary from "../../app/trip/[id]/(tabs)/index";
 const mockLoad = jest.fn();
 const mockMove = jest.fn();
 const mockDelete = jest.fn();
+const mockPush = jest.fn();
 const mockRestore = jest.fn();
 jest.mock("../api/itinerary", () => ({ loadItinerary: (...a: unknown[]) => mockLoad(...a), moveItem: (...a: unknown[]) => mockMove(...a), deleteItem: (...a: unknown[]) => mockDelete(...a), restoreItem: (...a: unknown[]) => mockRestore(...a) }));
-jest.mock("../api/members", () => ({ listMembers: async () => ({ ok: true, members: [{ id: "m1", display_name: "Asha", membership_type: "registered", role: "owner", isMe: true }] }) }));
+let mockRole: "owner" | "member" = "owner";
+jest.mock("../api/members", () => ({ listMembers: async () => ({ ok: true, members: [{ id: "m1", display_name: "Asha", membership_type: "registered", role: mockRole, isMe: true }] }) }));
 jest.mock("../api/invites", () => ({ createInviteLink: jest.fn() }));
 jest.mock("../api/trips", () => ({ loadTripSettings: jest.fn(), loadTripStatus: async () => ({ ok: true, status: "published", completedAt: null, name: "Goa", destination: "Goa", coverUrl: null, cardColor: 0 }) }));
 jest.mock("../components/DateField", () => ({
@@ -20,7 +22,7 @@ jest.mock("../components/MapPreview", () => ({
   MapPreview: () => { const { Text } = require("react-native"); return <Text>MAP PREVIEW</Text>; },
 }));
 jest.mock("expo-router", () => ({
-  useGlobalSearchParams: () => ({ id: "t1" }), useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: jest.fn(), back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
+  useGlobalSearchParams: () => ({ id: "t1" }), useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush, back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
 }));
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
@@ -29,7 +31,7 @@ const base = {
   id: "i1", version: 1, title: "Lunch", type: "restaurant", day_date: "2026-12-01", start_time: null, end_time: null, sort_order: 0,
   is_outside_trip_range: false, participants: [], location_text: null, location_url: null, latitude: null, longitude: null, formatted_address: null,
 };
-beforeEach(() => { mockLoad.mockReset(); mockMove.mockReset(); });
+beforeEach(() => { mockLoad.mockReset(); mockMove.mockReset(); mockRole = "owner"; });
 const load = (item: object) => mockLoad.mockResolvedValue({ ok: true, trip: { name: "Goa", start_date: "2026-12-01", end_date: "2026-12-05" }, items: [{ ...base, ...item }] });
 
 test("3.4 plain text location displays exactly as typed with no map preview", async () => {
@@ -166,4 +168,40 @@ test("the top has Back, Guests and three dots that open the trip options: settin
   expect(screen.getByRole("button", { name: /^Share trip/ })).toBeTruthy();
   expect(screen.getByRole("button", { name: /^End trip/ })).toBeTruthy();
   expect(screen.getByRole("button", { name: /^Delete trip/ })).toBeTruthy();
+});
+
+test("US-03 the options panel has an Edit button that opens the plan in the form", async () => {
+  load({});
+  await render(<Itinerary />);
+  await fireEvent.press(await screen.findByRole("button", { name: "Options for Lunch" }));
+  await fireEvent.press(await screen.findByRole("button", { name: "Edit plan" }));
+  expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/add-item", params: { id: "t1", itemId: "i1" } });
+});
+
+test("US-03 the options button shows on a plan I added, but not on someone else's, when I am not the owner", async () => {
+  mockRole = "member";
+  mockLoad.mockResolvedValue({ ok: true, trip: { name: "Goa", start_date: "2026-12-01", end_date: "2026-12-05" },
+    items: [{ ...base, id: "mine", title: "My plan", created_by_member_id: "m1" }, { ...base, id: "theirs", title: "Their plan", created_by_member_id: "m2", sort_order: 1 }] });
+  await render(<Itinerary />);
+  expect(await screen.findByText("Their plan")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Options for My plan" })).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Options for Their plan" })).toBeNull();
+});
+
+test("US-03 the trip owner gets the options button on every plan", async () => {
+  mockRole = "owner";
+  mockLoad.mockResolvedValue({ ok: true, trip: { name: "Goa", start_date: "2026-12-01", end_date: "2026-12-05" },
+    items: [{ ...base, id: "mine", title: "My plan", created_by_member_id: "m1" }, { ...base, id: "theirs", title: "Their plan", created_by_member_id: "m2", sort_order: 1 }] });
+  await render(<Itinerary />);
+  expect(await screen.findByRole("button", { name: "Options for Their plan" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Options for My plan" })).toBeTruthy();
+});
+
+test("US-03 a member cannot open the panel on someone else's plan by long press either", async () => {
+  mockRole = "member";
+  mockLoad.mockResolvedValue({ ok: true, trip: { name: "Goa", start_date: "2026-12-01", end_date: "2026-12-05" }, items: [{ ...base, title: "Their plan", created_by_member_id: "m2" }] });
+  await render(<Itinerary />);
+  await fireEvent(await screen.findByRole("button", { name: "Their plan" }), "longPress");
+  expect(screen.queryByRole("button", { name: "Edit plan" })).toBeNull();
+  expect(screen.queryByRole("button", { name: "Delete plan" })).toBeNull();
 });

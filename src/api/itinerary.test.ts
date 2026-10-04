@@ -1,4 +1,4 @@
-import { createItem, deleteItem, moveItem, setParticipants } from "./itinerary";
+import { createItem, deleteItem, moveItem, setParticipants, updateItem } from "./itinerary";
 
 const mockRpc = jest.fn();
 jest.mock("./supabase", () => ({ supabase: { rpc: (...a: unknown[]) => mockRpc(...a) } }));
@@ -67,4 +67,20 @@ test("deleting a plan sends the id, treats an already-deleted plan as done, and 
   expect(await deleteItem("i1")).toEqual({ ok: true });
   mockRpc.mockResolvedValueOnce({ error: { message: "x", code: "42501" } });
   expect(await deleteItem("i1")).toEqual({ ok: false, message: "Only the person who added this plan or the trip owner can delete it." });
+});
+
+test("US-03 editing a plan sends every field with the version, and clearing the place and message sends nulls", async () => {
+  mockRpc.mockResolvedValue({ error: null });
+  expect(await updateItem({ id: "i1", version: 2, title: " Beach ", day: "2026-12-03", startTime: "10:00", description: "  note " })).toEqual({ ok: true });
+  expect(mockRpc).toHaveBeenCalledWith("update_itinerary_item", { p_item: "i1", p_version: 2, p_title: " Beach ", p_day_date: "2026-12-03", p_start_time: "10:00",
+    p_location_text: null, p_location_url: null, p_latitude: null, p_longitude: null, p_formatted_address: null, p_description: "note" });
+});
+
+test("US-03 a stale edit is flagged, a refused edit says who can edit, and being offline says so", async () => {
+  mockRpc.mockResolvedValueOnce({ error: { message: "stale_version", code: "P0001" } });
+  expect(await updateItem({ id: "i1", version: 1, title: "x", day: "2026-12-03", startTime: null })).toMatchObject({ ok: false, stale: true });
+  mockRpc.mockResolvedValueOnce({ error: { message: "nope", code: "42501" } });
+  expect(await updateItem({ id: "i1", version: 1, title: "x", day: "2026-12-03", startTime: null })).toEqual({ ok: false, message: "Only the person who added this plan or the trip owner can edit it." });
+  mockRpc.mockRejectedValueOnce(new Error("network"));
+  expect(await updateItem({ id: "i1", version: 1, title: "x", day: "2026-12-03", startTime: null })).toMatchObject({ ok: false });
 });

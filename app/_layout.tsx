@@ -1,6 +1,6 @@
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
-import { View } from "react-native";
+import { Appearance, View } from "react-native";
 import * as SplashScreen from "expo-splash-screen";
 import { useCallback, useEffect, useState } from "react";
 import { AnimatedSplash } from "../src/components/AnimatedSplash";
@@ -11,6 +11,10 @@ import { startConnectivity } from "../src/offline/connectivity";
 import { startSync } from "../src/offline/sync";
 import { initSession, useSession } from "../src/stores/session";
 import { useProfile } from "../src/stores/profile";
+
+// The app is designed in light only. This overrides the phone's dark mode for everything native too (the bottom tab bar, the Android navigation
+// bar, date pickers, alerts), and app.json's userInterfaceStyle sets the same for the installed build.
+Appearance.setColorScheme("light");
 
 SplashScreen.preventAutoHideAsync();
 initSession();

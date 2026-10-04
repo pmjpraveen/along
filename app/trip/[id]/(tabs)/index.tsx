@@ -2,7 +2,7 @@ import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
 import { Skeleton } from "../../../../src/components/Skeleton";
 import { Chip } from "../../../../src/components/Chip";
 import { TripMenu } from "../../../../src/components/TripMenu";
-import { ChevronLeft, MapPin, MoreHorizontal, Trash2, Users } from "../../../../src/icons";
+import { ChevronLeft, MapPin, MoreHorizontal, Pencil, Trash2, Users } from "../../../../src/icons";
 import { useCallback, useMemo, useState } from "react";
 import { Linking, ScrollView, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { Pressable } from "../../../../src/components/Pressable";
@@ -55,6 +55,9 @@ export default function Trip() {
   const [picked, setPicked] = useState<string | null>(null);
   const [menu, setMenu] = useState(false);
   const isOwner = members.some((m) => m.isMe && m.role === "owner");
+  const myId = members.find((m) => m.isMe)?.id;
+  // Only the person who added a plan, or the trip owner, can change it, so only they get the options button (the server enforces it too).
+  const canManage = (i: Item) => isOwner || (!!myId && i.created_by_member_id === myId);
 
   // The header appears once its colour, cover and people have all come back, so it does not pop in piece by piece.
   const [extras, setExtras] = useState({ look: false, people: false });
@@ -85,6 +88,7 @@ export default function Trip() {
     toast("Plan deleted", { label: "Undo", onPress: async () => { const u = await restoreItem(item.id); if (!u.ok) setMoveError(u.message); await load(); } });
     await load();
   };
+  const edit = (item: Item) => { setMoving(null); router.push({ pathname: "/trip/[id]/add-item", params: { id, itemId: item.id } }); };
   const add = (day?: string) => router.push({ pathname: "/trip/[id]/add-item", params: { id, ...(day && { day }) } });
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
@@ -175,16 +179,19 @@ export default function Trip() {
                     <Text maxFontSizeMultiplier={1.3} style={s.timeText}>{i.start_time ? i.start_time.slice(0, 5) : "Any time"}</Text>
                     <View style={s.tick} />
                   </View>
-                  <Pressable accessibilityRole="button" accessibilityLabel={i.title} accessibilityHint="Long press to move to another day"
-                    accessibilityActions={[{ name: "move", label: `Move ${i.title} to another day` }]} onAccessibilityAction={() => setMoving(i.id)}
-                    onLongPress={() => setMoving(i.id)} delayLongPress={350} style={s.card}>
+                  <Pressable accessibilityRole="button" accessibilityLabel={i.title} accessibilityHint={canManage(i) ? "Long press to move to another day" : undefined}
+                    accessibilityActions={canManage(i) ? [{ name: "move", label: `Move ${i.title} to another day` }, { name: "edit", label: `Edit ${i.title}` }] : undefined}
+                    onAccessibilityAction={(e) => (e.nativeEvent.actionName === "edit" ? edit(i) : setMoving(i.id))}
+                    onLongPress={canManage(i) ? () => setMoving(i.id) : undefined} delayLongPress={350} style={s.card}>
                     <View style={[s.head4, placeOf(i) && s.head4Map, moving === i.id && !placeOf(i) && s.head4Open]}>
                       <View style={s.titleRow}>
                       <Text maxFontSizeMultiplier={1.4} style={[s.itemTitle, s.grow]}>{i.title}</Text>
-                      <Pressable accessibilityRole="button" accessibilityLabel={`Options for ${i.title}`} accessibilityState={{ expanded: moving === i.id }} hitSlop={space.s8}
-                        onPress={() => setMoving(moving === i.id ? null : i.id)} style={s.more}>
-                        <MoreHorizontal size={18} color={color.iconInk} strokeWidth={2} />
-                      </Pressable>
+                      {canManage(i) && (
+                        <Pressable accessibilityRole="button" accessibilityLabel={`Options for ${i.title}`} accessibilityState={{ expanded: moving === i.id }} hitSlop={space.s8}
+                          onPress={() => setMoving(moving === i.id ? null : i.id)} style={s.more}>
+                          <MoreHorizontal size={18} color={color.iconInk} strokeWidth={2} />
+                        </Pressable>
+                      )}
                       </View>
                     {i.is_outside_trip_range && <Badge variant="warning" label="Outside trip dates" />}
                     {placeLabel(i) ? (
@@ -197,9 +204,12 @@ export default function Trip() {
                     {i.description ? <Text maxFontSizeMultiplier={1.4} style={s.note}>{i.description}</Text> : null}
                     </View>
                     {placeOf(i) && <View style={s.map}><MapPreview place={placeOf(i)!} /></View>}
-                    {moving === i.id && (
+                    {moving === i.id && canManage(i) && (
                       <View style={[s.move, placeOf(i) && s.moveAfterMap]}>
                         <DateField compact dark label={`New day for ${i.title}`} value={i.day_date} min={ok.trip.start_date} max={ok.trip.end_date} onChange={(day) => move(i.id, i.version, day)} />
+                        <Pressable accessibilityRole="button" accessibilityLabel="Edit plan" onPress={() => edit(i)} hitSlop={space.s4} style={s.edit}>
+                          <Pencil size={18} color={color.paper} strokeWidth={1.75} />
+                        </Pressable>
                         <Pressable accessibilityRole="button" accessibilityLabel="Delete plan" onPress={() => removePlan(i)} hitSlop={space.s4} style={s.trash}>
                           <Trash2 size={18} color={color.paper} strokeWidth={1.75} />
                         </Pressable>
@@ -280,6 +290,7 @@ const s = StyleSheet.create({
   move: { flexDirection: "row", alignItems: "center", justifyContent: "flex-end", gap: space.s8, paddingTop: space.s8, paddingHorizontal: space.s8, paddingBottom: space.s16 },   // pushed to the right, 8pt from the card's edges
   moveAfterMap: { paddingTop: 0 },   // the map above already leaves its own 8pt
   more: { width: 32, height: 32, borderRadius: radius.pill, borderCurve: "continuous", alignItems: "center", justifyContent: "center" },
+  edit: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.brandBlack, alignItems: "center", justifyContent: "center" },
   trash: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.alarmRed, alignItems: "center", justifyContent: "center" },
   titleRow: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   itemTitle: { ...type.label, flex: 1, fontSize: 17, letterSpacing: track(17), color: color.obsidian },
