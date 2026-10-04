@@ -7,6 +7,8 @@ test("US-30 a request signed with the shared secret is accepted; a wrong, missin
   const good = await sign(body, SECRET);
   expect(await validSignature(body, good, SECRET)).toBe(true);
   expect(await validSignature(body, good.toUpperCase(), SECRET)).toBe(true);
+  expect(await validSignature(body, `sha1=${good}`, SECRET)).toBe(true);        // the form EAS actually sends
+  expect(await validSignature(body, `sha1=${await sign(body + "x", SECRET)}`, SECRET)).toBe(false);
   expect(await validSignature(body + " ", good, SECRET)).toBe(false);          // body changed
   expect(await validSignature(body, await sign(body, "another-secret-xxxxxxx"), SECRET)).toBe(false);
   expect(await validSignature(body, null, SECRET)).toBe(false);

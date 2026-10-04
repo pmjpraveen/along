@@ -12,7 +12,8 @@ export async function sign(body: string, secret: string): Promise<string> {
 export async function validSignature(body: string, header: string | null, secret: string): Promise<boolean> {
   if (!header || secret.length < 16) return false;
   const expected = await sign(body, secret);
-  const got = header.trim().toLowerCase();
+  // EAS sends the digest as "sha1=<hex>"; a bare hex digest is accepted too.
+  const got = header.trim().toLowerCase().replace(/^sha1=/, "");
   if (got.length !== expected.length) return false;
   let diff = 0;
   for (let i = 0; i < expected.length; i++) diff |= expected.charCodeAt(i) ^ got.charCodeAt(i);
