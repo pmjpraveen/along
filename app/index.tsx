@@ -11,6 +11,8 @@ import { useProfile } from "../src/stores/profile";
 import { listTrips, TripCard, TripListResult } from "../src/api/trips";
 import { Alert } from "../src/components/Alert";
 import { ProgressiveBlur } from "../src/components/ProgressiveBlur";
+import { UpdateBanner } from "../src/components/UpdateBanner";
+import { useAppUpdate } from "../src/hooks/useAppUpdate";
 import { Avatar } from "../src/components/Avatar";
 import { Badge, BadgeVariant } from "../src/components/Badge";
 import { Button, TextButton } from "../src/components/Buttons";
@@ -57,6 +59,7 @@ export default function Home() {
   const planning = trips?.ok ? ongoingFirst(trips.trips.filter((t) => t.phase !== "completed" && t.phase !== "archived")) : [];
   // Nothing left to plan: either no trips at all, or every trip is finished.
   const empty = trips?.ok === true && planning.length === 0;
+  const update = useAppUpdate();
   const hasFinished = trips?.ok === true && trips.trips.length > 0;
   const tile = (width - space.s20 * 2 - GAP) / 2;   // one column of the two
 
@@ -76,6 +79,8 @@ export default function Home() {
             <Avatar name={name ?? ""} uri={me?.avatarUrl} size={40} />
           </Pressable>
         </View>
+
+        {update && <UpdateBanner storeUrl={update.storeUrl} />}
 
         {!empty && (        <View style={s.sectionRow}>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Planning</Text>

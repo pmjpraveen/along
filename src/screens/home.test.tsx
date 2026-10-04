@@ -8,6 +8,8 @@ jest.mock("../api/trips", () => ({ listTrips: (...a: unknown[]) => mockList(...a
 jest.mock("../api/notifications", () => ({ unreadCount: async () => 0 }));
 jest.mock("../api/profile", () => ({ loadMyProfile: async () => ({ name: "Asha", email: "asha@along.test", since: "2026-09-29", country: null, avatarUrl: null, currency: null }) }));
 jest.mock("../api/supabase", () => ({ supabase: {} }));
+let mockUpdate: { storeUrl: string } | null = null;
+jest.mock("../hooks/useAppUpdate", () => ({ useAppUpdate: () => mockUpdate }));
 jest.mock("../hooks/useTripRealtime", () => ({ useMyNotificationsRealtime: jest.fn() }));
 jest.mock("expo-router", () => ({
   useRouter: () => ({ push: mockPush }), Redirect: () => null,
@@ -16,7 +18,7 @@ jest.mock("expo-router", () => ({
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 
 const trip = (o: object) => ({ id: "t1", name: "Goa with the gang", destination_name: "Goa, India", start_date: "2026-09-25", end_date: "2026-10-02", phase: "active", coverUrl: null, ...o });
-beforeEach(() => { jest.clearAllMocks(); useSession.setState({ status: "in", pendingInvite: null }); });
+beforeEach(() => { jest.clearAllMocks(); mockUpdate = null; useSession.setState({ status: "in", pendingInvite: null }); });
 
 test("Home greets me, lists trips I'm planning with their status and short dates, and keeps finished trips in History", async () => {
   mockList.mockResolvedValue({ ok: true, trips: [trip({}), trip({ id: "t2", name: "Ooty weekend", destination_name: "Ooty, India", start_date: "2026-05-07", end_date: "2026-05-09", phase: "completed" })] });
@@ -88,4 +90,17 @@ test("Home puts the ongoing trip first, even when it was started earlier than an
   const names = screen.getAllByRole("button").map((b) => b.props.accessibilityLabel as string).filter((l) => /^(Later trip|Happening now),/.test(l));
   expect(names[0]).toMatch(/^Happening now,/);
   expect(names[1]).toMatch(/^Later trip,/);
+});
+
+test("US-30 Home shows the update bar while this install is behind the store, and no bar once it is current", async () => {
+  mockList.mockResolvedValue({ ok: true, trips: [trip({})] });
+  mockUpdate = { storeUrl: "https://apps.apple.com/app/id1" };
+  const { unmount } = await render(<Home />);
+  expect(await screen.findByText("The app has a new update")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Update the app" })).toBeTruthy();
+  unmount();
+  mockUpdate = null;
+  await render(<Home />);
+  expect(await screen.findByText("Goa with the gang")).toBeTruthy();
+  expect(screen.queryByText("The app has a new update")).toBeNull();
 });

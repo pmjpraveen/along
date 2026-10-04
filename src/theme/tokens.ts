@@ -39,7 +39,7 @@ export const color = {
   brandBlack: "#222222", scrim: "rgba(0,0,0,0.25)", toast: "rgba(0,0,0,0.85)",   // the neutral dim behind every sheet and dialog, the same as the native modal screens
    dateFill: "#444444", cream: "#f8f4ed", inputBorder: "#d0d0d0", softGrey: "#f4f4f4", iconInk: "#444444", buttonGrey: "#f2f2f2", obsidian: product.content.primary, charcoal: product.content.secondary, slate: product.content.tertiary, pebble: product.interactive.secondary,
   paper: product.background.screen, neutralWash: product.background.neutral, borderNeutral: product.border.neutral,
-  darkGold: secondary.darkGold, alarmRed: product.sentiment.negative, positive: product.sentiment.positive, warning: product.sentiment.warning,
+  darkGold: secondary.darkGold, updateGold: "#ffcc3d", alarmRed: product.sentiment.negative, positive: product.sentiment.positive, warning: product.sentiment.warning,
   // Neutral wash (Forest Green at 8%) flattened onto white, for surfaces that overlap and so must not show through each other.
   neutralSolid: "#ecefeb",
   // Not in the Figma palette.

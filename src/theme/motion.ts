@@ -11,6 +11,7 @@ export const motion = {
   toastMs: 2200,      // how long a confirmation stays
   toastActionMs: 5000,   // how long one with an Undo stays, so there is time to reach it
   pressMs: 120,
+  updatePulse: { ms: 1800, scale: 1.45 },   // the update button's two rings: each swells out and fades over this long, the second half a cycle behind, and keeps repeating
   slideMs: 220,       // the selected pill sliding to another segment, and the list changing under it
   stampMs: 500,       // the passport stamp pressing down on the completion screen, the one moment allowed past 400 ms
   stampFrom: 1.12,    // the stamp starts this much larger and settles to 1
