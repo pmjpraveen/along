@@ -1,5 +1,5 @@
-import { motion, useScroll, useTransform } from "motion/react";
-import { useRef, type ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { gsap, reduced } from "../gsap";
 
 // A wide row of pastel cards, each a screen of the app. It slides sideways as the page scrolls down, so the row feels like it is being
 // pulled across the page rather than sitting still.
@@ -7,18 +7,24 @@ export type ShowcaseItem = { n: string; label: string; bg: string; body: ReactNo
 
 export function Showcase({ items }: { items: ShowcaseItem[] }) {
   const ref = useRef<HTMLDivElement>(null);
-  const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "end start"] });
-  const x = useTransform(scrollYProgress, [0, 1], ["6%", "-22%"]);
+  const row = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (reduced()) return;
+    const ctx = gsap.context(() => {
+      gsap.fromTo(row.current, { xPercent: 6 }, { xPercent: -22, ease: "none", scrollTrigger: { trigger: ref.current, start: "top bottom", end: "bottom top", scrub: true } });
+    }, ref);
+    return () => ctx.revert();
+  }, []);
   return (
     <div ref={ref} className="overflow-hidden py-6">
-      <motion.div style={{ x }} className="flex w-[260%] gap-4 sm:w-[180%] md:w-[150%] lg:w-[135%]">
+      <div ref={row} className="flex w-[260%] gap-4 sm:w-[180%] md:w-[150%] lg:w-[135%]">
         {items.map((it) => (
           <div key={it.n} className="relative flex h-[440px] flex-1 flex-col overflow-hidden rounded-[1.75rem] p-6 sm:h-[560px] md:h-[640px]" style={{ background: it.bg }}>
             <div className="flex items-start justify-between text-sm text-body"><span className="text-2xl font-medium tracking-tight text-ink">{it.label}</span><span>{it.n}</span></div>
             <div className="mt-5 flex flex-1 items-start justify-center overflow-hidden">{it.body}</div>
           </div>
         ))}
-      </motion.div>
+      </div>
     </div>
   );
 }

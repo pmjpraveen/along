@@ -1,6 +1,6 @@
-import { AnimatePresence, motion, useScroll, useSpring } from "motion/react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type ReactNode } from "react";
 import Lenis from "lenis";
+import { EASE, gsap, reduced, ScrollTrigger } from "./gsap";
 import { Faq } from "./components/Faq";
 import { Logo } from "./components/Logo";
 import { GuestMock, MemoryMock, PlanMock, SettleMock, SplitMock, StampMock } from "./components/Mocks";
@@ -10,11 +10,16 @@ import { ProgressiveBlur, ScrollHeadline, StickyStack } from "./components/Skipe
 const APP_STORE = "https://apps.apple.com/app/id6817977368";
 const PLAY_STORE = "https://play.google.com/store/apps/details?id=xyz.getalong.app";
 
-const Reveal = ({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) => (
-  <motion.div className={className} initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-80px" }} transition={{ duration: 0.7, delay, ease: [0.23, 1, 0.32, 1] }}>
-    {children}
-  </motion.div>
-);
+// Fades and lifts its content in once, as it scrolls into view. With Reduce Motion on it just shows.
+const Reveal = ({ children, delay = 0, className = "", style }: { children: ReactNode; delay?: number; className?: string; style?: CSSProperties }) => {
+  const ref = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (reduced()) return;
+    const tween = gsap.from(ref.current, { opacity: 0, y: 28, duration: 0.7, delay, ease: EASE, scrollTrigger: { trigger: ref.current, start: "top bottom-=80", once: true } });
+    return () => { tween.scrollTrigger?.kill(); tween.kill(); };
+  }, [delay]);
+  return <div ref={ref} className={className} style={style}>{children}</div>;
+};
 
 const Arrow = () => <svg viewBox="0 0 24 24" className="size-4" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M13 6l6 6-6 6" /></svg>;
 
@@ -32,6 +37,15 @@ const StoreButtons = ({ dark = false }: { dark?: boolean }) => {
 function Nav() {
   const [open, setOpen] = useState(false);
   const link = "rounded-xl px-4 py-3 text-lg font-medium text-white/90 hover:bg-white/10";
+  const panel = useRef<HTMLDivElement>(null), top = useRef<HTMLSpanElement>(null), bottom = useRef<HTMLSpanElement>(null);
+  const first = useRef(true);
+  useEffect(() => {
+    const duration = first.current || reduced() ? 0 : 0.3;
+    first.current = false;
+    gsap.to(panel.current, { height: open ? "auto" : 0, duration, ease: EASE });
+    gsap.to(top.current, { rotate: open ? 45 : 0, y: open ? 4 : 0, duration });
+    gsap.to(bottom.current, { rotate: open ? -45 : 0, y: open ? -4 : 0, duration });
+  }, [open]);
   return (
     <header className="fixed inset-x-0 top-0 z-40 px-3 pt-3 sm:px-5 sm:pt-5">
       <div className="mx-auto max-w-6xl overflow-hidden rounded-[1.75rem] bg-ink text-white shadow-[0_10px_40px_-12px_rgba(0,0,0,0.5)]">
@@ -47,21 +61,17 @@ function Nav() {
               Get along <span className="grid size-8 place-items-center rounded-full bg-card-0 text-ink"><Arrow /></span>
             </a>
             <button onClick={() => setOpen(!open)} aria-label="Menu" aria-expanded={open} className="grid size-10 place-items-center md:hidden">
-              <span className="block w-6 space-y-1.5"><motion.span animate={{ rotate: open ? 45 : 0, y: open ? 4 : 0 }} className="block h-0.5 bg-white" /><motion.span animate={{ rotate: open ? -45 : 0, y: open ? -4 : 0 }} className="block h-0.5 bg-white" /></span>
+              <span className="block w-6 space-y-1.5"><span ref={top} className="block h-0.5 bg-white" /><span ref={bottom} className="block h-0.5 bg-white" /></span>
             </button>
           </div>
         </div>
-        <AnimatePresence>
-          {open && (
-            <motion.div initial={{ height: 0 }} animate={{ height: "auto" }} exit={{ height: 0 }} transition={{ duration: 0.3, ease: [0.23, 1, 0.32, 1] }} className="overflow-hidden md:hidden">
-              <div className="flex flex-col px-3 pb-4">
-                <a onClick={() => setOpen(false)} href="#features" className={link}>Features</a>
-                <a onClick={() => setOpen(false)} href="#how" className={link}>How it works</a>
-                <a onClick={() => setOpen(false)} href="#faq" className={link}>FAQ</a>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <div ref={panel} inert={!open} className="overflow-hidden md:hidden" style={{ height: 0 }}>
+          <div className="flex flex-col px-3 pb-4">
+            <a onClick={() => setOpen(false)} href="#features" className={link}>Features</a>
+            <a onClick={() => setOpen(false)} href="#how" className={link}>How it works</a>
+            <a onClick={() => setOpen(false)} href="#faq" className={link}>FAQ</a>
+          </div>
+        </div>
       </div>
     </header>
   );
@@ -114,16 +124,24 @@ const faqs = [
 export function App() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const lenis = new Lenis({ lerp: 0.1 });
-    let id = requestAnimationFrame(function raf(t) { lenis.raf(t); id = requestAnimationFrame(raf); });
-    return () => { cancelAnimationFrame(id); lenis.destroy(); };
+    // Lenis smooths the scroll; GSAP's ticker drives it so ScrollTrigger always reads the smoothed position.
+    const lenis = new Lenis({ lerp: 0.1, autoRaf: false });
+    lenis.on("scroll", ScrollTrigger.update);
+    const tick = (time: number) => lenis.raf(time * 1000);
+    gsap.ticker.add(tick);
+    gsap.ticker.lagSmoothing(0);
+    return () => { gsap.ticker.remove(tick); lenis.destroy(); };
   }, []);
-  const { scrollYProgress } = useScroll();
-  const bar = useSpring(scrollYProgress, { stiffness: 120, damping: 24 });
+  const bar = useRef<HTMLDivElement>(null);
+  useLayoutEffect(() => {
+    if (reduced()) return;
+    const tween = gsap.fromTo(bar.current, { scaleX: 0 }, { scaleX: 1, ease: "none", scrollTrigger: { start: 0, end: "max", scrub: 0.3 } });
+    return () => { tween.scrollTrigger?.kill(); tween.kill(); };
+  }, []);
 
   return (
     <>
-      <motion.div className="fixed inset-x-0 top-0 z-50 h-0.5 origin-left bg-card-0" style={{ scaleX: bar }} />
+      <div ref={bar} className="fixed inset-x-0 top-0 z-50 h-0.5 origin-left scale-x-0 bg-card-0" />
       <Nav />
 
       <main>
@@ -149,10 +167,10 @@ export function App() {
               <h2 className="max-w-3xl text-[clamp(2.6rem,7vw,5.5rem)] font-normal leading-[0.98] tracking-[-0.055em]">Everything for the trip. Nothing in the way.</h2>
               <div className="mt-12 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {four.map((f, i) => (
-                  <motion.div key={f.t} initial={{ opacity: 0, y: 30 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ duration: 0.6, delay: i * 0.08, ease: [0.23, 1, 0.32, 1] }} className="rounded-3xl p-6" style={{ background: f.bg }}>
+                  <Reveal key={f.t} delay={i * 0.08} className="rounded-3xl p-6" style={{ background: f.bg }}>
                     <h3 className="text-2xl font-medium tracking-tight">{f.t}</h3>
                     <p className="mt-3 leading-relaxed text-white/75">{f.d}</p>
-                  </motion.div>
+                  </Reveal>
                 ))}
               </div>
             </div>
