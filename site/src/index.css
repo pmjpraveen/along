@@ -14,7 +14,16 @@
   --color-card-5: #fff27b;
 }
 
-html { scroll-behavior: auto; overflow-x: clip; }
+html { overflow-x: clip; }
+@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
 body { overflow-x: clip; }
 body { margin: 0; background: #fff; color: var(--color-ink); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
 @media (prefers-reduced-motion: reduce) { * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; } }
+
+:focus-visible { outline: 2px solid var(--color-ink); outline-offset: 3px; border-radius: 6px; }
+
+/* People who ask for less transparency get a solid bar and no blurred fade, instead of frosted glass. */
+@media (prefers-reduced-transparency: reduce) {
+  .glass { background: #fff; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  [data-blur] { display: none; }
+}

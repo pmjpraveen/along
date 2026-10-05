@@ -4,30 +4,30 @@
 import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { gsap, reduced } from "../gsap";
 
-/* Skiper 31: each character starts offset and rotated, and settles as the section scrolls into the middle of the screen. */
+/* A big statement whose words rise out of a mask, one after another, the first time it scrolls into view. Text in [brackets] sits in a tilted ink tag, like a trip name in the app. */
 export function ScrollHeadline({ lines }: { lines: string[] }) {
   const ref = useRef<HTMLDivElement>(null);
   useLayoutEffect(() => {
     if (reduced()) return;
     const ctx = gsap.context(() => {
-      ref.current!.querySelectorAll<HTMLElement>("[data-line]").forEach((line) => {
-        const chars = line.querySelectorAll<HTMLElement>("[data-char]");
-        const center = Math.floor(chars.length / 2);
-        const tl = gsap.timeline({ defaults: { ease: "none" }, scrollTrigger: { trigger: ref.current, start: "top bottom", end: "center center", scrub: true } });
-        tl.fromTo(chars, { x: (i) => (i - center) * 40, rotateX: (i) => (i - center) * 40 }, { x: 0, rotateX: 0, duration: 0.5 }, 0)
-          .fromTo(chars, { opacity: 0.15 }, { opacity: 1, duration: 0.35 }, 0)
-          .to({}, { duration: 1 }, 0);
-      });
+      gsap.from("[data-w]", { yPercent: 115, duration: 1, ease: "expo.out", stagger: 0.09, scrollTrigger: { trigger: ref.current, start: "top 75%", once: true } });
+      gsap.from("[data-tag]", { rotate: 0, scale: 0.9, duration: 0.8, ease: "back.out(2)", delay: 0.7, scrollTrigger: { trigger: ref.current, start: "top 75%", once: true } });
     }, ref);
     return () => ctx.revert();
   }, []);
   return (
-    <div ref={ref} className="mx-auto max-w-5xl px-5 text-center" style={{ perspective: 600 }}>
-      {lines.map((line) => (
-        <div key={line} data-line className="text-[clamp(2.4rem,8vw,6.5rem)] font-medium leading-[1.02] tracking-[-0.045em]">
-          {line.split("").map((c, i) => <span key={i} data-char className="inline-block" style={{ whiteSpace: c === " " ? "pre" : undefined }}>{c}</span>)}
-        </div>
-      ))}
+    <div ref={ref} className="mx-auto max-w-5xl px-5 text-center">
+      {lines.map((line) => {
+        const tag = line.match(/\[(.+?)\]/);
+        const before = tag ? line.slice(0, tag.index).trim() : line;
+        const word = (w: string, i: number, inTag = false) => <span key={`${w}${i}`} className="inline-block overflow-hidden pb-[0.14em] align-top"><span data-w className={`inline-block ${inTag ? "" : "mr-[0.25em]"}`}>{w}</span></span>;
+        return (
+          <div key={line} className="text-[clamp(2.4rem,8vw,6.5rem)] font-medium leading-[1.1] tracking-[-0.03em] sm:tracking-[-0.045em]">
+            {before.split(" ").filter(Boolean).map((w, i) => word(w, i))}
+            {tag && <span data-tag className="inline-block -rotate-2 rounded-[0.16em] bg-ink px-[0.2em] pb-[0.04em] text-white">{tag[1].split(" ").map((w, i, all) => <span key={i} className="inline-block overflow-hidden pb-[0.14em] align-top"><span data-w className={`inline-block ${i < all.length - 1 ? "mr-[0.25em]" : ""}`}>{w}</span></span>)}</span>}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -53,8 +53,8 @@ export function StickyStack({ items }: { items: { bg: string; body: ReactNode }[
   return (
     <div ref={ref} className="relative">
       {items.map((it, i) => (
-        <div key={i} className="sticky top-0 flex h-screen items-center justify-center px-4">
-          <div data-card style={{ top: `calc(${i * 14}px)`, background: it.bg }} className="relative flex h-[min(560px,86vh)] w-full max-w-5xl origin-top flex-col overflow-hidden rounded-[2rem] md:flex-row md:items-center">
+        <div key={i} className="sticky top-0 flex h-screen items-center justify-center px-2 sm:px-4">
+          <div data-card style={{ top: `calc(${i * 14}px)`, background: it.bg }} className="relative flex h-[min(640px,90vh)] w-full max-w-6xl origin-top flex-col overflow-hidden rounded-[2.25rem] shadow-[0_-24px_60px_-28px_rgba(0,0,0,0.3)] ring-1 ring-black/5 md:flex-row md:items-stretch">
             {it.body}
           </div>
         </div>
@@ -65,7 +65,7 @@ export function StickyStack({ items }: { items: { bg: string; body: ReactNode }[
 
 /* Skiper 41: a blur that thins out toward the edge, so content scrolling under the header fades instead of being cut off. */
 export const ProgressiveBlur = ({ height = 96 }: { height?: number }) => (
-  <div aria-hidden className="pointer-events-none absolute inset-x-0 top-0 select-none" style={{ height }}>
+  <div aria-hidden data-blur className="pointer-events-none absolute inset-x-0 top-0 select-none" style={{ height }}>
     {[4, 3, 2, 1].map((blur, i) => (
       <div key={blur} className="absolute inset-0" style={{
         backdropFilter: `blur(${blur}px)`, WebkitBackdropFilter: `blur(${blur}px)`,
