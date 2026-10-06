@@ -246,3 +246,36 @@ test("US-15 a member who is not the organiser gets Settle up only on payments th
   expect(await screen.findByText("Ben owes Cy ₹300.00")).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Settle up" })).toBeNull();
 });
+
+test("US-14 Transactions and Balances are a switch at the top of the page, so balances never sink below a long list", async () => {
+  await render(<Expenses />);
+  expect(await screen.findByRole("tab", { name: "Transactions" })).toBeTruthy();
+  expect(screen.getByRole("tab", { name: "Balances" })).toBeTruthy();
+  expect(screen.getByText("Lunch")).toBeTruthy();
+  expect(screen.queryByText("Ben owes you ₹500.00")).toBeNull();
+  await fireEvent.press(screen.getByRole("tab", { name: "Balances" }));
+  expect(await screen.findByText("Ben owes you ₹500.00")).toBeTruthy();
+  expect(screen.queryByText("Lunch")).toBeNull();
+  expect(screen.queryByText("See everyone's balances")).toBeNull();   // the old link at the bottom of the list is gone
+});
+
+test("US-14 the switch is there even when I am settled up", async () => {
+  mockBal.mockResolvedValue({ ok: true, currency: cur, rows: rows.map((r) => ({ ...r, net: 0 })) });
+  await render(<Expenses />);
+  expect(await screen.findByRole("tab", { name: "Balances" })).toBeTruthy();
+});
+
+test("US-14 the Balances view can still start a payment", async () => {
+  await render(<Expenses />);
+  await fireEvent.press(await screen.findByRole("tab", { name: "Balances" }));
+  await fireEvent.press(await screen.findByRole("button", { name: "Settle up" }));
+  expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/settle", params: { id: "t1", from: "m2", to: "m1", amount: "50000" } });
+});
+
+test("US-14 a balances failure shows its message and Retry inside the Balances view", async () => {
+  mockBal.mockResolvedValue({ ok: false, message: "No connection." });
+  await render(<Expenses />);
+  await fireEvent.press(await screen.findByRole("tab", { name: "Balances" }));
+  expect(await screen.findByText("No connection.")).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Retry" })).toBeTruthy();
+});

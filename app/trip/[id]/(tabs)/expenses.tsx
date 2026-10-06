@@ -3,6 +3,8 @@ import { PinnedBack, useContentTop, useScrollY } from "../../../../src/component
 import Animated from "react-native-reanimated";
 import { Skeleton } from "../../../../src/components/Skeleton";
 import { Backpack } from "../../../../src/icons";
+import { BalancesView } from "../../../../src/components/BalancesView";
+import { SegmentedControl } from "../../../../src/components/SegmentedControl";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../../src/components/Pressable";
@@ -34,6 +36,7 @@ export default function Expenses() {
   const [state, setState] = useState<ExpensesResult | null>(null);
   const [bal, setBal] = useState<BalancesResult | null>(null);
   const [canAdd, setCanAdd] = useState(true);
+  const [view, setView] = useState<"transactions" | "balances">("transactions");
   const load = useCallback(async () => {
     const [e, b, access] = await Promise.all([listExpenses(id), loadBalances(id), loadExpenseAccess(id)]);
     setState(e);
@@ -116,7 +119,13 @@ export default function Expenses() {
               </View>
             ) : (
               <>
-                <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Transactions</Text>
+                {/* Transactions and Balances are two views of the same page, so Balances is one tap away at the top however long the list gets. */}
+                <SegmentedControl accessibilityLabel="Show" value={view} onChange={setView}
+                  options={[{ value: "transactions", label: "Transactions" }, { value: "balances", label: "Balances" }]} />
+                {view === "balances" ? (
+                  <BalancesView state={bal} tripId={id} onRetry={load} showMine={false} />
+                ) : (
+                <>
                 {queuedRows}
                 <View>
                   {ok.expenses.map((e) => {
@@ -136,7 +145,8 @@ export default function Expenses() {
                     );
                   })}
                 </View>
-                <TextButton label="See everyone's balances" onPress={() => router.push({ pathname: "/trip/[id]/balances", params: { id } })} />
+                </>
+                )}
               </>
             )}
           </>
