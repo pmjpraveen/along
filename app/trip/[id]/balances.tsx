@@ -15,7 +15,7 @@ import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { BalancesResult, loadBalances } from "../../../src/api/balances";
 import { Button, TextButton } from "../../../src/components/Buttons";
-import { describeBalance, describeTransfer, simplifyDebts } from "../../../src/domain/balance";
+import { describeBalance, describeTransfer } from "../../../src/domain/balance";
 import { useTripRealtime } from "../../../src/hooks/useTripRealtime";
 import { color, font, radius, space, type, track } from "../../../src/theme/tokens";
 
@@ -37,7 +37,7 @@ function AllSettled() {
   );
 }
 
-// My net balance first, then the fewest payments that settle the group, then everyone else's net position. All derived on read.
+// My net balance first, then who owes whom as it was added, then everyone else's net position. All derived on read.
 export default function Balances() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { top, bottom } = useSafeAreaInsets();
@@ -52,13 +52,13 @@ export default function Balances() {
   useTripRealtime(id, ["expenses", "expense_participants", "settlements"], load);
   const mine = state?.ok ? state.rows.find((r) => r.isMe) : undefined;
   const others = state?.ok ? state.rows.filter((r) => !r.isMe) : [];
-  const transfers = state?.ok ? simplifyDebts(state.rows.map((r) => ({ memberId: r.memberId, net: r.net }))) : [];
-  // I can record a payment I am part of; the owner can also record one that involves a guest, who has no account to do it.
+  // Who owes whom exactly as the expenses and payments say (not rearranged into fewer payments).
+  const transfers = state?.ok ? state.transfers : [];
+  // I can record a payment I am part of; the trip owner (the organiser) can record any payment, so they can settle up for anyone and guests who have no
+  // account. The server allows exactly the same people, and a recorded payment shows who recorded it.
   const canSettle = (t: { from: string; to: string }) => {
     if (!state?.ok) return false;
-    if (t.from === mine?.memberId || t.to === mine?.memberId) return true;
-    const guestInvolved = state.rows.some((r) => r.guest && (r.memberId === t.from || r.memberId === t.to));
-    return !!mine?.isOwner && guestInvolved;
+    return !!mine?.isOwner || t.from === mine?.memberId || t.to === mine?.memberId;
   };
   // Payments that involve me come first.
   const ordered = [...transfers].sort((a, b) => Number(b.from === mine?.memberId || b.to === mine?.memberId) - Number(a.from === mine?.memberId || a.to === mine?.memberId));
@@ -73,6 +73,7 @@ export default function Balances() {
   }, [state, ordered.length]);
 
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
+  const whoIs = (m: string) => (state?.ok ? state.rows.find((r) => r.memberId === m) : undefined);
   const nameOf = (m: string) => state?.ok ? state.rows.find((r) => r.memberId === m)?.name ?? "Someone" : "Someone";
 
   return (
@@ -101,7 +102,7 @@ export default function Balances() {
                 <View>
                   {ordered.map((t) => (
                     <View key={`${t.from}-${t.to}`} style={s.row}>
-                      <Avatar name={nameOf(t.from)} size={40} />
+                      <Avatar name={nameOf(t.from)} uri={whoIs(t.from)?.avatarUrl} guest={whoIs(t.from)?.guest} size={40} />
                       <Text maxFontSizeMultiplier={1.4} style={s.line}>{describeTransfer(t, nameOf, mine?.memberId ?? null, state.currency.exponent, state.currency.code)}</Text>
                       {canSettle(t) && (
                         <Button label="Settle up" type="secondaryNeutral" size="small" onPress={() => router.push({ pathname: "/trip/[id]/settle", params: { id, from: t.from, to: t.to, amount: String(t.amountMinor) } })} />
@@ -118,7 +119,7 @@ export default function Balances() {
             <View>
               {others.map((r) => (
                 <View key={r.memberId} accessible style={s.row}>
-                  <Avatar name={r.name} guest={r.guest} size={40} />
+                  <Avatar name={r.name} uri={r.avatarUrl} guest={r.guest} size={40} />
                   <Text maxFontSizeMultiplier={1.4} style={s.line}>{describeBalance(r.net, r.name, false, state.currency.exponent, state.currency.code)}</Text>
                 </View>
               ))}

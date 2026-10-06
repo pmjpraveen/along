@@ -17,7 +17,16 @@ jest.mock("../offline/sync", () => ({
 }));
 let mockAccess = true;
 jest.mock("../api/expenses", () => ({ listExpenses: (...a: unknown[]) => mockList(...a), loadExpenseAccess: async () => mockAccess }));
-jest.mock("../api/balances", () => ({ loadBalances: (...a: unknown[]) => mockBal(...a) }));
+// These scenarios give each person's total; the list of who owes whom is whatever the API returns, so a scenario that does not spell it out gets one
+// that settles the totals, and the screen is tested on how it shows and acts on that list.
+jest.mock("../api/balances", () => ({
+  loadBalances: async (...a: unknown[]) => {
+    const r = await mockBal(...a);
+    if (!r?.ok || r.transfers) return r;
+    const { simplifyDebts } = require("../domain/balance");
+    return { ...r, transfers: simplifyDebts(r.rows.map((x: { memberId: string; net: number }) => ({ memberId: x.memberId, net: x.net }))) };
+  },
+}));
 jest.mock("expo-router", () => ({
   useGlobalSearchParams: () => ({ id: "t1" }), useLocalSearchParams: () => ({ id: "t1" }), useRouter: () => ({ push: mockPush, back: jest.fn(), canGoBack: () => true, replace: jest.fn() }),
   useFocusEffect: (cb: () => void) => require("react").useEffect(cb, [cb]),
@@ -57,7 +66,7 @@ test("4.5 the balances screen lists everyone, me first, including members who ar
   expect(screen.getByText("Rahul is settled up")).toBeTruthy();
 });
 
-test("5.4 the balances screen shows my net, then the simplified payments in plain words", async () => {
+test("5.4 the balances screen shows my net, then who owes whom in plain words", async () => {
   mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
     { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: false, net: -80000 },
     { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: false, net: 50000 },
@@ -105,7 +114,7 @@ test("5.5 a payment between two other people has no Settle up button here", asyn
   expect(screen.queryByRole("button", { name: "Settle up" })).toBeNull();
 });
 
-test("5.6 the owner gets Settle up on a payment involving a guest, so a guest's payment can be recorded for them", async () => {
+test("5.6 the organiser gets Settle up on a payment involving a guest, so a guest's payment can be recorded for them", async () => {
   mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
     { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: true, net: 0 },
     { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: false, net: -30000 },
@@ -213,4 +222,27 @@ test("on a completed trip a member sees the expenses but no way to add one; the 
   await render(<Expenses />);
   expect(await screen.findByText(/only the owner can add one/)).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Add an expense" })).toBeNull();
+});
+
+test("US-15 the organiser gets Settle up on every payment, including between two members who both have accounts", async () => {
+  mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
+    { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: true, net: 0 },
+    { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: false, net: -30000 },
+    { memberId: "m3", name: "Cy", guest: false, isMe: false, isOwner: false, net: 30000 },
+  ] });
+  await render(<Balances />);
+  expect(await screen.findByText("Ben owes Cy ₹300.00")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Settle up" }));
+  expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/settle", params: { id: "t1", from: "m2", to: "m3", amount: "30000" } });
+});
+
+test("US-15 a member who is not the organiser gets Settle up only on payments they are part of", async () => {
+  mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
+    { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: false, net: 0 },
+    { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: true, net: -30000 },
+    { memberId: "m3", name: "Cy", guest: false, isMe: false, isOwner: false, net: 30000 },
+  ] });
+  await render(<Balances />);
+  expect(await screen.findByText("Ben owes Cy ₹300.00")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Settle up" })).toBeNull();
 });

@@ -3,7 +3,7 @@ import { formatDate, short, toIso } from "./trip";
 
 export type FeedEvent = {
   id: string; entity_type: "expense" | "itinerary_item" | "member"; action: "created" | "edited" | "removed" | "joined" | "claimed" | "guest_added";
-  actor: string | null; created_at: string; summary: Record<string, string | number | undefined>;
+  actor: string | null; actorAvatar?: string | null; created_at: string; summary: Record<string, string | number | undefined>;
 };
 
 // One line per event as pieces, so the names and titles can be drawn bold. Joined together they are the plain sentence.

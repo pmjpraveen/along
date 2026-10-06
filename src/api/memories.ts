@@ -1,4 +1,5 @@
 import { LinkPreview, parseLinkPreview } from "../domain/googlePhotos";
+import { signAvatars } from "./profile";
 import { supabase } from "./supabase";
 
 const OFFLINE = "You're offline. Check your connection and try again.";
@@ -6,7 +7,7 @@ const isOffline = (m: string) => /network|fetch/i.test(m);
 
 export type Memory = {
   id: string; type: "photo" | "note" | "favorite_place" | "link"; caption: string | null; body: string | null; place_name: string | null;
-  created_at: string; author: string; photoUrl: string | null; linkUrl: string | null; linkTitle: string | null; linkImage: string | null; canManage: boolean;
+  created_at: string; author: string; authorAvatar?: string | null; photoUrl: string | null; linkUrl: string | null; linkTitle: string | null; linkImage: string | null; canManage: boolean;
 };
 export type MemoriesResult = { ok: true; memories: Memory[] } | { ok: false; message: string };
 export type SaveResult = { ok: true } | { ok: false; message: string };
@@ -17,7 +18,7 @@ export async function listMemories(tripId: string): Promise<MemoriesResult> {
     const [rows, members, session] = await Promise.all([
       supabase.from("memories").select("id, type, media_path, caption, body, place_name, link_url, link_title, link_image_url, created_at, created_by_member_id")
         .eq("trip_id", tripId).is("deleted_at", null).order("created_at", { ascending: false }),
-      supabase.from("trip_members").select("id, user_id, role, display_name").eq("trip_id", tripId),
+      supabase.from("trip_members").select("id, user_id, role, display_name, avatar_url").eq("trip_id", tripId),
       supabase.auth.getSession(),
     ]);
     const err = rows.error ?? members.error;
@@ -29,13 +30,15 @@ export async function listMemories(tripId: string): Promise<MemoriesResult> {
       for (const s of signed.data ?? []) if (s.path && s.signedUrl) urls.set(s.path, s.signedUrl);
     }
     const name = new Map((members.data ?? []).map((m) => [m.id as string, m.display_name as string]));
+    const avatars = await signAvatars((members.data ?? []).map((m) => m.avatar_url));
+    const avatarOf = new Map((members.data ?? []).map((m) => [m.id as string, avatars.get(m.avatar_url) ?? null]));
     // Only the person who added a memory, or the trip owner, can change or delete it (the server enforces the same rule).
     const me = (members.data ?? []).find((m) => m.user_id === session.data.session?.user.id);
     return {
       ok: true,
       memories: (rows.data ?? []).map((r) => ({
         id: r.id, type: r.type, caption: r.caption, body: r.body, place_name: r.place_name, created_at: r.created_at,
-        author: name.get(r.created_by_member_id) ?? "Someone", photoUrl: r.media_path ? urls.get(r.media_path) ?? null : null,
+        author: name.get(r.created_by_member_id) ?? "Someone", authorAvatar: avatarOf.get(r.created_by_member_id) ?? null, photoUrl: r.media_path ? urls.get(r.media_path) ?? null : null,
         linkUrl: r.link_url, linkTitle: r.link_title, linkImage: r.link_image_url,
         canManage: !!me && (me.role === "owner" || me.id === r.created_by_member_id),
       })),

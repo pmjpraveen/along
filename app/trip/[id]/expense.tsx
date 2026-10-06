@@ -3,10 +3,8 @@ import { PinnedBack, useContentTop, useScrollY } from "../../../src/components/P
 import Animated from "react-native-reanimated";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
-import { ChevronLeft } from "../../../src/icons";
 import { useCallback, useState } from "react";
-import { ScrollView, StyleSheet, Text, View } from "react-native";
-import { Pressable } from "../../../src/components/Pressable";
+import { StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ExpenseViewResult, loadExpenseView } from "../../../src/api/expenses";
 import { Alert } from "../../../src/components/Alert";
@@ -18,13 +16,13 @@ import { METHOD_LABEL, shareBp } from "../../../src/domain/expense";
 import { formatMinor, moneyParts } from "../../../src/domain/money";
 import { formatPercent } from "../../../src/domain/split";
 import { formatDate } from "../../../src/domain/trip";
-import { color, radius, space, type, track } from "../../../src/theme/tokens";
+import { color, font, radius, space, type, track } from "../../../src/theme/tokens";
 
 // One expense: the total, who paid and who added it, and how it was split: each person's share, its percentage of the total, and (for
 // percentage and share splits) the value that was entered. The person who added it, or the trip owner, can edit it.
 export default function ExpenseDetail() {
   const { id, expenseId } = useLocalSearchParams<{ id: string; expenseId: string }>();
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
   const { scrollY, onScroll } = useScrollY();
   const contentTop = useContentTop();
   const router = useRouter();
@@ -39,7 +37,7 @@ export default function ExpenseDetail() {
 
   return (
     <View style={{ flex: 1 }}>
-    <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} refreshControl={pull} style={s.screen} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: bottom + space.s24 }]}>
+    <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} refreshControl={pull} style={s.screen} contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: (x?.canEdit ? 160 : space.s24) + bottom }]}>
       {state === null ? (
         <Skeleton label="Loading expense" variant="expenseDetail" />
       ) : !x ? (
@@ -49,11 +47,13 @@ export default function ExpenseDetail() {
         </View>
       ) : (
         <>
-          <View style={s.head}>
-            <CategoryIcon category={x.category} size={56} />
+          <View accessible accessibilityLabel={`${x.title}, ${formatMinor(x.amountMinor, x.currency.exponent, x.currency.code)}, ${formatDate(x.date)}`} style={s.hero}>
+            <View style={s.heroTop}>
+              <CategoryIcon category={x.category} size={48} onGrey />
+              <Text maxFontSizeMultiplier={1.4} style={s.meta}>{formatDate(x.date)}</Text>
+            </View>
             <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.title}>{x.title}</Text>
             {parts && <Text maxFontSizeMultiplier={1.2} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.6} style={s.total}>{parts.prefix} {parts.whole}<Text style={s.frac}>{parts.frac}</Text></Text>}
-            <Text maxFontSizeMultiplier={1.4} style={s.meta}>{formatDate(x.date)}</Text>
           </View>
 
           <View style={s.card}>
@@ -83,11 +83,15 @@ export default function ExpenseDetail() {
             })}
           </View>
 
-          {x.canEdit && <PrimaryButton label="Edit expense" onPress={() => router.push({ pathname: "/trip/[id]/add-expense", params: { id, expenseId: x.id } })} />}
         </>
       )}
     </Animated.ScrollView>
     <PinnedBack onPress={back} scrollY={scrollY} />
+    {x?.canEdit && (
+      <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
+        <PrimaryButton label="Edit expense" onPress={() => router.push({ pathname: "/trip/[id]/add-expense", params: { id, expenseId: x.id } })} />
+      </View>
+    )}
     </View>
   );
 }
@@ -95,23 +99,24 @@ export default function ExpenseDetail() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
-  round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
-  head: { alignItems: "center", gap: space.s8 },
-  title: { ...type.sheetTitle, fontSize: 24, lineHeight: 30, letterSpacing: track(24), textAlign: "center", color: color.obsidian },
+  hero: { gap: space.s8, padding: space.s20, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
+  heroTop: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
+  title: { ...type.sheetTitle, fontSize: 24, lineHeight: 30, letterSpacing: track(24), color: color.obsidian },
   total: { ...type.display, fontSize: 40, lineHeight: 48, letterSpacing: track(40), color: color.obsidian, fontVariant: ["tabular-nums"] },
   frac: { color: color.slate },
   meta: { ...type.fieldValue, color: color.charcoal },
-  card: { padding: space.s20, gap: space.s12, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.neutralWash },
+  card: { padding: space.s20, gap: space.s12, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
   row: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", gap: space.s16 },
   line: { height: 1, backgroundColor: color.borderNeutral },
   label: { ...type.fieldValue, color: color.slate },
   value: { ...type.fieldValue, color: color.obsidian },
   split: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", marginTop: space.s8 },
-  section: { ...type.fieldValue, color: color.charcoal },
+  section: { ...type.fieldValue, fontFamily: font.medium, color: color.obsidian },
   person: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 64, paddingVertical: space.s12, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
   personText: { flex: 1, gap: 2 },
   name: { ...type.label, fontSize: 17, letterSpacing: track(17), color: color.obsidian },
   sub: { ...type.fieldMessage, color: color.slate },
   share: { ...type.label, fontSize: 17, letterSpacing: track(17), color: color.obsidian, fontVariant: ["tabular-nums"] },
   gap: { gap: space.s8 },
+  footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: space.s20, paddingTop: space.s12, backgroundColor: color.paper, borderTopWidth: 1, borderTopColor: color.borderNeutral },
 });

@@ -198,7 +198,7 @@ export default function Memories() {
                 </View>
               )}
               <View style={s.byline}>
-                <Avatar name={m.author} size={24} />
+                <Avatar name={m.author} uri={m.authorAvatar} size={24} />
                 <Text maxFontSizeMultiplier={1.4} style={s.meta}>{m.author} · {formatDate(toIso(new Date(m.created_at)))}</Text>
               </View>
             </View>

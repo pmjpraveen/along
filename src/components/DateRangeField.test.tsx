@@ -5,7 +5,7 @@ jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({
 
 test("Duration shows a placeholder, and Confirm waits for a last day, then commits the range once", async () => {
   const onChange = jest.fn();
-  await render(<DateRangeField label="Duration" start="2026-10-01" end="" onChange={onChange} />);
+  await render(<DateRangeField label="Duration" start="2026-10-01" end="" today="2026-10-01" onChange={onChange} />);
   expect(screen.getByText("Select date")).toBeTruthy();
   await fireEvent.press(screen.getByRole("button", { name: "Duration" }));
   await fireEvent.press(screen.getByRole("button", { name: "Confirm" }));

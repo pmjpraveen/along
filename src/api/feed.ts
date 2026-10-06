@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import type { FeedEvent } from "../domain/feed";
+import { signAvatars } from "./profile";
 import { supabase } from "./supabase";
 
 const OFFLINE = "You're offline. Check your connection and try again.";
@@ -13,16 +14,19 @@ export async function loadFeed(tripId: string): Promise<FeedResult> {
     const [events, members] = await Promise.all([
       supabase.from("activity_events").select("id, entity_type, action, actor_member_id, summary, created_at")
         .eq("trip_id", tripId).order("created_at", { ascending: false }).limit(100),
-      supabase.from("trip_members").select("id, display_name").eq("trip_id", tripId),
+      supabase.from("trip_members").select("id, display_name, avatar_url").eq("trip_id", tripId),
     ]);
     const err = events.error ?? members.error;
     if (err) return { ok: false, message: isOffline(err.message) ? OFFLINE : "Couldn't load activity. Try again." };
     const name = new Map((members.data ?? []).map((m) => [m.id as string, m.display_name as string]));
+    const avatars = await signAvatars((members.data ?? []).map((m) => m.avatar_url));
+    const avatarOf = new Map((members.data ?? []).map((m) => [m.id as string, avatars.get(m.avatar_url) ?? null]));
     return {
       ok: true,
       events: (events.data ?? []).map((e) => ({
         id: e.id, entity_type: e.entity_type, action: e.action, created_at: e.created_at, summary: e.summary,
         actor: e.actor_member_id ? name.get(e.actor_member_id) ?? null : null,
+        actorAvatar: e.actor_member_id ? avatarOf.get(e.actor_member_id) ?? null : null,
       })),
     };
   } catch {

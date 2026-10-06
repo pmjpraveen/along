@@ -71,7 +71,7 @@ export default function Activity() {
                 const fresh = isNew(e.created_at, since);
                 return (
                   <View key={e.id} accessible accessibilityLabel={`${fresh ? "New. " : ""}${describeEvent(e)}, ${clock12(e.created_at)}`} style={[s.item, i === d.events.length - 1 && s.itemLast]}>
-                    <Avatar name={e.actor ?? "?"} size={40} />
+                    <Avatar name={e.actor ?? "?"} uri={e.actorAvatar} size={40} />
                     <View style={s.text}>
                       <Text maxFontSizeMultiplier={1.4} style={s.line}>
                         {describeParts(e).map((p, i) => <Text key={i} style={p.bold ? s.bold : undefined}>{p.text}</Text>)}
