@@ -2,7 +2,7 @@ import { useFocusEffect, useGlobalSearchParams, useRouter } from "expo-router";
 import { PinnedBack, useContentTop, useScrollY } from "../../../../src/components/PinnedBack";
 import Animated from "react-native-reanimated";
 import { Skeleton } from "../../../../src/components/Skeleton";
-import { Backpack, ChevronLeft } from "../../../../src/icons";
+import { Backpack } from "../../../../src/icons";
 import { useCallback, useEffect, useState } from "react";
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../../src/components/Pressable";

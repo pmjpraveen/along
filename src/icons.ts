@@ -43,6 +43,7 @@ export { default as ShoppingBasket } from "lucide-react-native/icons/shopping-ba
 export { default as Stamp } from "lucide-react-native/icons/stamp";
 export { default as Ticket } from "lucide-react-native/icons/ticket";
 export { default as Square } from "lucide-react-native/icons/square";
+export { default as WifiOff } from "lucide-react-native/icons/wifi-off";
 export { default as Trash2 } from "lucide-react-native/icons/trash";
 export { default as UserPlus } from "lucide-react-native/icons/user-plus";
 export { default as Users } from "lucide-react-native/icons/users";

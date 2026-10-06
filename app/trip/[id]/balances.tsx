@@ -6,7 +6,7 @@ import { useReducedMotion } from "../../../src/hooks/useReducedMotion";
 import { motion } from "../../../src/theme/motion";
 import { Skeleton } from "../../../src/components/Skeleton";
 import { Avatar } from "../../../src/components/Avatar";
-import { Check, ChevronLeft } from "../../../src/icons";
+import { Check } from "../../../src/icons";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { useCallback, useEffect, useRef, useState } from "react";

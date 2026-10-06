@@ -3,6 +3,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Animated, { cancelAnimation, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { scheduleOnRN } from "react-native-worklets";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Check, WifiOff } from "../icons";
 import { useOnline } from "../offline/connectivity";
 import { useQueue } from "../offline/sync";
 import { useReducedMotion } from "../hooks/useReducedMotion";
@@ -62,12 +63,14 @@ export function OfflineBanner() {
   if (!shown) return null;
   return (
     <Animated.View accessible accessibilityRole="text" accessibilityLiveRegion="polite" style={[s.bar, { paddingBottom: bottom + space.s8 }, style]}>
-      <Text maxFontSizeMultiplier={1.3} style={s.text}>{shown.online ? "✓ " : "○ "}{shown.text}</Text>
+      {shown.online ? <Check size={18} color={color.paper} strokeWidth={2} /> : <WifiOff size={18} color={color.paper} strokeWidth={1.75} />}
+      <Text maxFontSizeMultiplier={1.3} style={s.text}>{shown.text}</Text>
     </Animated.View>
   );
 }
 
 const s = StyleSheet.create({
-  bar: { minHeight: 40, paddingHorizontal: space.s16, paddingTop: space.s8, backgroundColor: color.neutralWash, justifyContent: "center" },
-  text: { ...type.label, color: color.forestInk },
+  // The same dark band as the update bar: calm, no alarm colour, white text with an icon (never colour alone).
+  bar: { minHeight: 48, paddingHorizontal: space.s20, paddingTop: space.s12, flexDirection: "row", alignItems: "center", gap: space.s12, backgroundColor: color.obsidian },
+  text: { ...type.fieldMessage, flex: 1, color: color.paper },
 });

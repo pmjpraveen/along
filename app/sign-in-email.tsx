@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
-import { ChevronLeft } from "../src/icons";
+import Animated from "react-native-reanimated";
+import { PinnedBack, useContentTop, useScrollY } from "../src/components/PinnedBack";
 import { useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,7 +14,9 @@ import { color, radius, space, type } from "../src/theme/tokens";
 // Email and password sign-in on a page of its own, for an account made in the Supabase dashboard (the App Store reviewer's). Success needs no
 // navigation: the session store flips and the route guard moves to Home.
 export default function SignInEmail() {
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,10 +39,7 @@ export default function SignInEmail() {
 
   return (
     <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { paddingTop: top + space.s16, paddingBottom: bottom + space.s24 }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={() => (router.canGoBack() ? router.back() : router.replace("/sign-in"))} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-        </Pressable>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} keyboardShouldPersistTaps="handled" contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: space.s24 }]}>
         <View style={s.head}>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Sign in with email</Text>
           <Text maxFontSizeMultiplier={1.4} style={s.body}>Enter the email and password for your account.</Text>
@@ -47,8 +47,11 @@ export default function SignInEmail() {
         <TextField label="Email" placeholder="you@example.com" value={email} onChangeText={(v) => { setEmail(v); setEmailError(null); }} status={emailError ? "error" : undefined} message={emailError ?? undefined} autoCapitalize="none" autoCorrect={false} keyboardType="email-address" textContentType="username" autoFocus />
         <TextField label="Password" value={password} onChangeText={(v) => { setPassword(v); setPasswordError(null); }} status={passwordError ? "error" : undefined} message={passwordError ?? undefined} secureTextEntry autoCapitalize="none" textContentType="password" onSubmitEditing={submit} />
         {error && <Alert variant="negative">{error}</Alert>}
+      </Animated.ScrollView>
+      <PinnedBack onPress={() => (router.canGoBack() ? router.back() : router.replace("/sign-in"))} scrollY={scrollY} />
+      <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
         <PrimaryButton label={busy ? "Signing in…" : "Sign in"} onPress={submit} />
-      </ScrollView>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -56,8 +59,8 @@ export default function SignInEmail() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { paddingHorizontal: space.s20, gap: space.s16 },
-  round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
-  head: { gap: space.s8, marginTop: space.s8 },
+  head: { gap: space.s8 },
+  footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },
   heading: { ...type.pageTitle, color: color.brandBlack },
   body: { ...type.fieldValue, color: color.charcoal },
 });

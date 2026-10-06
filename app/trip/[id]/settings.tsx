@@ -1,6 +1,8 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { Skeleton } from "../../../src/components/Skeleton";
-import { ChevronLeft, ChevronRight } from "../../../src/icons";
+import { ChevronRight } from "../../../src/icons";
+import Animated from "react-native-reanimated";
+import { PinnedBack, useContentTop, useScrollY } from "../../../src/components/PinnedBack";
 import { useCallback, useDeferredValue, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
@@ -30,7 +32,9 @@ type Draft = { name: string; destination: string; description: string; cardColor
 // lights up when something changed. Dates and currency act at once. (Ending and deleting a trip are not on this page for now.)
 export default function TripSettings() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { top, bottom } = useSafeAreaInsets();
+  const { bottom } = useSafeAreaInsets();
+  const { scrollY, onScroll } = useScrollY();
+  const contentTop = useContentTop();
   const router = useRouter();
   const [state, setState] = useState<SettingsResult | null>(null);
   const [form, setForm] = useState<Draft | null>(null);
@@ -109,10 +113,7 @@ export default function TripSettings() {
 
   return (
     <KeyboardAvoidingView style={s.screen} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <ScrollView keyboardShouldPersistTaps="handled" contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: top + space.s12, paddingBottom: space.s32 }]}>
-        <Pressable accessibilityRole="button" accessibilityLabel="Back" onPress={back} hitSlop={space.s4} style={s.round}>
-          <ChevronLeft size={22} color={color.brandBlack} strokeWidth={1.75} />
-        </Pressable>
+      <Animated.ScrollView onScroll={onScroll} scrollEventThrottle={16} keyboardShouldPersistTaps="handled" contentInsetAdjustmentBehavior="never" contentContainerStyle={[s.content, { paddingTop: contentTop, paddingBottom: space.s32 }]}>
         <View style={s.head}>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Trip details</Text>
           {!!x && <Text maxFontSizeMultiplier={1.3} numberOfLines={1} style={s.subtitle}>{x.name}</Text>}
@@ -196,7 +197,8 @@ export default function TripSettings() {
             </BottomSheet>
           </>
         )}
-      </ScrollView>
+      </Animated.ScrollView>
+      <PinnedBack onPress={back} scrollY={scrollY} />
       {!!x && owner && (
         <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
           <Button label={saving ? "Saving…" : "Save changes"} onPress={save} type={dirty ? "primary" : "secondaryNeutral"} disabled={!dirty && !saving} busy={saving} />
@@ -209,7 +211,6 @@ export default function TripSettings() {
 const s = StyleSheet.create({
   screen: { flex: 1, backgroundColor: color.paper },
   content: { paddingHorizontal: space.s20, gap: space.s20 },
-  round: { width: 48, height: 48, borderRadius: radius.pill, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, backgroundColor: color.paper, alignItems: "center", justifyContent: "center" },
   head: { gap: space.s4, marginBottom: space.s8 },
   heading: { ...type.pageTitle, color: color.brandBlack },
   subtitle: { ...type.fieldValue, color: color.slate },

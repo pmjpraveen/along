@@ -2,7 +2,7 @@ import { useFocusEffect, useRouter } from "expo-router";
 import { PinnedBack, useContentTop, useScrollY } from "../src/components/PinnedBack";
 import Animated from "react-native-reanimated";
 import { Skeleton } from "../src/components/Skeleton";
-import { Bell, Camera, ChevronLeft, Coins, ImagePlus, Pencil, FileText, Globe, LogOut, Shield, Trash2 } from "../src/icons";
+import { Bell, Camera, Coins, ImagePlus, Pencil, FileText, Globe, LogOut, Shield, Trash2 } from "../src/icons";
 
 const GOLD = passportArt.gold;   // the gold used for embossing on a passport cover
 import * as ImagePicker from "expo-image-picker";

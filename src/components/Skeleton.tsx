@@ -15,7 +15,7 @@ export type SkeletonVariant =
   | "tripHeader" | "planRows"                    // the trip page's header (cover, date, name) and its day chips with plans
   | "balances" | "expenses" | "expenseDetail" | "summaryBody" | "summaryCards"
   | "dayChips" | "greetingName" | "profileName" | "profileCard"                 // the profile page's name, and its email and member-since card
-  | "fields" | "memories" | "cover" | "block";
+  | "fields" | "settle" | "memories" | "cover" | "block";
 
 const Bar = ({ w, h = 16, style }: { w: ViewStyle["width"]; h?: number; style?: ViewStyle }) => <View style={[s.fill, { width: w, height: h, borderRadius: radius.pill }, style]} />;
 const Box = ({ h, r = radius.card, style, children }: { h?: number; r?: number; style?: ViewStyle; children?: ReactNode }) => <View style={[s.fill, { height: h, borderRadius: r }, style]}>{children}</View>;
@@ -63,18 +63,22 @@ export function Skeleton({ label, variant = "list" }: { label: string; variant?:
       case "planRows":   // day chips, then plans: time column and a card
         return <><Row>{n(4).map((i) => <Box key={i} h={32} r={radius.pill} style={{ width: 72 }} />)}</Row>
           {n(3).map((i) => <Row key={i} style={s.top}><Bar w={44} h={14} /><Box h={84} r={radius.card} style={s.grow} /></Row>)}</>;
-      case "balances":   // "Your balance" card, a section title, and avatar rows
-        return <><Box h={104} r={radius.sheet} style={s.inner}><Bar w="30%" h={14} style={on} /><Bar w="60%" h={30} style={on} /></Box><Bar w="30%" style={s.section} />{n(3).map((i) => <Row key={i}><Dot /><Bar w="60%" /></Row>)}</>;
+      case "balances":   // "Your balance" card, a section title, and rows: avatar, two lines, a Settle up button
+        return <><Box h={104} r={radius.sheet} style={s.inner}><Bar w="30%" h={14} style={on} /><Bar w="60%" h={30} style={on} /></Box><Bar w="30%" style={s.section} />{n(3).map((i) => <Row key={i} style={s.rowBetween}><Row><Dot /><View style={s.stack}><Bar w={150} /><Bar w={90} h={12} /></View></Row><Box h={32} r={radius.pill} style={{ width: 84 }} /></Row>)}</>;
       case "expenses":   // the summary card, then transactions: icon, two lines, amount
         return <><Box h={250} r={radius.xLarge} style={s.inner}><Bar w="40%" h={18} style={on} /><Box h={170} r={radius.sheet} style={{ ...on, alignSelf: "stretch" }} /></Box><Bar w="35%" style={s.section} />{n(4).map((i) => <Row key={i}><Dot /><View style={s.lines}><Bar w="55%" /><Bar w="35%" h={12} /></View><Bar w={64} /></Row>)}</>;
-      case "expenseDetail":   // the amount, who paid, then each person's share
-        return <><Bar w="30%" h={14} /><Bar w="55%" h={44} /><Bar w="45%" h={14} />{n(3).map((i) => <Row key={i} style={s.rowBetween}><Row><Dot /><Bar w={96} /></Row><Bar w={64} /></Row>)}</>;
+      case "expenseDetail":   // the grey hero card (icon and date, title, amount), the paid-by card, then each person's share
+        return <><Box h={168} r={radius.sheet} style={s.inner}><Row style={s.rowBetween}><Box h={48} r={radius.pill} style={{ ...on, width: 48 }} /><Bar w={56} h={14} style={on} /></Row><Bar w="50%" h={22} style={on} /><Bar w="60%" h={38} style={on} /></Box>
+          <Box h={104} r={radius.sheet} style={s.inner}><Row style={s.rowBetween}><Bar w="20%" h={14} style={on} /><Bar w="40%" h={16} style={on} /></Row><Row style={s.rowBetween}><Bar w="25%" h={14} style={on} /><Bar w="40%" h={16} style={on} /></Row></Box>
+          <Bar w="30%" style={s.section} />{n(3).map((i) => <Row key={i} style={s.rowBetween}><Row><Dot /><View style={s.stack}><Bar w={110} /><Bar w={50} h={12} /></View></Row><Bar w={72} /></Row>)}</>;
       case "summaryBody":   // the completed trip page below its header: total card and the three options
         return <><Box h={200} r={radius.sheet} style={s.inner}><Bar w="25%" h={14} style={on} /><Bar w="45%" h={40} style={on} /><Bar w="55%" h={14} style={on} /><Bar w="30%" h={14} style={on} /></Box><View style={s.options}>{n(3).map((i) => <Row key={i} style={s.optionRow}><Dot /><View style={s.lines}><Bar w="40%" /><Bar w="60%" h={12} /></View></Row>)}</View></>;
       case "summaryCards":   // the end-trip page: people and plans card, total spent card
         return <><Box h={96} r={radius.sheet} style={s.inner}><Bar w="30%" h={28} style={on} /><Bar w="50%" h={14} style={on} /></Box><Box h={148} r={radius.sheet} style={s.inner}><Bar w="25%" h={14} style={on} /><Bar w="45%" h={34} style={on} /><Bar w="55%" h={14} style={on} /></Box></>;
       case "fields":   // a form: label above a 48-tall box
         return n(4).map((i) => <View key={i} style={s.field}><Bar w="25%" h={14} /><Box h={48} r={radius.card} /></View>);
+      case "settle":   // the Settle up form: the two people on a grey card, then the amount
+        return <><Box h={132} r={radius.sheet} style={s.inner}><Row><Box h={48} r={radius.pill} style={{ ...on, width: 48 }} /><Box h={48} r={radius.pill} style={{ ...on, width: 48 }} /></Row><Bar w="70%" h={30} style={on} /></Box><View style={s.field}><Bar w="20%" h={14} /><Box h={56} r={radius.card} /></View></>;
       case "memories":   // a photo (4:3), a line of text and the byline
         return n(2).map((i) => (
           <Box key={i} r={radius.sheet} style={s.memory}><Box h={Math.round((width - space.s40 - space.s16) * 0.75)} r={radius.card} style={s.photo} /><Bar w="70%" style={on} /><Row><Box h={24} r={radius.pill} style={{ ...on, width: 24 }} /><Bar w="40%" h={12} style={on} /></Row></Box>));
@@ -105,6 +109,7 @@ const s = StyleSheet.create({
   top: { alignItems: "flex-start" },
   grow: { flex: 1 },
   lines: { flex: 1, gap: space.s8 },
+  stack: { gap: space.s8 },   // two lines of fixed width that keep the amount at the far edge
   stampGrid: { flexDirection: "row", flexWrap: "wrap", justifyContent: "space-between", rowGap: space.s24 },
   tiles: { flexDirection: "row", flexWrap: "wrap", gap: space.s12, rowGap: space.s24 },
   line: { height: 1, backgroundColor: color.borderNeutral },
