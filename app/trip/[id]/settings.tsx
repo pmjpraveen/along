@@ -22,7 +22,7 @@ import { toast } from "../../../src/stores/toast";
 import { ListItem } from "../../../src/components/ListItem";
 import { PlaceSearchField } from "../../../src/components/PlaceSearchField";
 import { FieldLabel, TextField } from "../../../src/components/TextField";
-import { CARD_COLORS, formatDate, formatRange } from "../../../src/domain/trip";
+import { CARD_COLORS, formatDate, formatRange, toIso } from "../../../src/domain/trip";
 import { color, radius, space, type } from "../../../src/theme/tokens";
 
 type Draft = { name: string; destination: string; description: string; cardColor: number; start: string; end: string; currency: string };
@@ -55,6 +55,7 @@ export default function TripSettings() {
   useFocusEffect(useCallback(() => { load(); }, [load]));
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
+  const today = toIso(new Date());
   const x = state?.ok ? state.settings : null;
   const over = x ? x.status === "completed" || x.status === "archived" : false;
   const owner = !!x?.isOwner;
@@ -186,7 +187,7 @@ export default function TripSettings() {
 
 
             <BottomSheet visible={datesOpen} onClose={() => setDatesOpen(false)} title="Modify dates" actionLabel="Confirm" actionType="secondaryNeutral" actionDisabled={!range.end} onAction={dates}>
-              <RangeCalendar value={range} onChange={setRange} />
+              <RangeCalendar value={range} onChange={setRange} min={x && x.start >= today ? today : undefined} today={today} />
             </BottomSheet>
             <BottomSheet visible={picker} onClose={() => setPicker(false)} title="Currency" tall header={<SearchField placeholder="Search currencies" value={query} onChangeText={setQuery} />} body="Amounts aren't converted, so choose this before adding any expenses.">
               <SheetRows>

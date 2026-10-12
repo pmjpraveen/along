@@ -170,3 +170,17 @@ test("US-02 someone who is not the owner has no photo button", async () => {
   expect(await screen.findByDisplayValue("Goa trip")).toBeTruthy();
   expect(screen.queryByRole("button", { name: /photo/i })).toBeNull();
 });
+
+test("US-04 for a trip that has not started, the Modify dates calendar shows only today and later; for a trip already under way it stays open to its own dates", async () => {
+  jest.useFakeTimers().setSystemTime(new Date("2026-10-15T10:00:00Z"));
+  try {
+    mockLoad.mockResolvedValue(settings({ start: "2026-11-10", end: "2026-11-14" }));
+    await render(<TripSettings />);
+    await fireEvent.press(await screen.findByRole("button", { name: /^Trip dates/ }));
+    expect(await screen.findByText("October 2026")).toBeTruthy();
+    expect(screen.queryByText("September 2026")).toBeNull();
+    expect(screen.getByRole("button", { name: "Wednesday 14 October 2026" }).props.accessibilityState).toMatchObject({ disabled: true });
+  } finally {
+    jest.useRealTimers();
+  }
+});

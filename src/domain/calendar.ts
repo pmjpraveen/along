@@ -54,3 +54,14 @@ export function rangeRole(iso: string, r: Range): "single" | "start" | "end" | "
 }
 
 export const monthsFrom = (from: Ym, count: number): Ym[] => Array.from({ length: count }, (_, i) => addMonths(from, i));
+
+// Which months the range calendar lists: this month onward, never the months before it. The one exception is a trip that already started earlier, which opens
+// from its own start month so its dates are not lost. It runs far enough to show the chosen last day plus a few months beyond (never fewer than `minMonths`).
+export function rangeMonths(value: { start: string; end: string }, today: string, minMonths = 18): Ym[] {
+  const days = [parseIso(today), parseIso(value.start)].filter((d): d is { year: number; month: number; day: number } => !!d);
+  const earliest = days.reduce((a, b) => (b.year * 12 + b.month < a.year * 12 + a.month ? b : a), days[0] ?? { year: 1970, month: 0, day: 1 });
+  const first: Ym = { year: earliest.year, month: earliest.month };
+  const end = parseIso(value.end) ?? parseIso(value.start);
+  const reach = end ? (end.year * 12 + end.month) - (first.year * 12 + first.month) + 4 : 0;
+  return monthsFrom(first, Math.max(minMonths, reach));
+}

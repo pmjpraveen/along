@@ -2,7 +2,8 @@ import { useState } from "react";
 import { ChevronLeft, ChevronRight } from "../icons";
 import { StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
-import { addMonths, dayLabel, isoOf, monthGrid, monthsFrom, monthTitle, nextRange, parseIso, Range, isWeekendColumn, rangeRole, WEEKDAYS, Ym } from "../domain/calendar";
+import { addMonths, dayLabel, isoOf, monthGrid, monthTitle, nextRange, parseIso, Range, isWeekendColumn, rangeMonths, rangeRole, WEEKDAYS, Ym } from "../domain/calendar";
+import { toIso } from "../domain/trip";
 import { color, font, radius, shadow, space, type, track } from "../theme/tokens";
 
 type Props = {
@@ -63,13 +64,12 @@ export function Calendar({ value, onSelect, min, max }: Props) {
   );
 }
 
-type RangeProps = { value: Range; onChange: (r: Range) => void; min?: string; months?: number };
+type RangeProps = { value: Range; onChange: (r: Range) => void; min?: string; months?: number; today?: string };
 
 // The same calendar as a date range picker: months stacked one under another (the sheet scrolls), tap a first and a last day and
 // the days between are banded in dark grey (#444444) with white numbers and rounded ends. Days before `min` are dimmed and cannot be chosen.
-export function RangeCalendar({ value, onChange, min, months = 18 }: RangeProps) {
-  const first = parseIso(value.start) ?? parseIso(min ?? "") ?? { year: new Date().getFullYear(), month: new Date().getMonth(), day: 1 };
-  const list = monthsFrom({ year: first.year, month: first.month }, months);
+export function RangeCalendar({ value, onChange, min, months = 18, today = toIso(new Date()) }: RangeProps) {
+  const list = rangeMonths(value, today, months);
   return (
     <View style={s.rangeList}>
       {list.map((ym) => (

@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react-native";
 import { StyleSheet } from "react-native";
-import { Calendar } from "./Calendar";
+import { Calendar, RangeCalendar } from "./Calendar";
 import { color } from "../theme/tokens";
 
 const flat = (el: { props: { style?: unknown } }) => StyleSheet.flatten(el.props.style as never) as Record<string, unknown>;
@@ -66,4 +66,18 @@ test("touch areas stay generous: each day has hit slop and the arrows are 48pt",
   const day = screen.getByRole("button", { name: "Friday 18 November 2022" }).props.hitSlop as { top: number; bottom: number; left: number; right: number };
   expect(36 + day.left + day.right).toBeGreaterThanOrEqual(44);
   expect(flat(screen.getByRole("button", { name: "Next month" }))).toMatchObject({ width: 48, height: 48 });
+});
+
+test("US-04 the range calendar starts at the current month and shows no earlier months, even when the trip is in a later month", async () => {
+  await render(<RangeCalendar value={{ start: "2026-11-10", end: "2026-11-14" }} onChange={jest.fn()} today="2026-10-15" min="2026-10-15" />);
+  expect(screen.getByText("October 2026")).toBeTruthy();
+  expect(screen.getByText("November 2026")).toBeTruthy();
+  expect(screen.queryByText("September 2026")).toBeNull();
+  expect(screen.getByRole("button", { name: "Thursday 15 October 2026" })).toBeTruthy();
+});
+
+test("US-04 days before today are dimmed and cannot be chosen, and today and later can", async () => {
+  await render(<RangeCalendar value={{ start: "", end: "" }} onChange={jest.fn()} today="2026-10-15" min="2026-10-15" />);
+  expect(screen.getByRole("button", { name: "Wednesday 14 October 2026" }).props.accessibilityState).toMatchObject({ disabled: true });
+  expect(screen.getByRole("button", { name: "Thursday 15 October 2026" }).props.accessibilityState).toMatchObject({ disabled: false });
 });

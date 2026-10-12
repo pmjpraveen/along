@@ -1,4 +1,4 @@
-import { addMonths, dayLabel, daysInMonth, isoOf, monthGrid, monthsFrom, monthTitle, nextRange, parseIso, rangeRole, weekdayOf, isWeekendColumn, WEEKDAYS } from "./calendar";
+import { addMonths, dayLabel, daysInMonth, isoOf, monthGrid, monthsFrom, monthTitle, nextRange, parseIso, rangeMonths, rangeRole, weekdayOf, isWeekendColumn, WEEKDAYS } from "./calendar";
 
 test("November 2022 starts on a Tuesday and has 30 days over five rows", () => {
   const grid = monthGrid({ year: 2022, month: 10 });
@@ -80,4 +80,29 @@ test("the week starts on Sunday: 1 Oct 2026 is a Thursday, so it sits in the fif
   expect(monthGrid({ year: 2026, month: 10 })[0]).toEqual([1, 2, 3, 4, 5, 6, 7]);   // 1 Nov 2026 is a Sunday
   expect([0, 1, 2, 3, 4, 5, 6].filter(isWeekendColumn)).toEqual([0, 6]);
   expect(dayLabel(2026, 9, 1)).toBe("Thursday 1 October 2026");
+});
+
+describe("rangeMonths: which months the range calendar lists", () => {
+  const titles = (m: { year: number; month: number }[]) => m.map((x) => `${x.year}-${String(x.month + 1).padStart(2, "0")}`);
+
+  test("US-04 a trip in November starts the list at the current month (October), never earlier, and includes November", () => {
+    const m = rangeMonths({ start: "2026-11-10", end: "2026-11-14" }, "2026-10-15");
+    expect(titles(m)[0]).toBe("2026-10");
+    expect(titles(m)).toContain("2026-11");
+    expect(titles(m)).not.toContain("2026-09");
+  });
+
+  test("US-04 with no dates chosen yet, it starts at this month", () => {
+    expect(titles(rangeMonths({ start: "", end: "" }, "2026-10-15"))[0]).toBe("2026-10");
+  });
+
+  test("US-04 an older trip (start before today) opens from its own start month, so past dates are not lost", () => {
+    expect(titles(rangeMonths({ start: "2026-07-03", end: "2026-07-09" }, "2026-10-15"))[0]).toBe("2026-07");
+  });
+
+  test("US-04 it always runs far enough to show the chosen last day, however far ahead", () => {
+    const m = rangeMonths({ start: "2028-02-01", end: "2028-02-10" }, "2026-10-15");
+    expect(titles(m)).toContain("2028-02");
+    expect(m.length).toBeGreaterThanOrEqual(18);
+  });
 });

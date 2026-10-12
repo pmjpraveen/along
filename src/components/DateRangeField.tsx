@@ -25,7 +25,7 @@ export function DateRangeField({ label, start, end, onChange, invalid, today = t
       </Pressable>
       <BottomSheet visible={open} onClose={() => setOpen(false)} title={label} actionLabel="Confirm" actionType="secondaryNeutral" actionDisabled={!draft.end}
         onAction={() => { onChange(draft); setOpen(false); }}>
-        <RangeCalendar value={draft} onChange={setDraft} min={today} />
+        <RangeCalendar value={draft} onChange={setDraft} min={today} today={today} />
       </BottomSheet>
     </>
   );
