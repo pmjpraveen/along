@@ -1,4 +1,5 @@
-import { act, fireEvent, render, screen } from "@testing-library/react-native";
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react-native";
+import { Platform, StyleSheet } from "react-native";
 import Expenses from "../../app/trip/[id]/(tabs)/expenses";
 import Balances from "../../app/trip/[id]/balances";
 
@@ -16,7 +17,8 @@ jest.mock("../offline/sync", () => ({
   discardQueued: (...a: unknown[]) => mockDiscard(...a),
 }));
 let mockAccess = true;
-jest.mock("../api/expenses", () => ({ listExpenses: (...a: unknown[]) => mockList(...a), loadExpenseAccess: async () => mockAccess }));
+const mockDeleteExpense = jest.fn();
+jest.mock("../api/expenses", () => ({ listExpenses: (...a: unknown[]) => mockList(...a), loadExpenseAccess: async () => mockAccess, deleteExpense: (...a: unknown[]) => mockDeleteExpense(...a) }));
 // These scenarios give each person's total; the list of who owes whom is whatever the API returns, so a scenario that does not spell it out gets one
 // that settles the totals, and the screen is tested on how it shows and acts on that list.
 jest.mock("../api/balances", () => ({
@@ -62,8 +64,8 @@ test("4.5 a balance failure does not hide the expense list", async () => {
 test("4.5 the balances screen lists everyone, me first, including members who are settled", async () => {
   await render(<Balances />);
   expect(await screen.findByText("You're owed ₹500.00")).toBeTruthy();
-  expect(screen.getByText("Ben owes ₹500.00")).toBeTruthy();
-  expect(screen.getByText("Rahul is settled up")).toBeTruthy();
+  expect(screen.getByLabelText(/^Ben\. Owes ₹500\.00\./)).toBeTruthy();   // everyone's totals are open by default
+  expect(screen.getByLabelText(/^Rahul\. Settled up\./)).toBeTruthy();
 });
 
 test("5.4 the balances screen shows my net, then who owes whom in plain words", async () => {
@@ -76,7 +78,7 @@ test("5.4 the balances screen shows my net, then who owes whom in plain words", 
   expect(await screen.findByText("You owe ₹800.00")).toBeTruthy();
   expect(screen.getByText("You owe Ben ₹500.00")).toBeTruthy();
   expect(screen.getByText("You owe Rahul ₹300.00")).toBeTruthy();
-  expect(screen.getByText("Ben is owed ₹500.00")).toBeTruthy();
+  expect(screen.getByLabelText(/^Ben\. Owed ₹500\.00\./)).toBeTruthy();
 });
 
 test("5.4 when everyone is at zero it says so, and shows no To settle up section", async () => {
@@ -278,4 +280,77 @@ test("US-14 a balances failure shows its message and Retry inside the Balances v
   await fireEvent.press(await screen.findByRole("tab", { name: "Balances" }));
   expect(await screen.findByText("No connection.")).toBeTruthy();
   expect(screen.getByRole("button", { name: "Retry" })).toBeTruthy();
+});
+
+// The delete dialog reports "fully closed" from the platform's own dismiss on iOS, which Jest does not run; Android reports it itself.
+describe("deleting an expense", () => {
+  beforeAll(() => { jest.replaceProperty(Platform, "OS", "android"); });
+  const startDelete = async () => fireEvent(await screen.findByLabelText(/^Lunch, /), "accessibilityAction", { nativeEvent: { actionName: "delete" } });
+
+  test("US-07 the person who added an expense, or the owner, deletes it after a confirmation, and the list reloads", async () => {
+    mockDeleteExpense.mockResolvedValue({ ok: true });
+    await render(<Expenses />);
+    await startDelete();
+    expect(await screen.findByText("Delete Lunch?")).toBeTruthy();
+    expect(mockDeleteExpense).not.toHaveBeenCalled();
+    const loadsBefore = mockList.mock.calls.length;
+    await fireEvent.press(screen.getByRole("button", { name: "Delete" }));
+    await waitFor(() => expect(mockDeleteExpense).toHaveBeenCalledWith("e1"));
+    await waitFor(() => expect(mockList.mock.calls.length).toBeGreaterThan(loadsBefore));
+  });
+
+  test("US-07 a swipeable expense row is opaque, so the red Delete behind it is hidden until the row is swiped", async () => {
+    await render(<Expenses />);
+    const row = await screen.findByLabelText(/^Lunch, /);
+    expect(StyleSheet.flatten(row.props.style)?.backgroundColor).toBeTruthy();
+  });
+
+  test("US-07 keeping the expense from the confirmation deletes nothing", async () => {
+    await render(<Expenses />);
+    await startDelete();
+    await fireEvent.press(await screen.findByRole("button", { name: "Keep" }));
+    expect(mockDeleteExpense).not.toHaveBeenCalled();
+  });
+
+  test("US-07 a refused delete says why and keeps the dialog open", async () => {
+    mockDeleteExpense.mockResolvedValue({ ok: false, message: "Only the person who added this expense or the trip owner can delete it." });
+    await render(<Expenses />);
+    await startDelete();
+    await fireEvent.press(await screen.findByRole("button", { name: "Delete" }));
+    expect(await screen.findByText("Only the person who added this expense or the trip owner can delete it.")).toBeTruthy();
+  });
+
+  test("US-07 someone who did not add the expense (and is not the owner) gets no delete option", async () => {
+    mockList.mockResolvedValue({ ok: true, currency: cur, expenses: [{ id: "e9", title: "Taxi", amount_minor: 30000, expense_date: "2026-12-02", paidBy: "Ben", addedBy: "Ben", canEdit: false }] });
+    await render(<Expenses />);
+    await fireEvent(await screen.findByLabelText(/^Taxi, /), "accessibilityAction", { nativeEvent: { actionName: "delete" } });
+    expect(screen.queryByText("Delete Taxi?")).toBeNull();
+    expect(screen.queryByRole("button", { name: "Delete Taxi" })).toBeNull();
+  });
+});
+
+test("US-07 transactions are grouped under day headers with each day's total, newest day first", async () => {
+  mockList.mockResolvedValue({ ok: true, currency: cur, trip: { name: "Goa", destination: "Goa", cardColor: 2, start: "2026-12-01", end: "2026-12-05" }, expenses: [
+    { id: "e1", title: "Dinner", amount_minor: 30000, expense_date: "2026-12-03", paidBy: "Asha", addedBy: "Asha", canEdit: true },
+    { id: "e2", title: "Cab", amount_minor: 20000, expense_date: "2026-12-03", paidBy: "Ben", addedBy: "Ben", canEdit: false },
+    { id: "e3", title: "Hotel", amount_minor: 100000, expense_date: "2026-12-01", paidBy: "Asha", addedBy: "Asha", canEdit: true },
+    { id: "e4", title: "Flights", amount_minor: 500000, expense_date: "2026-11-20", paidBy: "Asha", addedBy: "Asha", canEdit: true },
+  ] });
+  await render(<Expenses />);
+  expect(await screen.findByLabelText("Day 3 · 3 Dec, ₹500.00")).toBeTruthy();
+  expect(screen.getByLabelText("Day 1 · 1 Dec, ₹1,000.00")).toBeTruthy();
+  expect(screen.getByLabelText("Before the trip, ₹5,000.00")).toBeTruthy();   // never hidden, even outside the trip's dates
+  expect(screen.queryByText("Day 2 · 2 Dec")).toBeNull();                      // a day with nothing is not listed
+});
+
+test("US-07 each day's band is a sticky header: the sticky indices point exactly at the bands, which sit right after the page title, summary and switch", async () => {
+  mockList.mockResolvedValue({ ok: true, currency: cur, trip: { name: "Goa", destination: "Goa", cardColor: 2, start: "2026-12-01", end: "2026-12-05" }, expenses: [
+    { id: "e1", title: "Dinner", amount_minor: 30000, expense_date: "2026-12-03", paidBy: "Asha", addedBy: "Asha", canEdit: true },
+    { id: "e3", title: "Hotel", amount_minor: 100000, expense_date: "2026-12-01", paidBy: "Asha", addedBy: "Asha", canEdit: true },
+  ] });
+  await render(<Expenses />);
+  await screen.findByLabelText("Day 3 · 3 Dec, ₹300.00");
+  const scroll = screen.getByTestId("expenses-scroll");
+  // children: 0 page title, 1 summary, 2 switch, 3 day band, 4 its rows, 5 day band, 6 its rows
+  expect(scroll.props.stickyHeaderIndices).toEqual([3, 5]);
 });

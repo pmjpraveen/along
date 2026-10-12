@@ -1,4 +1,4 @@
-import { createExpense, updateExpense } from "./expenses";
+import { createExpense, deleteExpense, updateExpense } from "./expenses";
 
 const mockRpc = jest.fn();
 jest.mock("./supabase", () => ({ supabase: { rpc: (...a: unknown[]) => mockRpc(...a) } }));
@@ -76,4 +76,16 @@ test("6.2 no connection and server hiccups are marked retryable; a validation re
   expect(await createExpense(input)).toMatchObject({ ok: false, retry: true });
   mockRpc.mockResolvedValue({ error: { message: "split_must_sum" }, status: 400 });
   expect((await createExpense(input) as { retry?: boolean }).retry).toBeUndefined();
+});
+
+test("US-07 deleting calls delete_expense, treats an already-deleted one as done, and explains a refusal or being offline", async () => {
+  mockRpc.mockResolvedValueOnce({ error: null });
+  expect(await deleteExpense("e1")).toEqual({ ok: true });
+  expect(mockRpc).toHaveBeenCalledWith("delete_expense", { p_expense: "e1" });
+  mockRpc.mockResolvedValueOnce({ error: { message: "expense not found", code: "P0002" } });
+  expect(await deleteExpense("e1")).toEqual({ ok: true });
+  mockRpc.mockResolvedValueOnce({ error: { message: "x", code: "42501" } });
+  expect(await deleteExpense("e1")).toEqual({ ok: false, message: "Only the person who added this expense or the trip owner can delete it." });
+  mockRpc.mockResolvedValueOnce({ error: { message: "Failed to fetch" } });
+  expect((await deleteExpense("e1")).ok).toBe(false);
 });

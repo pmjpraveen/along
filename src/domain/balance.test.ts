@@ -1,4 +1,4 @@
-import { describeBalance, describeTransfer, pairwiseDebts, simplifyDebts } from "./balance";
+import { describeBalance, describeTransfer, pairwiseDebts, personTotals, simplifyDebts } from "./balance";
 
 test("4.5 says who owes or is owed, in plain words, for me and for others", () => {
   expect(describeBalance(50000, "Asha", true, 2, "INR")).toBe("You're owed ₹500.00");
@@ -132,5 +132,33 @@ test("US-14 for random expenses and payments, every person's total matches the l
     const pairs = t.map((x) => [x.from, x.to].sort().join("|"));
     expect(new Set(pairs).size).toBe(pairs.length);
     expect(t.every((x) => x.amountMinor > 0 && x.from !== x.to)).toBe(true);
+  }
+});
+
+test("US-14 each person's total cost is the sum of their shares, and what they paid is the sum of the expenses they paid", () => {
+  const totals = personTotals([
+    { payerId: "praveen", amountMinor: 7113000, shares: ["praveen", "asha", "lata", "meera", "mohan"].map((m) => ({ memberId: m, owedMinor: 1422600 })) },
+    { payerId: "hemant", amountMinor: 6728000, shares: ["hemant", "anusha", "deepa", "girija"].map((m) => ({ memberId: m, owedMinor: 1682000 })) },
+    { payerId: "praveen", amountMinor: 1000, shares: [{ memberId: "praveen", owedMinor: 400 }, { memberId: "asha", owedMinor: 600 }] },
+  ]);
+  expect(totals.get("praveen")).toEqual({ costMinor: 1422600 + 400, paidMinor: 7113000 + 1000 });
+  expect(totals.get("asha")).toEqual({ costMinor: 1422600 + 600, paidMinor: 0 });
+  expect(totals.get("hemant")).toEqual({ costMinor: 1682000, paidMinor: 6728000 });
+  expect(totals.get("nobody")).toBeUndefined();
+});
+
+test("US-14 across random expenses, everyone's costs add up to what was paid, and to the total of all expenses", () => {
+  let seed = 7;
+  const rnd = (n: number) => { seed = (seed * 1103515245 + 12345) % 2147483648; return seed % n; };
+  const people = ["a", "b", "c", "d", "e"];
+  for (let round = 0; round < 300; round++) {
+    const expenses = Array.from({ length: 1 + rnd(6) }, () => {
+      const shares = people.filter(() => rnd(2) === 0).map((m) => ({ memberId: m, owedMinor: 1 + rnd(90000) }));
+      return { payerId: people[rnd(5)], shares, amountMinor: shares.reduce((s, x) => s + x.owedMinor, 0) };
+    });
+    const totals = [...personTotals(expenses).values()];
+    const cost = totals.reduce((s, x) => s + x.costMinor, 0);
+    expect(cost).toBe(totals.reduce((s, x) => s + x.paidMinor, 0));
+    expect(cost).toBe(expenses.reduce((s, e) => s + e.amountMinor, 0));
   }
 });

@@ -4,6 +4,7 @@ import { useRouter } from "expo-router";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { BalancesResult } from "../api/balances";
 import { describeBalance, describeTransfer } from "../domain/balance";
+import { formatMinor } from "../domain/money";
 import { haptic } from "../haptics";
 import { useReducedMotion } from "../hooks/useReducedMotion";
 import { Check } from "../icons";
@@ -13,6 +14,9 @@ import { Alert } from "./Alert";
 import { Avatar } from "./Avatar";
 import { Button, TextButton } from "./Buttons";
 import { Skeleton } from "./Skeleton";
+
+// The page shows the first few payments, with a button for the rest, so the list stays light however big the group is.
+const PAYMENTS_SHOWN = 4;
 
 // Shown once the last payment is recorded: a check settles in with a gentle spring and a fade (just a fade with Reduce Motion).
 function AllSettled() {
@@ -37,7 +41,6 @@ function AllSettled() {
 export function BalancesView({ state, tripId, onRetry, showMine = true }: { state: BalancesResult | null; tripId: string; onRetry: () => void; showMine?: boolean }) {
   const router = useRouter();
   const mine = state?.ok ? state.rows.find((r) => r.isMe) : undefined;
-  const others = state?.ok ? state.rows.filter((r) => !r.isMe) : [];
   const transfers = state?.ok ? state.transfers : [];
   // I can record a payment I am part of; the trip owner (the organiser) can record any payment, so they can settle up for anyone and guests who have no
   // account. The server allows exactly the same people, and a recorded payment shows who recorded it.
@@ -48,6 +51,7 @@ export function BalancesView({ state, tripId, onRetry, showMine = true }: { stat
   // Only a trip that had payments to make and now has none earns the moment; a trip that never owed anything does not.
   const hadDebts = useRef(false);
   const [settled, setSettled] = useState(false);
+  const [allPayments, setAllPayments] = useState(false);   // the settle-up list shows the first few until asked for more
   useEffect(() => {
     if (!state?.ok) return;
     if (ordered.length > 0) { hadDebts.current = true; setSettled(false); }
@@ -73,11 +77,29 @@ export function BalancesView({ state, tripId, onRetry, showMine = true }: { stat
         </View>
       )}
 
+      <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={[s.section, !showMine && s.sectionFirst]}>Everyone's totals</Text>
+      <View>
+        {[...state.rows].sort((x, y) => y.net - x.net || x.name.localeCompare(y.name)).map((r) => {
+          const money = (n: number) => formatMinor(n, state.currency.exponent, state.currency.code);
+          const status = r.net > 0 ? `Owed ${money(r.net)}` : r.net < 0 ? `Owes ${money(-r.net)}` : "Settled up";
+          return (
+            <View key={r.memberId} accessible accessibilityLabel={`${r.isMe ? "You" : r.name}. ${status}. Total cost ${money(r.costMinor)}, paid ${money(r.paidMinor)}`} style={s.person}>
+              <Avatar name={r.name} uri={r.avatarUrl} guest={r.guest} size={40} />
+              <View style={s.personText}>
+                <Text maxFontSizeMultiplier={1.4} style={s.personName}>{r.isMe ? "You" : r.name}</Text>
+                <Text maxFontSizeMultiplier={1.4} style={s.personSub}>Cost {money(r.costMinor)} · Paid {money(r.paidMinor)}</Text>
+              </View>
+              <Text maxFontSizeMultiplier={1.4} style={s.personStatus}>{status}</Text>
+            </View>
+          );
+        })}
+      </View>
+
       {ordered.length > 0 && (
         <>
-          <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={[s.section, !showMine && s.sectionFirst]}>To settle up</Text>
+          <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>To settle up</Text>
           <View>
-            {ordered.map((t) => (
+            {(allPayments ? ordered : ordered.slice(0, PAYMENTS_SHOWN)).map((t) => (
               <View key={`${t.from}-${t.to}`} style={s.row}>
                 <Avatar name={nameOf(t.from)} uri={whoIs(t.from)?.avatarUrl} guest={whoIs(t.from)?.guest} size={40} />
                 <Text maxFontSizeMultiplier={1.4} style={s.line}>{describeTransfer(t, nameOf, mine?.memberId ?? null, state.currency.exponent, state.currency.code)}</Text>
@@ -87,20 +109,11 @@ export function BalancesView({ state, tripId, onRetry, showMine = true }: { stat
               </View>
             ))}
           </View>
+          {ordered.length > PAYMENTS_SHOWN && <TextButton label={allPayments ? "Show fewer" : `Show ${ordered.length - PAYMENTS_SHOWN} more`} onPress={() => setAllPayments((v) => !v)} />}
         </>
       )}
 
       {settled && <AllSettled />}
-
-      <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>Everyone</Text>
-      <View>
-        {others.map((r) => (
-          <View key={r.memberId} accessible style={s.row}>
-            <Avatar name={r.name} uri={r.avatarUrl} guest={r.guest} size={40} />
-            <Text maxFontSizeMultiplier={1.4} style={s.line}>{describeBalance(r.net, r.name, false, state.currency.exponent, state.currency.code)}</Text>
-          </View>
-        ))}
-      </View>
     </>
   );
 }
@@ -111,9 +124,14 @@ const s = StyleSheet.create({
   mineLabel: { ...type.fieldValue, color: color.charcoal },
   mineText: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: track(30), color: color.brandBlack, fontVariant: ["tabular-nums"] },
   section: { ...type.fieldValue, fontFamily: font.medium, color: color.obsidian, marginTop: space.s16 },
-  sectionFirst: { marginTop: 0 },
-  row: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 72, paddingVertical: space.s12, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
+  row: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 64, paddingVertical: space.s8, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
   settled: { flexDirection: "row", alignItems: "center", gap: space.s16, paddingVertical: space.s8 },
   badge: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
+  sectionFirst: { marginTop: 0 },
+  person: { flexDirection: "row", alignItems: "center", gap: space.s12, minHeight: 64, paddingVertical: space.s8, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
+  personText: { flex: 1, gap: 2 },
+  personName: { ...type.label, color: color.obsidian },
+  personSub: { ...type.fieldMessage, color: color.slate, fontVariant: ["tabular-nums"] },
+  personStatus: { ...type.label, color: color.obsidian, fontVariant: ["tabular-nums"] },
   line: { ...type.fieldValue, flex: 1, color: color.obsidian, fontVariant: ["tabular-nums"] },
 });

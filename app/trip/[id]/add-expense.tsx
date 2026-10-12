@@ -22,7 +22,10 @@ import { PayerPicker } from "../../../src/components/PayerPicker";
 import { AmountInput } from "../../../src/components/AmountInput";
 import { formatMinor, parseMinor } from "../../../src/domain/money";
 import { customError, customRemaining, customShares, formatPercent, percentError, shareSummary, sharesError, splitEqual, splitPercentage, splitShares } from "../../../src/domain/split";
-import { toIso } from "../../../src/domain/trip";
+import { short, toIso } from "../../../src/domain/trip";
+import { expenseDayChoices } from "../../../src/domain/expenseDays";
+import { BottomSheet } from "../../../src/components/BottomSheet";
+import { Calendar } from "../../../src/components/Calendar";
 import { color, font, radius, space, type } from "../../../src/theme/tokens";
 
 type Method = "equal" | "custom" | "percentage" | "shares";
@@ -56,6 +59,7 @@ export default function AddExpense() {
   const [percentText, setPercentText] = useState<Record<string, string>>({});
   const [sharesText, setSharesText] = useState<Record<string, string>>({});
   const [date, setDate] = useState(() => toIso(new Date()));
+  const [pickingDate, setPickingDate] = useState(false);
   const [editing, setEditing] = useState<ExpenseDetail | null>(null);
 
   const load = async () => {
@@ -175,6 +179,18 @@ export default function AddExpense() {
               <TextField label="What was it for?" accessibilityLabel="Title" placeholder="Lunch" value={title} onChangeText={setTitle}
                 autoCapitalize="sentences" status={errors.title ? "error" : undefined} message={errors.title} />
             </View>
+            {form.trip && (
+              <View style={s.field}>
+                <FieldLabel>Day</FieldLabel>
+                <ScrollView horizontal showsHorizontalScrollIndicator={false} style={s.chipScroll} contentContainerStyle={s.chips} accessibilityRole="tablist" accessibilityLabel="Day">
+                  {expenseDayChoices(form.trip.start, form.trip.end, date).map((c) => (
+                    <Chip key={c.date} role="tab" label={c.dayNumber ? `${short(c.date)} - Day ${c.dayNumber}` : short(c.date)} accessibilityLabel={c.dayNumber ? `Day ${c.dayNumber}, ${short(c.date)}` : short(c.date)}
+                      selected={c.date === date} onPress={() => setDate(c.date)} />
+                  ))}
+                  <Chip role="tab" label="Other date" selected={false} onPress={() => setPickingDate(true)} />
+                </ScrollView>
+              </View>
+            )}
             <View style={s.field}>
               {pickingPayer ? (
                 <>
@@ -236,6 +252,9 @@ export default function AddExpense() {
           <Button label={busy ? "Saving…" : editing ? "Save changes" : "Add expense"} onPress={save} type={liveMinor && title.trim() ? "primary" : "secondaryNeutral"} size="large" />
         </View>
       )}
+      <BottomSheet visible={pickingDate} onClose={() => setPickingDate(false)} title="Date">
+        <Calendar value={date} onSelect={(iso) => { setDate(iso); setPickingDate(false); }} />
+      </BottomSheet>
     </KeyboardAvoidingView>
   );
 }

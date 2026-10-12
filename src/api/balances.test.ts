@@ -26,7 +26,7 @@ const setup = (settlements: object[] = []) => mockFrom.mockImplementation((t: st
   if (t === "trips") return table({ primary_currency: "INR", currencies: { minor_unit_exponent: 2 } });
   if (t === "trip_members") return table(members);
   if (t === "trip_member_balances") return table([{ member_id: "p", net_minor: 2000 }, { member_id: "h", net_minor: 1000 }, { member_id: "a", net_minor: -1000 }, { member_id: "m", net_minor: -2000 }]);
-  if (t === "expenses") return table([{ id: "e1", paid_by_member_id: "p" }, { id: "e2", paid_by_member_id: "h" }]);
+  if (t === "expenses") return table([{ id: "e1", paid_by_member_id: "p", amount_minor: 3000 }, { id: "e2", paid_by_member_id: "h", amount_minor: 2000 }]);
   if (t === "expense_participants") return table([
     { expense_id: "e1", trip_member_id: "p", owed_amount_minor: 1000 }, { expense_id: "e1", trip_member_id: "m", owed_amount_minor: 2000 },
     { expense_id: "e2", trip_member_id: "h", owed_amount_minor: 1000 }, { expense_id: "e2", trip_member_id: "a", owed_amount_minor: 1000 },
@@ -68,4 +68,10 @@ test("US-14 each person's profile photo comes with their balance, and a person w
   mockSigned.mockResolvedValue({ data: [{ path: "u-h/photo.jpg", signedUrl: "https://signed/h.jpg" }] });
   const r = await loadBalances("t1");
   expect(r.ok && r.rows.map((x) => [x.name, x.avatarUrl])).toEqual([["Praveen", null], ["Hemant", "https://signed/h.jpg"], ["Anusha", null], ["Mohan", null]]);
+});
+
+test("US-14 each person's total cost and what they paid come with their balance", async () => {
+  setup();
+  const r = await loadBalances("t1");
+  expect(r.ok && r.rows.map((x) => [x.name, x.costMinor, x.paidMinor])).toEqual([["Praveen", 1000, 3000], ["Hemant", 1000, 2000], ["Anusha", 1000, 0], ["Mohan", 2000, 0]]);
 });

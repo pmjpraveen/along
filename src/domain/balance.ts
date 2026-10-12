@@ -58,6 +58,19 @@ export function pairwiseDebts(expenses: ExpenseEntry[], payments: PaymentEntry[]
   return out.sort((x, y) => y.amountMinor - x.amountMinor || (x.from < y.from ? -1 : x.from > y.from ? 1 : x.to < y.to ? -1 : x.to > y.to ? 1 : 0));
 }
 
+// What each person's share of every expense adds up to (their cost of the trip), and what they paid out. Both are plain sums of what was added.
+export type ExpenseTotalsEntry = ExpenseEntry & { amountMinor: number };
+export type PersonTotal = { costMinor: number; paidMinor: number };
+export function personTotals(expenses: ExpenseTotalsEntry[]): Map<string, PersonTotal> {
+  const out = new Map<string, PersonTotal>();
+  const at = (id: string) => { let v = out.get(id); if (!v) { v = { costMinor: 0, paidMinor: 0 }; out.set(id, v); } return v; };
+  for (const e of expenses) {
+    at(e.payerId).paidMinor += e.amountMinor;
+    for (const s of e.shares) at(s.memberId).costMinor += s.owedMinor;
+  }
+  return out;
+}
+
 // "You owe Rahul ₹800.00", "Ben owes you ₹500.00", "Ben owes Rahul ₹300.00".
 export function describeTransfer(t: Transfer, nameOf: (id: string) => string, meId: string | null, exponent: number, code: string): string {
   const amount = formatMinor(t.amountMinor, exponent, code);

@@ -7,24 +7,24 @@ const isOffline = (m: string) => /network|fetch/i.test(m);
 
 export type Currency = { code: string; exponent: number };
 export type PayerOption = { id: string; name: string; guest: boolean; isMe: boolean; uri?: string | null };
-export type FormData = { currency: Currency; members: PayerOption[] };
+export type FormData = { currency: Currency; members: PayerOption[]; trip?: { start: string; end: string } };
 export type FormResult = { ok: true; data: FormData } | { ok: false; message: string };
 export type ExpenseRow = {
   id: string; title: string; amount_minor: number; expense_date: string; paidBy: string; addedBy: string; canEdit: boolean;
   category?: string; paidById?: string; addedById?: string; myShareMinor?: number;
 };
 export type ExpensesResult =
-  | { ok: true; currency: Currency; expenses: ExpenseRow[]; meId?: string | null; trip?: { name: string; destination: string; cardColor: number }; members?: { name: string; guest: boolean; uri?: string | null }[] }
+  | { ok: true; currency: Currency; expenses: ExpenseRow[]; meId?: string | null; trip?: { name: string; destination: string; cardColor: number; start?: string; end?: string }; members?: { name: string; guest: boolean; uri?: string | null }[] }
   | { ok: false; message: string };
 export type CreateExpenseInput = { tripId: string; title: string; amountMinor: number; date: string; split: Share[]; key: string; paidBy?: string; method?: "equal" | "custom" | "percentage" | "shares"; values?: Record<string, number> };
 // retry: the request could not be completed for a reason that is not the data (no connection, server hiccup), so it is safe to send again.
 export type CreateExpenseResult = { ok: true } | { ok: false; message: string; retry?: boolean };
 
 async function tripCurrency(tripId: string) {
-  const { data, error } = await supabase.from("trips").select("primary_currency, name, destination_name, card_color, currencies(minor_unit_exponent)").eq("id", tripId).single();
+  const { data, error } = await supabase.from("trips").select("primary_currency, name, destination_name, card_color, start_date, end_date, currencies(minor_unit_exponent)").eq("id", tripId).single();
   if (error) return { error };
   const cur = data.currencies as unknown as { minor_unit_exponent: number };
-  return { currency: { code: data.primary_currency as string, exponent: cur.minor_unit_exponent }, trip: { name: data.name as string, destination: data.destination_name as string, cardColor: data.card_color as number } };
+  return { currency: { code: data.primary_currency as string, exponent: cur.minor_unit_exponent }, trip: { name: data.name as string, destination: data.destination_name as string, cardColor: data.card_color as number, start: data.start_date as string, end: data.end_date as string } };
 }
 
 // Once a trip is completed only its owner can add expenses (the server enforces it too); everyone can still see them. True when I may add one.
@@ -53,7 +53,7 @@ export async function loadExpenseForm(tripId: string): Promise<FormResult> {
     if (err || !cur.currency) return { ok: false, message: isOffline(err?.message ?? "") ? OFFLINE : "Couldn't load the trip. Try again." };
     const urls = await signAvatars((members.data ?? []).map((m) => m.avatar_url));
     return { ok: true, data: {
-      currency: cur.currency,
+      currency: cur.currency, trip: { start: cur.trip.start, end: cur.trip.end },
       members: (members.data ?? []).map((m) => ({ id: m.id, name: m.display_name, guest: m.membership_type === "guest", isMe: !!me && m.user_id === me, uri: urls.get(m.avatar_url) ?? null })),
     } };
   } catch {
@@ -197,6 +197,21 @@ export async function updateExpense(i: UpdateExpenseInput): Promise<CreateExpens
     if (error.message === "stale_version") return { ok: false, message: "Someone else just changed this expense. Go back and reopen it to see the latest." };
     if (error.code === "42501") return { ok: false, message: "Only the person who added this expense or the trip owner can edit it." };
     return { ok: false, message: "Couldn't save your changes. Try again." };
+  } catch {
+    return { ok: false, message: OFFLINE };
+  }
+}
+
+export type DeleteExpenseResult = { ok: true } | { ok: false; message: string };
+
+// Hides an expense for everyone (it is never erased). The person who added it or the trip owner can; the server refuses anyone else. Balances follow by
+// themselves, since they are derived from the expenses that remain.
+export async function deleteExpense(expenseId: string): Promise<DeleteExpenseResult> {
+  try {
+    const { error } = await supabase.rpc("delete_expense", { p_expense: expenseId });
+    if (!error || error.code === "P0002") return { ok: true };   // already gone
+    if (isOffline(error.message)) return { ok: false, message: OFFLINE };
+    return { ok: false, message: error.code === "42501" ? "Only the person who added this expense or the trip owner can delete it." : "Couldn't delete the expense. Try again." };
   } catch {
     return { ok: false, message: OFFLINE };
   }

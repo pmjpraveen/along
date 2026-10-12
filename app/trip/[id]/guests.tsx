@@ -5,11 +5,10 @@ import { useReducedMotion } from "../../../src/hooks/useReducedMotion";
 import { motion } from "../../../src/theme/motion";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
-import { Trash2 } from "../../../src/icons";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import ReanimatedSwipeable, { SwipeableMethods } from "react-native-gesture-handler/ReanimatedSwipeable";
+import { SwipeToDelete } from "../../../src/components/SwipeToDelete";
 import { Dialog } from "../../../src/components/Dialog";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 import { ScrollView, Share, StyleSheet, Text, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { createInviteLink } from "../../../src/api/invites";
@@ -41,7 +40,6 @@ export default function Guests() {
   const [deleting, setDeleting] = useState<Member | null>(null);
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
-  const rows = useRef<Record<string, SwipeableMethods | null>>({});
 
   const load = useCallback(() => {
     return listMembers(id).then((r) => { if (r.ok) { setMembers(r.members); setError(null); } else setError(r.message); });
@@ -55,7 +53,7 @@ export default function Guests() {
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
   const add = () => router.push({ pathname: "/trip/[id]/add-guest", params: { id } });
 
-  const closeDelete = () => { if (deleting) rows.current[deleting.id]?.close(); setDeleting(null); setDeleteError(null); };
+  const closeDelete = () => { setDeleting(null); setDeleteError(null); };
   const confirmDelete = async () => {
     if (!deleting || deleteBusy) return;
     setDeleteBusy(true);
@@ -109,17 +107,11 @@ export default function Guests() {
                 <View key={g.id}>
                   {i > 0 && <View style={s.divider} />}
                   {isOwner ? (
-                    <ReanimatedSwipeable ref={(r) => { rows.current[g.id] = r; }} overshootRight={false} rightThreshold={40}
-                      renderRightActions={() => (
-                        <Pressable accessibilityRole="button" accessibilityLabel={`Delete ${g.display_name}`} dip={false} onPress={() => setDeleting(g)} style={s.delete}>
-                          <Trash2 size={18} color={color.paper} strokeWidth={1.75} />
-                          <Text maxFontSizeMultiplier={1.3} style={s.deleteText}>Delete</Text>
-                        </Pressable>
-                      )}>
+                    <SwipeToDelete label={`Delete ${g.display_name}`} onDelete={() => { setDeleteError(null); setDeleting(g); }}>
                       <ListItem title={g.display_name} subtitle="Hasn't joined yet" leading={<Avatar name={g.display_name} guest size={40} />}
                         trailing="button" buttonLabel={busyId === g.id ? "Inviting…" : "Invite"} onPress={() => invite(g)}
                         actions={[{ name: "delete", label: `Delete ${g.display_name}` }]} onAction={(a) => { if (a === "delete") setDeleting(g); }} />
-                    </ReanimatedSwipeable>
+                    </SwipeToDelete>
                   ) : (
                     <ListItem title={g.display_name} subtitle="Hasn't joined yet" leading={<Avatar name={g.display_name} guest size={40} />} />
                   )}
@@ -152,8 +144,6 @@ const s = StyleSheet.create({
   sub: { ...type.body, color: color.charcoal },
   head: { gap: space.s8, marginTop: space.s8 },
   list: { marginHorizontal: -space.s16 },
-  delete: { width: 96, alignItems: "center", justifyContent: "center", gap: space.s4, backgroundColor: color.alarmRed },
-  deleteText: { ...type.buttonSmall, color: color.paper },
   divider: { height: 1, marginHorizontal: space.s16, backgroundColor: color.borderNeutral },
   gap: { gap: space.s12, alignItems: "flex-start" },
   footer: { position: "absolute", left: 0, right: 0, bottom: 0, paddingHorizontal: space.s20, paddingTop: space.s12, backgroundColor: color.paper, borderTopWidth: 1, borderTopColor: color.borderNeutral },

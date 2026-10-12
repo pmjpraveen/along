@@ -9,6 +9,8 @@ export { default as Camera } from "lucide-react-native/icons/camera";
 export { default as Car } from "lucide-react-native/icons/car";
 export { default as Check } from "lucide-react-native/icons/check";
 export { default as ChevronLeft } from "lucide-react-native/icons/chevron-left";
+export { default as ChevronDown } from "lucide-react-native/icons/chevron-down";
+export { default as ChevronUp } from "lucide-react-native/icons/chevron-up";
 export { default as ChevronRight } from "lucide-react-native/icons/chevron-right";
 export { default as CircleAlert } from "lucide-react-native/icons/circle-alert";
 export { default as CircleCheck } from "lucide-react-native/icons/circle-check";

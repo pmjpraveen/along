@@ -13,7 +13,7 @@ jest.mock("../api/expenses", () => ({
   updateExpense: (...a: unknown[]) => mockUpdate(...a),
   loadExpense: async () => ({ ok: true, expense: { id: "e1", version: 3, title: "Dinner", amountMinor: 90000, date: "2026-12-02", paidBy: "m2", method: "equal",
     people: [{ memberId: "m1", owedMinor: 45000, value: null }, { memberId: "m2", owedMinor: 45000, value: null }] } }),
-  loadExpenseForm: async () => ({ ok: true, data: { currency: { code: "INR", exponent: 2 }, members: [
+  loadExpenseForm: async () => ({ ok: true, data: { currency: { code: "INR", exponent: 2 }, trip: { start: "2026-12-01", end: "2026-12-03" }, members: [
     { id: "m2", name: "Ben", guest: false, isMe: false }, { id: "m1", name: "Asha", guest: false, isMe: true }, { id: "m3", name: "Rahul", guest: true, isMe: false } ] } }),
   createExpense: (...a: unknown[]) => mockCreate(...a),
 }));
@@ -344,4 +344,36 @@ test("a member cannot start an expense on a completed trip: it says only the own
   await render(<AddExpense />);
   expect(await screen.findByText(/only the owner can add expenses/)).toBeTruthy();
   expect(screen.queryByRole("button", { name: "Add expense" })).toBeNull();
+});
+
+test("US-07 the day chips are the trip's days, and the chosen day is the date the expense is saved with", async () => {
+  mockCreate.mockResolvedValue({ ok: true });
+  await render(<AddExpense />);
+  await fill("1000", "Dinner");
+  expect(await screen.findByRole("tab", { name: "Day 1, 1 Dec" })).toBeTruthy();
+  expect(screen.getByRole("tab", { name: "Day 3, 3 Dec" })).toBeTruthy();
+  await fireEvent.press(screen.getByRole("tab", { name: "Day 2, 2 Dec" }));
+  await save();
+  await waitFor(() => expect(mockBack).toHaveBeenCalled());
+  expect(mockCreate.mock.calls[0][0]).toMatchObject({ date: "2026-12-02" });
+});
+
+test("US-07 a date outside the trip is never blocked: today shows as its own choice when it is not a day of the trip", async () => {
+  jest.useFakeTimers().setSystemTime(new Date("2027-02-10T10:00:00Z"));
+  try {
+    mockCreate.mockResolvedValue({ ok: true });
+    await render(<AddExpense />);
+    await fill("500", "Late bill");
+    expect(await screen.findByRole("tab", { name: "10 Feb" })).toBeTruthy();   // not numbered: it is not a day of the trip
+    await save();
+    await waitFor(() => expect(mockBack).toHaveBeenCalled());
+    expect(mockCreate.mock.calls[0][0]).toMatchObject({ date: "2027-02-10" });
+  } finally {
+    jest.useRealTimers();
+  }
+});
+
+test("US-07 Other date opens a calendar so any date can be chosen", async () => {
+  await render(<AddExpense />);
+  expect(await screen.findByRole("tab", { name: "Other date" })).toBeTruthy();
 });
