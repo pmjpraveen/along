@@ -14,7 +14,7 @@ export default function TripTabs() {
   const [canAddExpense, setCanAddExpense] = useState(true);
   useEffect(() => { loadExpenseAccess(id).then(setCanAddExpense); }, [id]);
   const choose = (c: AddChoice) =>
-    router.push({ pathname: c === "item" ? "/trip/[id]/add-item" : c === "guest" ? "/trip/[id]/add-guest" : "/trip/[id]/add-expense", params: { id } });
+    router.push({ pathname: c === "item" ? "/trip/[id]/add-item" : c === "import" ? "/trip/[id]/import" : c === "guest" ? "/trip/[id]/add-guest" : "/trip/[id]/add-expense", params: { id } });
   return (
     <View style={{ flex: 1 }}>
       <NativeTabs tintColor={color.brandBlack} iconColor={{ default: color.iconInk, selected: color.brandBlack }}

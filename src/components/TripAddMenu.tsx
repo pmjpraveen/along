@@ -1,4 +1,4 @@
-import { CalendarPlus, Plus, Receipt, UserPlus } from "../icons";
+import { CalendarPlus, ClipboardPaste, Plus, Receipt, UserPlus } from "../icons";
 import { useRef } from "react";
 import { create } from "zustand";
 import { Platform, StyleSheet, View } from "react-native";
@@ -11,10 +11,13 @@ import { ListItem } from "./ListItem";
 // Open state lives in a store so the iOS native "+" tab (a separate screen) can open the sheet that the layout renders.
 export const useAddMenu = create<{ open: boolean; set: (o: boolean) => void }>((set) => ({ open: false, set: (open) => set({ open }) }));
 
-export type AddChoice = "item" | "guest" | "expense";
+// Import plans is built but its server side (function, migration 0057, OpenRouter key) is not live yet, so the row stays hidden. Set to true once it is.
+const SHOW_IMPORT = false;
+
+export type AddChoice = "item" | "import" | "guest" | "expense";
 
 // The one "+" for a trip. On iOS it is the platform's own detached tab-bar button (see add.tsx); on Android a floating button above the
-// bar. Either opens a sheet with the three things you add to a trip; choosing one closes the sheet first, then opens that form.
+// bar. Either opens a sheet with the things you add to a trip; choosing one closes the sheet first, then opens that form.
 export function TripAddMenu({ onChoose, canAddExpense = true }: { onChoose: (c: AddChoice) => void; canAddExpense?: boolean }) {
   const { bottom } = useSafeAreaInsets();
   const open = useAddMenu((s) => s.open);
@@ -34,6 +37,7 @@ export function TripAddMenu({ onChoose, canAddExpense = true }: { onChoose: (c: 
       <BottomSheet visible={open} onClose={() => setOpen(false)} onClosed={closed} title="Add to trip">
         <SheetRows>
         <ListItem title="Itinerary item" subtitle="Something your group will do" leading={icon(CalendarPlus)} trailing="chevron" onPress={() => choose("item")} />
+        {SHOW_IMPORT && <ListItem title="Import plans" subtitle="Paste an itinerary from anywhere" leading={icon(ClipboardPaste)} trailing="chevron" onPress={() => choose("import")} />}
         <ListItem title="Guest" subtitle="A friend who isn't on along yet" leading={icon(UserPlus)} trailing="chevron" onPress={() => choose("guest")} />
         {canAddExpense && <ListItem title="Expense" subtitle="Who paid, and who shares it" leading={icon(Receipt)} trailing="chevron" onPress={() => choose("expense")} />}
         </SheetRows>

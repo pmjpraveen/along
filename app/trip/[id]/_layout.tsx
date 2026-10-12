@@ -14,6 +14,7 @@ export default function TripLayout() {
       <Stack.Screen name="summary" />
       <Stack.Screen name="add-guest" options={{ presentation: "modal" }} />
       <Stack.Screen name="add-item" options={{ presentation: "modal" }} />
+      <Stack.Screen name="import" options={{ presentation: "modal" }} />
       <Stack.Screen name="add-expense" options={{ presentation: "modal" }} />
       <Stack.Screen name="settle" options={{ presentation: "modal" }} />
     </Stack>

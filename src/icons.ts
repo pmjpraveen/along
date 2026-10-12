@@ -5,6 +5,7 @@ export { default as Backpack } from "lucide-react-native/icons/backpack";
 export { default as BedDouble } from "lucide-react-native/icons/bed-double";
 export { default as Bell } from "lucide-react-native/icons/bell";
 export { default as CalendarPlus } from "lucide-react-native/icons/calendar-plus";
+export { default as ClipboardPaste } from "lucide-react-native/icons/clipboard-paste";
 export { default as Camera } from "lucide-react-native/icons/camera";
 export { default as Car } from "lucide-react-native/icons/car";
 export { default as Check } from "lucide-react-native/icons/check";
