@@ -5,7 +5,7 @@ import { StampKind, StampShape, StampStyle, stampDate, styleFor } from "../domai
 import { stampWear } from "../domain/stampWear";
 import { color, font } from "../theme/tokens";
 
-type Props = { destination: string; date: string; kind: StampKind; shape: StampShape; onPress?: () => void; ink?: string; tilt?: number; compact?: boolean; frame?: StampStyle };
+type Props = { destination: string; date: string; kind: StampKind; shape: StampShape; onPress?: () => void; ink?: string; tilt?: number; compact?: boolean; frame?: StampStyle; light?: boolean };
 
 const W = 340;
 const H = 176;
@@ -17,7 +17,8 @@ const LABEL = { arrival: "ARRIVAL", departure: "DEPARTURE" } as const;
 // of six frame styles (double line, dashed, bold, triple, filled label band, dotted), with the destination, ARRIVAL or DEPARTURE, and the date. It is printed like the real thing: fine grain where the ink did not take, soft
 // smudges where it faded, and a faint ghost of a double strike. The wear comes from the destination, date and kind, so a stamp always
 // looks the same. Arrival carries a solid ink dot, departure an open ring.
-export function Stamp({ destination, date, kind, shape, onPress, ink = color.forestInk, tilt, compact, frame }: Props) {
+// `light` leaves out the wear (grain and smudges), which is most of the cost: a page that is being turned draws many copies of its stamps, and a stamp in motion does not need it.
+export function Stamp({ destination, date, kind, shape, onPress, ink = color.forestInk, tilt, compact, frame, light }: Props) {
   const wear = stampWear(`${destination}|${date}|${kind}`, W, H);
   const name = destination.toUpperCase();
   const label = LABEL[kind];
@@ -106,7 +107,7 @@ export function Stamp({ destination, date, kind, shape, onPress, ink = color.for
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`${destination}, ${kind} ${when}`} onPress={onPress} style={[s.wrap, compact && s.compact]}>
       <Svg viewBox={`0 0 ${W} ${H}`} style={[s.svg, { transform: [{ rotate: `${tilt ?? wear.tilt}deg` }] }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        <Defs>
+        {!light && <Defs>
           <RadialGradient id="smudge">
             <Stop offset="0" stopColor="#000" stopOpacity={1} />
             <Stop offset="1" stopColor="#000" stopOpacity={0} />
@@ -119,9 +120,9 @@ export function Stamp({ destination, date, kind, shape, onPress, ink = color.for
               <Ellipse key={`s${i}`} cx={m.x} cy={m.y} rx={m.rx} ry={m.ry} fill="url(#smudge)" opacity={m.strength} rotation={m.angle} origin={`${m.x}, ${m.y}`} />
             ))}
           </Mask>
-        </Defs>
+        </Defs>}
         <G opacity={0.1}>{words(1.8)}</G>
-        <G mask="url(#wear)" opacity={0.92}>{words()}</G>
+        <G mask={light ? undefined : "url(#wear)"} opacity={0.92}>{words()}</G>
       </Svg>
     </Pressable>
   );

@@ -18,9 +18,10 @@ export const motion = {
   settledFrom: 0.9,   // the "everyone's settled" badge grows from this scale
   bannerRise: 8,      // the offline strip rises this many points while fading in
   bannerMs: 200,      // the offline strip sliding in
-  splash: { holdMs: 100, turnMs: 450, zoomMs: 600 },   // the opening animation: rest, stripes swing upright, zoom all the way into the logo and straight into the app
+  splash: { holdMs: 100, turnMs: 520, zoomMs: 600 },   // the opening animation: rest, stripes swing upright, zoom all the way into the logo and straight into the app
   shine: { sweepMs: 1600, restMs: 3200, buttonSweepMs: 900, buttonRestMs: 500 },   // the glint across the passport cover and the Start new trip button
   skeleton: { pulseMs: 800, low: 0.45 },   // a loading placeholder breathes between full and this opacity, on the UI thread
+  book: { turnMs: 520, foldMs: 650, rotateMs: 750 },   // a passport page turning; opening or closing the cover is two beats one after the other: the cover folding, and the whole book rotating
   pressScale: 0.98,   // a touch dips the control to this size at once
 } as const;
 

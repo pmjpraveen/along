@@ -6,6 +6,13 @@ jest.mock("react-native-reanimated", () => require("react-native-reanimated/mock
 jest.mock("react-native-worklets", () => require("react-native-worklets/lib/module/mock"));
 require("react-native-gesture-handler/jestSetup");
 
+// Skia draws on the GPU; the passport book's page curl is not exercised under Jest (Reduce Motion is on), so only its names need to exist.
+jest.mock("@shopify/react-native-skia", () => ({
+  Canvas: () => null, Fill: () => null, Shader: () => null, ImageShader: () => null,
+  Skia: { RuntimeEffect: { Make: () => null } },
+  makeImageFromView: async () => null,
+}));
+
 // Speech recognition is native.
 jest.mock("expo-speech-recognition", () => ({
   ExpoSpeechRecognitionModule: { start: jest.fn(), stop: jest.fn(), requestPermissionsAsync: async () => ({ granted: true }) },

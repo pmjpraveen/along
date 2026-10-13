@@ -41,20 +41,23 @@ jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({
 const stamp = (id: string, dest: string, start: string, end: string) => ({ id, trip_id: `trip-${id}`, destination_name: dest, start_date: start, end_date: end, awarded_at: "x" });
 beforeEach(() => { jest.clearAllMocks(); mockLoadMe.mockImplementation(async () => ({ name: "Asha", email: "asha@along.test", since: "2026-09-29", country: "IN", avatarUrl: null, currency: null })); });
 
-test("7.4 the passport shows a stamp per completed trip, in the order given, with destination in caps and DD-MM-YYYY dates", async () => {
+// The passport is a book: it starts closed, tapping the cover opens it onto the data page (Reduce Motion is on in tests), and the arrow turns to the next pages.
+const openBook = async () => { await fireEvent.press(await screen.findByRole("button", { name: "Open passport" })); };
+const nextPage = async () => { await fireEvent.press(screen.getAllByRole("button", { name: "Next page" }).at(-1)!); };
+const stampLabels = () => screen.queryAllByRole("button").map((x) => String(x.props.accessibilityLabel)).filter((l) => / (arrival|departure) /.test(l));
+
+test("7.4 the passport starts closed; opened, the data page is the first page and the stamps of every completed trip follow, newest first, with destination in caps and DD-MM-YYYY dates", async () => {
   mockStamps.mockResolvedValue({ ok: true, stamps: [stamp("b", "Lisbon", "2026-06-10", "2026-06-14"), stamp("a", "Goa, India", "2025-12-01", "2025-12-05")] });
   await render(<Passport />);
-  expect(await screen.findByLabelText("Lisbon, arrival 10 JUN 2026")).toBeTruthy();
-  expect(screen.getByLabelText("Lisbon, departure 14 JUN 2026")).toBeTruthy();
-  expect(screen.getByLabelText("Goa, India, arrival 01 DEC 2025")).toBeTruthy();
-  expect(screen.getByLabelText("Goa, India, departure 05 DEC 2025")).toBeTruthy();
-  const labels = screen.getAllByRole("button").map((x) => String(x.props.accessibilityLabel)).filter((l) => / (arrival|departure) /.test(l));
-  expect(labels).toEqual(["Lisbon, departure 14 JUN 2026", "Lisbon, arrival 10 JUN 2026", "Goa, India, departure 05 DEC 2025", "Goa, India, arrival 01 DEC 2025"]);
+  await openBook();
+  expect(await screen.findByText("ASHA")).toBeTruthy();
+  expect(stampLabels()).toEqual(["Lisbon, departure 14 JUN 2026", "Lisbon, arrival 10 JUN 2026", "Goa, India, departure 05 DEC 2025", "Goa, India, arrival 01 DEC 2025"]);
 });
 
 test("7.4 tapping a stamp opens that trip's summary", async () => {
   mockStamps.mockResolvedValue({ ok: true, stamps: [stamp("a", "Goa, India", "2025-12-01", "2025-12-05")] });
   await render(<Passport />);
+  await openBook();
   await fireEvent.press(await screen.findByRole("button", { name: /Goa, India, arrival/ }));
   expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/summary", params: { id: "trip-a" } });
 });
@@ -62,7 +65,21 @@ test("7.4 tapping a stamp opens that trip's summary", async () => {
 test("7.4 a one-day trip shows a single date", async () => {
   mockStamps.mockResolvedValue({ ok: true, stamps: [stamp("a", "Ooty", "2026-05-07", "2026-05-07")] });
   await render(<Passport />);
+  await openBook();
   expect(await screen.findByLabelText("Ooty, arrival 07 MAY 2026")).toBeTruthy();
+});
+
+test("US-31 opening the cover shows the data page: my name, nationality, issue date, trips and a passport number", async () => {
+  mockStamps.mockResolvedValue({ ok: true, stamps: [stamp("a", "Goa, India", "2025-12-01", "2025-12-05"), stamp("b", "Lisbon", "2026-06-10", "2026-06-14")] });
+  await render(<Passport />);
+  expect(screen.queryByLabelText(/^Passport of Asha/)).toBeNull();
+  await openBook();
+  expect(await screen.findByLabelText("Passport of Asha. Nationality India. 2 trips.")).toBeTruthy();
+  expect(screen.getByText("ASHA")).toBeTruthy();
+  expect(screen.getByText("INDIA")).toBeTruthy();
+  expect(screen.getByText("29 SEP 2026")).toBeTruthy();
+  expect(screen.getByText("P / IND")).toBeTruthy();
+  expect(screen.getByText(/^IN\d{7}$/)).toBeTruthy();
 });
 
 test("7.4 an empty passport shows zero trips, and its page says how to earn a stamp; a failure offers retry", async () => {
