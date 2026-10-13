@@ -35,8 +35,8 @@ export default function Passport() {
     <View style={{ flex: 1 }}>
     <View style={[s.screen, s.content, { paddingTop: contentTop, paddingBottom: bottom + space.s16 }]}>
       <View style={s.head}>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Travel stamps</Text>
-        <Text maxFontSizeMultiplier={1.4} style={s.body}>An arrival and a departure for every finished trip.</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Travel passport</Text>
+        <Text maxFontSizeMultiplier={1.4} style={s.body}>A collection of stamps for every trip completed.</Text>
       </View>
       {state === null ? (
         <Skeleton label="Loading your stamps" variant="stamps" />
@@ -46,10 +46,11 @@ export default function Passport() {
           <TextButton label="Retry" onPress={load} />
         </View>
       ) : stamps.length === 0 ? (
-        <Text maxFontSizeMultiplier={1.4} style={s.body}>No stamps yet. Finish a trip and you'll earn your first one.</Text>
+        <Text maxFontSizeMultiplier={1.4} style={s.body}>No stamps yet. Complete a trip and you'll get an arrival and a departure stamp.</Text>
       ) : (
-        <View style={s.book} accessibilityLabel="Passport"><PassportBook items={pages} holder={holder} onOpenStamp={(id) => router.push({ pathname: "/trip/[id]/summary", params: { id } })} /></View>
+        <View style={s.book}><PassportBook items={pages} holder={holder} onOpenStamp={(id) => router.push({ pathname: "/trip/[id]/summary", params: { id } })} /></View>
       )}
+      {me && !me.country && <TextButton label="Choose your country in Settings" onPress={() => router.push("/profile")} />}
     </View>
     <PinnedBack onPress={() => (router.canGoBack() ? router.back() : router.replace("/profile"))} scrollY={scrollY} />
     </View>

@@ -73,6 +73,7 @@ export const shadow = {
 
 // Only Light 300, Regular 400 and Medium 500 are used; the display moments use Medium.
 export const font = { light: "GeistSans-Light", regular: "GeistSans-Regular", medium: "GeistSans-Medium" } as const;
+export const signatureFont = "MrsSaintDelafield";   // handwriting, used only for the signature on the passport data page
 
 // Every size is set 2% tighter than its natural width (letterSpacing is in points, so 2% of the font size). Stamps and all-caps hero text track wider on purpose.
 export const track = (fontSize: number) => Math.round(-0.02 * fontSize * 100) / 100;

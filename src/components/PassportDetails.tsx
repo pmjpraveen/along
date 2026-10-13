@@ -3,12 +3,21 @@ import { Image, StyleSheet, Text, View } from "react-native";
 import Svg, { Circle } from "react-native-svg";
 import { countryName, flagOf, PASSPORTS } from "../domain/countries";
 import { initialsOf } from "../domain/initials";
-import { mrzLines, passportNumber } from "../domain/passportDetails";
+import { MRZ_WIDTH, mrzLines, passportNumber } from "../domain/passportDetails";
 import { longDate } from "../domain/trip";
-import { color, font } from "../theme/tokens";
+import { color, font, signatureFont } from "../theme/tokens";
 
 export type Holder = { name: string; country: string | null; avatarUrl: string | null; since: string };
 const INK = "#2b2a28";
+
+// The faint concentric rings printed on every inner page of the passport, like the security pattern on a real one. `w` by `h` is the page laid out upright (spine along its top edge).
+export function PageRings({ w, h }: { w: number; h: number }) {
+  return (
+    <Svg width={w} height={h} style={StyleSheet.absoluteFill} pointerEvents="none">
+      {[40, 62, 84, 106, 128, 150].map((r) => <Circle key={r} cx={w * 0.72} cy={h * 0.42} r={r} fill="none" stroke="#7a6a3a" strokeOpacity={0.07} strokeWidth={1} />)}
+    </Svg>
+  );
+}
 
 function Field({ label, value }: { label: string; value: string }) {
   return (
@@ -28,15 +37,13 @@ export function PassportDetails({ holder, trips, w, h, spineBelow = false, onPho
   const number = passportNumber(holder?.country ?? null, name, holder?.since ?? "");
   const issued = holder?.since ?? "";
   const lines = mrzLines({ iso3, name, number, issued });
-  const nationality = holder?.country ? countryName(holder.country) : "Not set";
-  const cell = (w - 36 - 8) / 30;
+  const nationality = holder?.country ? countryName(holder.country) : "-";
+  const cell = (w - 36 - 8) / MRZ_WIDTH;
   // A page without a photo is ready at once; with one, only once it has loaded (the page is photographed for the curl).
   useEffect(() => { if (!holder?.avatarUrl) onPhotoReady?.(); }, [holder?.avatarUrl, onPhotoReady]);
   return (
-    <View accessible accessibilityLabel={`Passport of ${name}. Nationality ${nationality}. ${trips === 1 ? "1 trip" : `${trips} trips`}.`} style={[s.root, { width: w, height: h }, spineBelow ? s.spineBelow : null]}>
-      <Svg width={w} height={h} style={StyleSheet.absoluteFill} pointerEvents="none">
-        {[40, 62, 84, 106, 128, 150].map((r) => <Circle key={r} cx={w * 0.72} cy={h * 0.42} r={r} fill="none" stroke="#7a6a3a" strokeOpacity={0.07} strokeWidth={1} />)}
-      </Svg>
+    <View accessible accessibilityLabel={`Passport of ${name}. ${holder?.country ? `Nationality ${nationality}.` : "Nationality not chosen."} ${trips === 1 ? "1 trip" : `${trips} trips`}.`} style={[s.root, { width: w, height: h }, spineBelow ? s.spineBelow : null]}>
+      <PageRings w={w} h={h} />
       <View style={s.head}>
         <Text maxFontSizeMultiplier={1.2} style={s.title}>PASSPORT</Text>
         {holder?.country ? <Text style={s.flag}>{flagOf(holder.country)}</Text> : null}
@@ -53,9 +60,14 @@ export function PassportDetails({ holder, trips, w, h, spineBelow = false, onPho
         </View>
         <View style={s.col}>
           <Field label="PASSPORT NO." value={number} />
-          <Field label="TYPE / CODE" value={`P / ${iso3}`} />
+          <Field label="COUNTRY CODE" value={iso3} />
           <Field label="TRIPS" value={String(trips)} />
         </View>
+      </View>
+      <View style={s.signature} accessibilityLabel={`Signature of ${name}`}>
+        <Text maxFontSizeMultiplier={1.2} style={s.label}>SIGNATURE OF HOLDER</Text>
+        <Text numberOfLines={1} adjustsFontSizeToFit style={s.signed}>{name}</Text>
+        <View style={s.line} />
       </View>
       <View style={s.grow} />
       <View accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={s.mrz}>
@@ -83,8 +95,11 @@ const s = StyleSheet.create({
   field: { gap: 1 },
   label: { fontFamily: font.medium, fontSize: 9, letterSpacing: 1.2, color: color.slate },
   value: { fontFamily: font.medium, fontSize: 14, letterSpacing: 0.2, color: INK },
+  signature: { marginTop: 18, gap: 0 },
+  signed: { fontFamily: signatureFont, fontSize: 34, lineHeight: 40, color: "#1d2a5c", marginLeft: 6, marginTop: 2 },
+  line: { height: 1, backgroundColor: "rgba(60,40,10,0.3)", marginTop: -4 },
   grow: { flex: 1 },
-  mrz: { backgroundColor: "rgba(60,40,10,0.06)", borderRadius: 3, paddingVertical: 6, paddingHorizontal: 4, gap: 2, alignSelf: "flex-start" },
+  mrz: { backgroundColor: "rgba(60,40,10,0.06)", borderRadius: 3, paddingVertical: 6, paddingHorizontal: 4, gap: 1, alignSelf: "flex-start" },
   mrzLine: { flexDirection: "row" },
-  mrzCell: { textAlign: "center", fontFamily: font.medium, fontSize: 12.5, lineHeight: 16, color: INK },
+  mrzCell: { textAlign: "center", fontFamily: font.medium, fontSize: 10.5, lineHeight: 14, color: INK },
 });

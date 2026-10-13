@@ -26,6 +26,7 @@ export default function Layout() {
     "GeistSans-Light": require("../assets/fonts/GeistSans-Light.ttf"),
     "GeistSans-Regular": require("../assets/fonts/GeistSans-Regular.ttf"),
     "GeistSans-Medium": require("../assets/fonts/GeistSans-Medium.ttf"),
+    MrsSaintDelafield: require("@expo-google-fonts/mrs-saint-delafield/400Regular/MrsSaintDelafield_400Regular.ttf"),   // the passport's handwritten signature (the one place text is not Geist)
   });
   const ready = status !== "loading" && (fontsLoaded || !!fontError);
   const [splashDone, setSplashDone] = useState(false);

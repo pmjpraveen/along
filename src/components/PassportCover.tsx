@@ -1,31 +1,22 @@
-import { useMemo } from "react";
-import Svg, { Circle, Defs, Ellipse, G, Line, LinearGradient, Pattern, RadialGradient, Rect, Stop, Text as SvgText } from "react-native-svg";
-import { hashSeed, rng } from "../domain/stampWear";
+import { makeImageFromView, SkImage } from "@shopify/react-native-skia";
+import { useEffect, useRef, useState } from "react";
+import { View } from "react-native";
+import Svg, { Circle, Defs, Ellipse, G, Line, LinearGradient, RadialGradient, Rect, Stop, Text as SvgText } from "react-native-svg";
 import { font } from "../theme/tokens";
 import { LOGO_W_UNITS, LogoPaths } from "./AlongLogo";
+import { FoilGrain, LeatherTexture } from "./LeatherTexture";
 
 type Props = { w: number; h: number; base: string };
-
-// A pebbled leatherette tile: small bumps, each a darker dot with a lighter one just above it (the way light catches a bump), scattered the same way every time.
-// Two tiles of different sizes lie over each other so the repeat cannot be seen.
-function grain(seed: string, size: number, count: number) {
-  const r = rng(hashSeed(seed));
-  return Array.from({ length: count }, () => {
-    const x = r() * size, y = r() * size, rad = 0.55 + r() * 0.8;
-    return { x, y, rad };
-  });
-}
 
 // The front of the passport: pebbled cover, stitched spine, a pressed gold frame and a gold-foil globe, the title and the along logo. Everything is one SVG, so it costs one view.
 export function PassportCover({ w: width, h: height, base }: Props) {
   // Drawn on a 340-wide sheet and scaled to fit, so the same cover works at any size.
   const w = 340;
   const h = (height * 340) / width;
-  const a = useMemo(() => grain("cover-a", 53, 80), []);
-  const b = useMemo(() => grain("cover-b", 37, 44), []);
   const cx = w / 2 + 6;   // the face is the cover less the spine, so its middle sits a little right of the cover's middle
-  const gy = h * 0.34;
-  const ty = h * 0.64;
+  const gy = h * 0.5;
+  const ty = h * 0.8;       // the along logo
+  const py = h * 0.17;      // the word PASSPORT, at the top of the cover
   const foil = (id: string) => (
     <LinearGradient id={id} x1="0" y1="0" x2="1" y2="1">
       <Stop offset="0" stopColor="#f6e3a6" />
@@ -48,19 +39,26 @@ export function PassportCover({ w: width, h: height, base }: Props) {
   const logoW = 112;
   const title = (fill: string, dx = 0, dy = 0) => (
     <>
-      <SvgText x={cx + dx} y={ty + dy} fontSize={27} fontFamily={font.medium} letterSpacing={6} textAnchor="middle" fill={fill}>PASSPORT</SvgText>
-      <G transform={`translate(${cx - logoW / 2 + dx} ${ty + 22 + dy}) scale(${logoW / LOGO_W_UNITS})`}><LogoPaths fill={fill} /></G>
+      <SvgText x={cx + dx} y={py + dy} fontSize={20} fontFamily={font.medium} letterSpacing={5} textAnchor="middle" fill={fill}>PASSPORT</SvgText>
+      <G transform={`translate(${cx - logoW / 2 + dx} ${ty + dy}) scale(${logoW / LOGO_W_UNITS})`}><LogoPaths fill={fill} /></G>
     </>
   );
+  // A picture of the foil shapes alone, taken from a hidden copy, so the grain shader knows where the foil is.
+  const maskRef = useRef<View>(null);
+  const [mask, setMask] = useState<SkImage | null>(null);
+  useEffect(() => {
+    let live = true;
+    const id = setTimeout(async () => {
+      const img = maskRef.current ? await makeImageFromView(maskRef).catch(() => null) : null;
+      if (live && img) setMask(img);
+    }, 60);
+    return () => { live = false; clearTimeout(id); };
+  }, [width, height]);
   return (
+    <View style={{ width, height }}>
+    <LeatherTexture w={width} h={height} base={base} />
     <Svg width={width} height={height} viewBox={`0 0 ${w} ${h}`} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
       <Defs>
-        <Pattern id="bumpsA" width={53} height={53} patternUnits="userSpaceOnUse">
-          {a.map((d, i) => (<G key={i}><Circle cx={d.x} cy={d.y} r={d.rad} fill="#000" opacity={0.15} /><Circle cx={d.x} cy={d.y - d.rad * 0.7} r={d.rad * 0.55} fill="#fff" opacity={0.1} /></G>))}
-        </Pattern>
-        <Pattern id="bumpsB" width={37} height={37} patternUnits="userSpaceOnUse">
-          {b.map((d, i) => (<G key={i}><Circle cx={d.x} cy={d.y} r={d.rad} fill="#000" opacity={0.12} /><Circle cx={d.x} cy={d.y - d.rad * 0.7} r={d.rad * 0.5} fill="#fff" opacity={0.08} /></G>))}
-        </Pattern>
         <RadialGradient id="worn" cx="50%" cy="44%" r="75%">
           <Stop offset="0.55" stopColor="#000" stopOpacity={0} />
           <Stop offset="1" stopColor="#000" stopOpacity={0.3} />
@@ -72,9 +70,6 @@ export function PassportCover({ w: width, h: height, base }: Props) {
         </LinearGradient>
         {foil("foil")}
       </Defs>
-      <Rect width={w} height={h} fill={base} />
-      <Rect width={w} height={h} fill="url(#bumpsA)" />
-      <Rect width={w} height={h} fill="url(#bumpsB)" />
       <Rect width={w} height={h} fill="url(#sheen)" />
       <Rect width={w} height={h} fill="url(#worn)" />
       {/* the spine: a darker band with a line of stitching down it */}
@@ -89,5 +84,16 @@ export function PassportCover({ w: width, h: height, base }: Props) {
       {title("#000", 1, 1.6)}
       {title("url(#foil)")}
     </Svg>
+    {mask && <FoilGrain w={width} h={height} mask={mask} />}
+    <View pointerEvents="none" style={{ position: "absolute", left: 0, top: 0, opacity: 0 }}>
+      <View ref={maskRef} collapsable={false} style={{ width, height }}>
+        <Svg width={width} height={height} viewBox={`0 0 ${w} ${h}`}>
+          <Rect x={36} y={29} width={w - 62} height={h - 56} rx={14} fill="none" stroke="#000" strokeWidth={1.2} />
+          {globe("#000")}
+          {title("#000")}
+        </Svg>
+      </View>
+    </View>
+    </View>
   );
 }

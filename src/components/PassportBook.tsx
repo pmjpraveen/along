@@ -15,7 +15,7 @@ import { EASE_IN_OUT, motion } from "../theme/motion";
 import { color, passportArt, radius, space, type } from "../theme/tokens";
 import { PageCurl } from "./PageCurl";
 import { PassportCover } from "./PassportCover";
-import { Holder, PassportDetails } from "./PassportDetails";
+import { Holder, PageRings, PassportDetails } from "./PassportDetails";
 import { Pressable } from "./Pressable";
 import { Stamp } from "./Stamp";
 
@@ -44,9 +44,9 @@ export function PassportBook({ items, onOpenStamp, holder }: Props) {
   const fit = Math.min(1, boxH / (2 * w), boxW / h);
   const fitX = fit * (1 - 16 / (h * fit));   // opened, the book is 8 points narrower on each side than it would be; its height is unchanged
   const onLayout = (e: LayoutChangeEvent) => setArea({ width: Math.round(e.nativeEvent.layout.width), height: Math.round(e.nativeEvent.layout.height) });
-  const cellW = Math.floor((h - 50) / 2);
-  const rows = Math.max(1, Math.min(3, Math.floor((w - 50) / (Math.round(cellW / STAMP_ASPECT) + 8))));
-  const halves = useMemo(() => bookHalves(items, rows * 2), [items, rows]);
+  // Six stamps to a page (two across, three down), each as big as that allows.
+  const cellW = Math.floor(Math.min((h - 50) / 2, STAMP_ASPECT * ((w - 64) / 3)));
+  const halves = useMemo(() => bookHalves(items, 6), [items]);
   const last = lastSpread(halves);
 
   const [spread, setSpread] = useState(0);
@@ -157,7 +157,8 @@ export function PassportBook({ items, onOpenStamp, holder }: Props) {
   };
 
   return (
-    <GestureHandlerRootView style={s.root} onLayout={onLayout}>
+    <GestureHandlerRootView style={s.root}>
+      <View style={s.area} onLayout={onLayout}>
       <GestureDetector gesture={swipe}>
         <View style={{ width: boxW, height: boxH }} accessibilityLabel="Passport. Swipe up or down to turn the page.">
           <Animated.View style={[{ position: "absolute", left: (boxW - 2 * w) / 2, top: (boxH - h) / 2, width: 2 * w, height: h }, stage]}>
@@ -168,7 +169,7 @@ export function PassportBook({ items, onOpenStamp, holder }: Props) {
             <Animated.View style={[s.slot, { width: w, left: 0, height: h }, leanLeft]}>{render(leftIdx)}</Animated.View>
             <Animated.View style={[s.slot, { width: w, left: w, height: h }, leanRight]}>
               {render(rightIdx)}
-              {spread === 0 && !curl && <Pressable accessibilityRole="button" accessibilityLabel="Open passport" onPress={() => go(1)} dip={false} style={StyleSheet.absoluteFill} />}
+              {spread === 0 && !curl && <Pressable accessibilityRole="button" accessibilityLabel="Open passport" accessibilityHint="Opens the passport to its first page" onPress={() => go(1)} dip={false} style={StyleSheet.absoluteFill} />}
             </Animated.View>
             {curl?.front && curl.back && <PageCurl w={w} h={h} p={curlP} dir={dir} front={curl.front} back={curl.back} tiltDeg={TILT} />}
             {!reduced && (
@@ -181,6 +182,8 @@ export function PassportBook({ items, onOpenStamp, holder }: Props) {
           </Animated.View>
         </View>
       </GestureDetector>
+      </View>
+      <Text accessibilityElementsHidden importantForAccessibility="no" maxFontSizeMultiplier={1.3} style={[s.hint, { opacity: spread === 0 && !curl ? 1 : 0 }]}>Tap to open</Text>
     </GestureHandlerRootView>
   );
 }
@@ -223,6 +226,7 @@ function PageView({ half, idx, w, h, cellW, count, holder, light, onOpenStamp, o
   return (
     <View style={[s.page, right ? s.pageRight : s.pageLeft, s.paper, { width: w, height: h }]}>
       <View style={{ position: "absolute", left: (w - h) / 2, top: (h - w) / 2, width: h, height: w, transform: [{ rotate: "-90deg" }], alignItems: "center", justifyContent: "center" }}>
+        {half.kind !== "details" && <PageRings w={h} h={w} />}
         <SpineShade width={h} top={right} />
         {half.kind === "details" && <View style={StyleSheet.absoluteFill}><PassportDetails holder={holder} trips={Math.floor(count / 2)} w={h} h={w} spineBelow={!right} onPhotoReady={onPhotoReady} /></View>}
         {half.kind === "stamps" && (
@@ -237,7 +241,7 @@ function PageView({ half, idx, w, h, cellW, count, holder, light, onOpenStamp, o
                 );
               })}
             </View>
-            <Text style={s.pageNo}>{idx - 1}</Text>
+            <Text accessibilityLabel={`Page ${idx - 1}, ${half.kind === "stamps" ? `${half.items.length} ${half.items.length === 1 ? "stamp" : "stamps"}` : "no stamps"}`} style={s.pageNo}>{idx - 1}</Text>
           </>
         )}
       </View>
@@ -246,7 +250,9 @@ function PageView({ half, idx, w, h, cellW, count, holder, light, onOpenStamp, o
 }
 
 const s = StyleSheet.create({
-  root: { flex: 1, alignItems: "center", justifyContent: "center" },
+  root: { flex: 1, alignItems: "center" },
+  area: { flex: 1, alignSelf: "stretch", alignItems: "center", justifyContent: "center" },
+  hint: { ...type.fieldMessage, color: color.slate, height: 24, textAlign: "center" },
   slot: { position: "absolute", top: 0 },
   bookShadow: { position: "absolute", top: 0, backgroundColor: "#d9d2c3", borderRadius: EDGE },
   shadowWide: { shadowColor: "#2a1d08", shadowOpacity: 0.3, shadowRadius: 26, shadowOffset: { width: 22, height: 0 }, elevation: 14 },

@@ -78,7 +78,7 @@ test("US-31 opening the cover shows the data page: my name, nationality, issue d
   expect(screen.getByText("ASHA")).toBeTruthy();
   expect(screen.getByText("INDIA")).toBeTruthy();
   expect(screen.getByText("29 SEP 2026")).toBeTruthy();
-  expect(screen.getByText("P / IND")).toBeTruthy();
+  expect(screen.getByText("IND")).toBeTruthy();
   expect(screen.getByText(/^IN\d{7}$/)).toBeTruthy();
 });
 

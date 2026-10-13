@@ -26,10 +26,12 @@ import { matches } from "../src/domain/search";
 import { COUNTRIES, countryName, currencyOf, flagOf, PASSPORTS } from "../src/domain/countries";
 import { NotificationType, TYPE_LABEL, TYPES } from "../src/domain/notifications";
 import { TextButton } from "../src/components/Buttons";
+import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
+import { LeatherTexture } from "../src/components/LeatherTexture";
 import { PassportShine } from "../src/components/PassportShine";
 import { compactDate, longDate } from "../src/domain/trip";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
-import { color, font, mix, radius, space, type, passportArt, track } from "../src/theme/tokens";
+import { color, font, radius, space, type, passportArt, track } from "../src/theme/tokens";
 
 // Me: a big avatar, my details, and my Travel Passport (a count of trips and one stamp per completed trip, most recent first).
 // Tap a stamp to reopen that trip's summary.
@@ -122,8 +124,7 @@ export default function Profile() {
   // The cover takes its colour from the passport of my country (teal until one is chosen).
   const passport = me?.country ? PASSPORTS[me.country] : undefined;
   const cover = passport?.cover ?? passportArt.defaultCover;
-  const coverTop = mix(cover, "#ffffff", 0.14);      // the cover is a touch lighter at the top and darker at the bottom, like a lit leather cover
-  const coverBottom = mix(cover, "#000000", 0.28);
+  const [coverSize, setCoverSize] = useState<{ w: number; h: number } | null>(null);
   const mrzName = (me?.name ?? "").toUpperCase().replace(/[^A-Z]/g, "");
 
   return (
@@ -149,11 +150,21 @@ export default function Profile() {
           </View>
         )}
 
-        <View style={[s.card, s.passportCard]}>
+        <View style={[s.card, s.passportCard]} onLayout={(e) => setCoverSize({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })}>
           {/* The whole card is the passport cover: colour of my country's passport, a faint grain, and a gold embossed frame and title. */}
           <View pointerEvents="none" style={StyleSheet.absoluteFill}>
-            {Array.from({ length: 32 }, (_, i) => <View key={i} style={{ flex: 1, backgroundColor: mix(coverTop, coverBottom, i / 31) }} />)}
-            <View style={s.grain}>{Array.from({ length: 14 }, (_, i) => <View key={i} style={[s.grainLine, { top: `${(i + 1) * 6.6}%` }]} />)}</View>
+            {/* the same pebbled leather as the passport book's cover, with a light-to-dark wash so the card still reads as a lit cover */}
+            {coverSize && <LeatherTexture w={coverSize.w} h={coverSize.h} base={cover} cell={3.4} />}
+            <Svg width="100%" height="100%" style={StyleSheet.absoluteFill}>
+              <Defs>
+                <LinearGradient id="wash" x1="0" y1="0" x2="0" y2="1">
+                  <Stop offset="0" stopColor="#fff" stopOpacity={0.12} />
+                  <Stop offset="0.5" stopColor="#000" stopOpacity={0} />
+                  <Stop offset="1" stopColor="#000" stopOpacity={0.3} />
+                </LinearGradient>
+              </Defs>
+              <Rect width="100%" height="100%" fill="url(#wash)" />
+            </Svg>
             {/* The shine: a glint that sweeps across the cover, rests, and repeats. */}
             <PassportShine />
             <View style={s.frame} />
@@ -276,8 +287,6 @@ const s = StyleSheet.create({
   passportTitleRow: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: space.s12 },
   passportTitle: { ...type.fieldValue, fontFamily: font.medium, letterSpacing: 2, textTransform: "uppercase", color: GOLD },
   frame: { position: "absolute", top: 6, left: 6, right: 6, bottom: 6, borderRadius: radius.tile, borderCurve: "continuous", borderWidth: 1, borderColor: passportArt.goldFrame },
-  grain: { position: "absolute", top: 0, left: 0, right: 0, bottom: 0 },
-  grainLine: { position: "absolute", left: 0, right: 0, height: 1, backgroundColor: "rgba(255,255,255,0.05)" },
   gap: { gap: space.s8 },
   group: { ...type.fieldValue, fontFamily: font.medium, color: color.obsidian, marginTop: space.s8 },
   list: { borderRadius: radius.sheet, borderCurve: "continuous", borderWidth: 1, borderColor: color.borderNeutral, overflow: "hidden" },
