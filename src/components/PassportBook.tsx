@@ -114,12 +114,12 @@ export function PassportBook({ items, onOpenStamp, holder }: Props) {
     await new Promise((r) => setTimeout(r, 90));
     from.value = s; dir.value = d; p.value = 0;
     setCurl({ front, back: behind, d });
-    const done = () => scheduleOnRN(settle, s + d);
+    const to = s + d;
     const fold = { duration: motion.book.foldMs, easing: EASE_IN_OUT };
     const turnOver = { duration: motion.book.rotateMs, easing: EASE_IN_OUT };
-    if (s === 0 && d === 1) lay.value = withTiming(1, turnOver, (ok) => { if (ok) p.value = withTiming(1, fold, (ok2) => { if (ok2) done(); }); });   // opening: the book turns on its side, then the cover lifts
-    else if (s === 1 && d === -1) p.value = withTiming(1, fold, (ok) => { if (ok) lay.value = withTiming(0, turnOver, (ok2) => { if (ok2) done(); }); });   // closing: the page folds over, then the book turns upright
-    else p.value = withTiming(1, { duration: motion.book.turnMs, easing: EASE_IN_OUT }, (ok) => { if (ok) done(); });
+    if (s === 0 && d === 1) lay.value = withTiming(1, turnOver, (ok) => { if (ok) p.value = withTiming(1, fold, (ok2) => { if (ok2) scheduleOnRN(settle, to); }); });   // opening: the book turns on its side, then the cover lifts
+    else if (s === 1 && d === -1) p.value = withTiming(1, fold, (ok) => { if (ok) lay.value = withTiming(0, turnOver, (ok2) => { if (ok2) scheduleOnRN(settle, to); }); });   // closing: the page folds over, then the book turns upright
+    else p.value = withTiming(1, { duration: motion.book.turnMs, easing: EASE_IN_OUT }, (ok) => { if (ok) scheduleOnRN(settle, to); });
   };
   const swipe = Gesture.Pan().activeOffsetY([-12, 12]).failOffsetX([-30, 30]).onEnd((e) => {
     if (Math.abs(e.translationY) > 40 || Math.abs(e.velocityY) > 500) scheduleOnRN(go, e.translationY < 0 ? 1 : -1);
