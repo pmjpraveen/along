@@ -150,7 +150,8 @@ export default function Profile() {
           </View>
         )}
 
-        <View style={[s.card, s.passportCard]} onLayout={(e) => setCoverSize({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })}>
+        <Pressable accessibilityRole="button" accessibilityLabel={`Passport, total trips ${stamps.length}`} accessibilityHint="Opens your passport" disabled={!state?.ok} dip={false}
+          onPress={() => router.push("/passport")} style={[s.card, s.passportCard]} onLayout={(e) => setCoverSize({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) })}>
           {/* The whole card is the passport cover: colour of my country's passport, a faint grain, and a gold embossed frame and title. */}
           <View pointerEvents="none" style={StyleSheet.absoluteFill}>
             {/* the same pebbled leather as the passport book's cover, with a light-to-dark wash so the card still reads as a lit cover */}
@@ -182,20 +183,20 @@ export default function Profile() {
             </View>
           ) : (
             <>
-            <Pressable accessibilityRole="button" accessibilityLabel={`Passport, total trips ${stamps.length}`} accessibilityHint="Opens your stamps" onPress={() => router.push("/passport")} style={s.cover}>
+            <View style={s.cover}>
               <View style={s.inset}>
               {/* The passport's page: two machine-readable lines, then the trip count; it runs off the bottom like a page in a cover. */}
               <View style={s.page}>
                 <Text numberOfLines={1} ellipsizeMode="clip" maxFontSizeMultiplier={1.2} style={s.mrz}>{mrzLine(`<<${passport?.iso3 ?? "ALONG"}<<${mrzName}<<MEMBERSINCE${compactDate(me?.since ?? "")}<<`)}</Text>
                 <Text numberOfLines={1} ellipsizeMode="clip" maxFontSizeMultiplier={1.2} style={s.mrz}>{mrzLine(`TRIPS${String(stamps.length).padStart(3, "0")}`)}</Text>
-                <Text maxFontSizeMultiplier={1.3} style={s.label}>Total trips</Text>
+                <Text maxFontSizeMultiplier={1.3} style={[s.label, { marginTop: space.s12 }]}>Total trips</Text>
                 <Text maxFontSizeMultiplier={1.2} style={s.count}>{stamps.length}</Text>
               </View>
               </View>
-            </Pressable>
+            </View>
             </>
           )}
-        </View>
+        </Pressable>
 
         {error && <Alert variant="negative">{error}</Alert>}
 

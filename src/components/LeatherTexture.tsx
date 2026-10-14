@@ -80,8 +80,8 @@ half4 main(float2 xy) {
   float3 n = normalize(float3(-dx * 6.5, -dy * 6.5, 1.0));
   float lit = dot(n, normalize(float3(-0.4, -0.55, 0.73))) - 0.73;
   float shade = 0.5 * lit + 0.26 * (c - 0.85);
-  float a = clamp(abs(shade) * 1.1, 0.0, 0.4) * m;
-  return shade < 0.0 ? half4(0.1, 0.06, 0.0, a) : half4(0.95, 0.78, 0.38, a * 0.4);
+  float a = clamp(abs(shade) * 0.2, 0.0, 0.055) * m;
+  return shade < 0.0 ? half4(0.1, 0.06, 0.0, a) : half4(0.95, 0.78, 0.38, a * 0.3);
 }
 `;
 

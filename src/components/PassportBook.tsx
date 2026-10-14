@@ -7,7 +7,7 @@ import { scheduleOnRN } from "react-native-worklets";
 import Svg, { Defs, LinearGradient, Rect, Stop } from "react-native-svg";
 import { PASSPORTS } from "../domain/countries";
 import { Half, bookHalves, lastSpread } from "../domain/passportBook";
-import { placement } from "../domain/passportPage";
+import { scatter } from "../domain/passportPage";
 import type { Impression } from "../domain/stampShape";
 import { haptic } from "../haptics";
 import { useReducedMotion } from "../hooks/useReducedMotion";
@@ -17,9 +17,8 @@ import { PageCurl } from "./PageCurl";
 import { PassportCover } from "./PassportCover";
 import { Holder, PageRings, PassportDetails } from "./PassportDetails";
 import { Pressable } from "./Pressable";
-import { Stamp } from "./Stamp";
+import { Stamp, STAMP_H, STAMP_W } from "./Stamp";
 
-const STAMP_ASPECT = 340 / 176;
 const EDGE = radius.card;
 const SPINE_TILT = 5;   // degrees each page of the open book leans in toward the spine, so the book is a little narrower at the fold (a shallow "V") as in a real open book
 const TILT = 9;   // degrees the fold line tilts while a page lifts, as if pulled up by one corner
@@ -44,9 +43,9 @@ export function PassportBook({ items, onOpenStamp, holder }: Props) {
   const fit = Math.min(1, boxH / (2 * w), boxW / h);
   const fitX = fit * (1 - 16 / (h * fit));   // opened, the book is 8 points narrower on each side than it would be; its height is unchanged
   const onLayout = (e: LayoutChangeEvent) => setArea({ width: Math.round(e.nativeEvent.layout.width), height: Math.round(e.nativeEvent.layout.height) });
-  // Six stamps to a page (two across, three down), each as big as that allows.
-  const cellW = Math.floor(Math.min((h - 50) / 2, STAMP_ASPECT * ((w - 64) / 3)));
-  const halves = useMemo(() => bookHalves(items, 6), [items]);
+  // Four stamps to a page, pressed here and there a little crooked and never overlapping (see scatter); each is as wide as that allows.
+  const cellW = Math.floor(Math.min(h * 0.29, w * 0.38));
+  const halves = useMemo(() => bookHalves(items, 4), [items]);
   const last = lastSpread(halves);
 
   const [spread, setSpread] = useState(0);
@@ -232,11 +231,11 @@ function PageView({ half, idx, w, h, cellW, count, holder, light, onOpenStamp, o
         {half.kind === "stamps" && (
           <>
             <View style={s.stamps}>
-              {half.items.map((im, i) => {
-                const pl = placement(im.key, i);
+              {scatter(half.items.map((im) => im.key), h, w, half.items.map((im) => cellW * im.scale)).map((spot, i) => {
+                const im = half.items[i];
                 return (
-                  <View key={im.key} style={{ width: cellW, transform: [{ translateX: pl.dx / 3 }, { translateY: pl.dy / 3 }] }}>
-                    <Stamp compact destination={im.destination} date={im.date} kind={im.kind} shape={im.shape} ink={pl.ink} tilt={pl.tilt} light={light} onPress={() => onOpenStamp(im.tripId)} />
+                  <View key={im.key} style={{ position: "absolute", left: spot.x - spot.size / 2, top: spot.y - (spot.size * STAMP_H) / STAMP_W / 2, width: spot.size, transform: [{ rotate: `${spot.rot}deg` }] }}>
+                    <Stamp compact destination={im.destination} date={im.date} kind={im.kind} shape={im.shape} ink={im.ink} tilt={0} light={light} onPress={() => onOpenStamp(im.tripId)} />
                   </View>
                 );
               })}
@@ -262,6 +261,6 @@ const s = StyleSheet.create({
   pageRight: { borderTopRightRadius: EDGE, borderBottomRightRadius: EDGE, borderTopLeftRadius: 2, borderBottomLeftRadius: 2 },
   pageLeft: { borderTopLeftRadius: EDGE, borderBottomLeftRadius: EDGE, borderTopRightRadius: 2, borderBottomRightRadius: 2 },
   paper: { backgroundColor: color.cream, borderWidth: StyleSheet.hairlineWidth, borderColor: color.borderNeutral, justifyContent: "center", alignItems: "center" },
-  stamps: { flexDirection: "row", flexWrap: "wrap", justifyContent: "center", columnGap: 6, rowGap: 8, paddingHorizontal: 18 },
+  stamps: { position: "absolute", left: 0, top: 0, right: 0, bottom: 0 },
   pageNo: { position: "absolute", bottom: 10, right: 20, ...type.fieldMessage, color: color.slate },
 });

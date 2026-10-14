@@ -1,16 +1,21 @@
-import { impressions, shapeFor, SHAPES, STYLES, styleFor, stampDate } from "./stampShape";
+import { impressions, inkFor, shapeFor, SHAPES, sizeFor, STAMP_INKS, stampDate } from "./stampShape";
 
-test("a trip's arrival and departure never share a shape, and the same trip always gets the same ones", () => {
+test("a trip always gets the same frame and ink, from the six shapes and seven inks", () => {
   for (const id of ["a", "b", "goa", "ooty", "0479a6cc", "z9"]) {
-    expect(shapeFor(id, "arrival")).not.toBe(shapeFor(id, "departure"));
     expect(shapeFor(id, "arrival")).toBe(shapeFor(id, "arrival"));
+    expect(inkFor(id, "arrival")).toBe(inkFor(id, "arrival"));
     expect(SHAPES).toContain(shapeFor(id, "arrival"));
+    expect(STAMP_INKS).toContain(inkFor(id, "arrival"));
+    expect(inkFor(id, "departure")).not.toBe(inkFor(id, "arrival"));
   }
 });
 
-test("different trips do not all get the same shape", () => {
-  const seen = new Set(Array.from({ length: 30 }, (_, i) => shapeFor(`trip-${i}`, "arrival")));
-  expect(seen.size).toBeGreaterThan(2);
+test("across many trips every shape and every ink gets used", () => {
+  const shapes = new Set<string>();
+  const inks = new Set<string>();
+  for (let i = 0; i < 300; i++) { shapes.add(shapeFor(`trip-${i}`, "arrival")); shapes.add(shapeFor(`trip-${i}`, "departure")); inks.add(inkFor(`trip-${i}`, "arrival")); }
+  expect(shapes.size).toBe(SHAPES.length);
+  expect(inks.size).toBe(STAMP_INKS.length);
 });
 
 test("dates print the way a border stamp does", () => {
@@ -19,26 +24,21 @@ test("dates print the way a border stamp does", () => {
   expect(stampDate("")).toBe("");
 });
 
-test("each completed trip leaves a departure on its last day above an arrival on its first, in order", () => {
+test("each completed trip leaves a departure on its last day above an arrival on its first, in order, with a different frame and ink each", () => {
   const list = impressions([{ id: "a", trip_id: "t1", destination_name: "Goa", start_date: "2026-12-01", end_date: "2026-12-05" }, { id: "b", trip_id: "t2", destination_name: "Ooty", start_date: "2026-05-07", end_date: "2026-05-09" }]);
   expect(list.map((x) => [x.destination, x.kind, x.date])).toEqual([["Goa", "departure", "2026-12-05"], ["Goa", "arrival", "2026-12-01"], ["Ooty", "departure", "2026-05-09"], ["Ooty", "arrival", "2026-05-07"]]);
   expect(new Set(list.map((x) => x.key)).size).toBe(4);
+  expect(list[0].shape).not.toBe(list[1].shape);
+  expect(list[0].ink).not.toBe(list[1].ink);
 });
 
-test("there are ten shapes and ten frame styles, and across many trips every one of them gets used", () => {
-  expect(SHAPES).toHaveLength(10);
-  expect(STYLES).toHaveLength(10);
-  const shapes = new Set<string>(); const styles = new Set<string>();
-  for (let i = 0; i < 400; i++) {
-    const shape = shapeFor(`trip-${i}`, i % 2 ? "arrival" : "departure");
-    shapes.add(shape);
-    styles.add(styleFor(`City ${i}|2026-0${(i % 9) + 1}-10|arrival`, shape));
+test("US-31 every stamp is pressed at its own size, between about 0.85 and 1.2 of the page's stamp size, the same every time", () => {
+  const sizes = new Set<number>();
+  for (let i = 0; i < 100; i++) for (const kind of ["arrival", "departure"] as const) {
+    const s = sizeFor(`trip-${i}`, kind);
+    expect(s).toBeGreaterThanOrEqual(0.85); expect(s).toBeLessThanOrEqual(1.2);
+    expect(sizeFor(`trip-${i}`, kind)).toBe(s);
+    sizes.add(s);
   }
-  expect(shapes.size).toBe(10);
-  expect(styles.size).toBe(10);
-});
-
-test("a stamp always gets the same frame style, and a circle never gets the filled band", () => {
-  expect(styleFor("Goa|2026-03-06|arrival", "oval")).toBe(styleFor("Goa|2026-03-06|arrival", "oval"));
-  for (let i = 0; i < 200; i++) expect(styleFor(`X${i}|2026-01-01|departure`, "circle")).not.toBe("banner");
+  expect(sizes.size).toBeGreaterThan(10);
 });

@@ -12,8 +12,7 @@ import { TextButton } from "../src/components/Buttons";
 import { Stamp } from "../src/components/Stamp";
 import { TripCover } from "../src/components/TripCover";
 import { TripNameTag } from "../src/components/TripNameTag";
-import { placement } from "../src/domain/passportPage";
-import { shapeFor } from "../src/domain/stampShape";
+import { inkFor, shapeFor } from "../src/domain/stampShape";
 import { CARD_COLORS, formatRange } from "../src/domain/trip";
 import { usePullToRefresh } from "../src/hooks/usePullToRefresh";
 import { color, font, mix, radius, shadow, space, type, pillOn, track } from "../src/theme/tokens";
@@ -65,7 +64,7 @@ export default function TripHistory() {
                       <View key={kind} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
                         style={[s.stamp, k === 0 ? s.stampTop : s.stampBottom, { width: STAMP_W }, k === 0 ? { right: -STAMP_W / 2 } : { left: -STAMP_W / 2 }]}>
                         <Stamp compact destination={t.destination_name.split(",")[0].trim()} date={kind === "arrival" ? t.start_date : t.end_date} kind={kind}
-                          shape={shapeFor(t.id, kind)} ink={placement(t.id, k).ink} tilt={k === 0 ? -8 : 6} />
+                          shape={shapeFor(t.id, kind)} ink={inkFor(t.id, kind)} tilt={k === 0 ? -8 : 6} />
                       </View>
                     ))}
                     <View style={s.meta}>

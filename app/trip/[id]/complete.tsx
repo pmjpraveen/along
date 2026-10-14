@@ -2,7 +2,7 @@ import { Alert } from "../../../src/components/Alert";
 import { PinnedBack, useContentTop, useScrollY } from "../../../src/components/PinnedBack";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { useReducedMotion } from "../../../src/hooks/useReducedMotion";
-import { shapeFor } from "../../../src/domain/stampShape";
+import { inkFor, shapeFor } from "../../../src/domain/stampShape";
 import { Stamp as StampArt } from "../../../src/components/Stamp";
 import { EASE_OUT, motion } from "../../../src/theme/motion";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
@@ -30,7 +30,7 @@ function StampAward({ destination, date, tripId }: { destination: string; date: 
   const style = useAnimatedStyle(() => ({ opacity: p.value, transform: [{ scale: from - (from - 1) * p.value }] }));
   return (
     <Animated.View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={[s.stampAward, style]}>
-      <StampArt compact destination={destination} date={date} kind="arrival" shape={shapeFor(tripId, "arrival")} tilt={-6} />
+      <StampArt compact destination={destination} date={date} kind="arrival" shape={shapeFor(tripId, "arrival")} ink={inkFor(tripId, "arrival")} tilt={-6} />
     </Animated.View>
   );
 }

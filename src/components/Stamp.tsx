@@ -1,129 +1,134 @@
-import { StyleSheet } from "react-native";
+import { makeImageFromView, SkImage } from "@shopify/react-native-skia";
+import { useEffect, useRef, useState } from "react";
+import { LayoutChangeEvent, StyleSheet, View } from "react-native";
 import { Pressable } from "./Pressable";
-import Svg, { Circle, Defs, Ellipse, G, Mask, Path, RadialGradient, Rect, Stop, Text as SvgText, TextPath } from "react-native-svg";
-import { StampKind, StampShape, StampStyle, stampDate, styleFor } from "../domain/stampShape";
+import Svg, { Circle, Defs, Ellipse, G, Mask, Path, Rect, Text as SvgText } from "react-native-svg";
+import { MOTIFS, motifFor } from "../domain/motifs";
+import { StampKind, StampShape, stampDate } from "../domain/stampShape";
 import { stampWear } from "../domain/stampWear";
 import { color, font } from "../theme/tokens";
+import { StampInk } from "./StampInk";
 
-type Props = { destination: string; date: string; kind: StampKind; shape: StampShape; onPress?: () => void; ink?: string; tilt?: number; compact?: boolean; frame?: StampStyle; light?: boolean };
+type Props = { destination: string; date: string; kind: StampKind; shape: StampShape; onPress?: () => void; ink?: string; tilt?: number; compact?: boolean; light?: boolean };
 
-const W = 340;
-const H = 176;
-const CX = W / 2;
-const CY = H / 2;
-const LABEL = { arrival: "ARRIVAL", departure: "DEPARTURE" } as const;
+export const STAMP_W = 150;
+export const STAMP_H = 170;
+const LABEL = { arrival: "ARRIVED", departure: "DEPARTED" } as const;
+// Where the small word at the top sits: the arch and the hexagon close in at the top, so it drops a little.
+const TOP: Record<StampShape, number> = { rect: 28, chamfer: 28, arch: 38, hexagon: 38, oval: 30, circle: 30 };
+// How far the last lines are lifted where the frame closes in at the bottom, so the date stays inside it.
+const LIFT: Record<StampShape, number> = { rect: 0, chamfer: 0, arch: 0, hexagon: 14, oval: 8, circle: 11 };
 
-// An ink stamp in one of ten shapes (rounded rectangle, oval, circle, hexagon, cut-corner rectangle, octagon, stadium, arch, ticket, triangle) and one
-// of six frame styles (double line, dashed, bold, triple, filled label band, dotted), with the destination, ARRIVAL or DEPARTURE, and the date. It is printed like the real thing: fine grain where the ink did not take, soft
-// smudges where it faded, and a faint ghost of a double strike. The wear comes from the destination, date and kind, so a stamp always
-// looks the same. Arrival carries a solid ink dot, departure an open ring.
-// `light` leaves out the wear (grain and smudges), which is most of the cost: a page that is being turned draws many copies of its stamps, and a stamp in motion does not need it.
-export function Stamp({ destination, date, kind, shape, onPress, ink = color.forestInk, tilt, compact, frame, light }: Props) {
-  const wear = stampWear(`${destination}|${date}|${kind}`, W, H);
-  const name = destination.toUpperCase();
-  const label = LABEL[kind];
+// A passport stamp. Both stamps of a trip share a frame (a double line in one of six shapes) and an ink. An arrival is plain type: ARRIVED, a dot, the city, the country, a rule and the
+// date. A departure carries a small illustration of the place (see domain/motifs) above its words: DEPARTED, the picture, "CITY · COUNTRY", a rule and the date.
+// It is printed like the real thing (see StampInk): ink that spreads, uneven pressure, grain and smudges. The clean stamp is drawn as SVG first; once a picture of it has been taken the GPU
+// prints it through the ink shader. `light` skips the inking: a page being turned draws many copies.
+const INK_CACHE = new Map<string, SkImage>();
+let uids = 0;
+
+// A scene scaled to fit a box, painted onto a mask so its "cut" shapes (windows, snowcaps, waves) are left blank again instead of covered with paper colour.
+function Illustration({ id, x, y, w, h, ink, mask }: { id: ReturnType<typeof motifFor>; x: number; y: number; w: number; h: number; ink: string; mask: string }) {
+  const m = MOTIFS[id];
+  const [bx, by, bw, bh] = m.box;
+  const sc = Math.min(w / bw, h / bh);
+  const tx = x + (w - bw * sc) / 2 - bx * sc;
+  const ty = y + (h - bh * sc) / 2 - by * sc;
+  return (
+    <>
+      <Defs>
+        <Mask id={mask} x={x} y={y} width={w} height={h} maskUnits="userSpaceOnUse">
+          <G transform={`translate(${tx} ${ty}) scale(${sc})`}>
+            {m.shapes.map((s, i) => {
+              const c = s.kind === "ink" ? "#fff" : "#000";
+              return s.stroke ? <Path key={i} d={s.d} fill="none" stroke={c} strokeWidth={s.stroke} strokeLinecap="round" /> : <Path key={i} d={s.d} fill={c} />;
+            })}
+          </G>
+        </Mask>
+      </Defs>
+      <Rect x={x} y={y} width={w} height={h} fill={ink} mask={`url(#${mask})`} />
+    </>
+  );
+}
+
+// The double-line frame: a heavy outer line and a hairline just inside it.
+function Frame({ shape, ink }: { shape: StampShape; ink: string }) {
+  const outer = { fill: "none", stroke: ink, strokeWidth: 2.4, strokeLinejoin: "round" } as const;
+  const inner = { fill: "none", stroke: ink, strokeWidth: 0.9, strokeLinejoin: "round" } as const;
+  switch (shape) {
+    case "rect": return <><Rect x={4} y={4} width={142} height={162} rx={12} {...outer} /><Rect x={9.5} y={9.5} width={131} height={151} rx={8} {...inner} /></>;
+    case "chamfer": return <><Path d="M26 4 H124 L146 26 V144 L124 166 H26 L4 144 V26 Z" {...outer} /><Path d="M28 9.5 H122 L140.5 28 V142 L122 160.5 H28 L9.5 142 V28 Z" {...inner} /></>;
+    case "arch": return <><Path d="M6 166 V70 a69 69 0 0 1 138 0 V166 Z" {...outer} /><Path d="M12 160 V70 a63 63 0 0 1 126 0 V160 Z" {...inner} /></>;
+    case "hexagon": return <><Path d="M75 4 L144 44 V126 L75 166 L6 126 V44 Z" {...outer} /><Path d="M75 10 L138 47 V123 L75 160 L12 123 V47 Z" {...inner} /></>;
+    case "oval": return <><Ellipse cx={75} cy={85} rx={72} ry={80} {...outer} /><Ellipse cx={75} cy={85} rx={66.5} ry={74.5} {...inner} /></>;
+    default: return <><Circle cx={75} cy={85} r={75} {...outer} /><Circle cx={75} cy={85} r={69.5} {...inner} /></>;
+  }
+}
+
+export function Stamp({ destination, date, kind, shape, onPress, ink = color.forestInk, tilt, compact, light }: Props) {
+  const words$ = `${destination}|${date}|${kind}`;
+  const wear = stampWear(words$, STAMP_W, STAMP_H);
   const when = stampDate(date);
+  const uid = useRef(++uids).current;
+  const scene = motifFor(destination);
+  const [cityName, ...rest] = destination.toUpperCase().split(",").map((x) => x.trim());
+  const countryName = rest.join(", ");
+  const top = TOP[shape];
+  const up = LIFT[shape];
+  // The lettering is fattened with a thin stroke: the sample is set in heavy type, and ink that has spread reads heavier than the clean font.
+  const text = { fontFamily: font.medium, fill: ink, stroke: ink, strokeWidth: 0.25, textAnchor: "middle" } as const;
 
-  // One ring of the frame, pulled in by `d` drawing units. The five original shapes are drawn directly; the others are paths that are
-  // scaled in about the centre, which keeps their rings evenly spaced.
-  const PATH: Partial<Record<StampShape, string>> = {
-    hexagon: "M96 8 H244 L318 88 L244 168 H96 L22 88 Z",
-    chamfer: "M40 10 H300 L330 40 V136 L300 166 H40 L10 136 V40 Z",
-    octagon: "M84 8 H256 L332 52 V124 L256 168 H84 L8 124 V52 Z",
-    arch: "M24 168 V86 Q24 8 170 8 Q316 8 316 86 V168 Z",
-    ticket: "M12 12 H328 V77 A11 11 0 0 0 328 99 V164 H12 V99 A11 11 0 0 0 12 77 Z",
-    triangle: "M170 9 L328 166 H12 Z",
-  };
-  type Line = { strokeWidth: number; strokeDasharray?: string; strokeLinecap?: "round" };
-  const ring = (d: number, line: Line) => {
-    const p = { stroke: ink, fill: "none", ...line } as const;
-    switch (shape) {
-      case "oval": return <Ellipse cx={CX} cy={CY} rx={152 - d} ry={76 - d} {...p} />;
-      case "circle": return <Circle cx={CX} cy={CY} r={80 - d * 0.85} {...p} />;
-      case "stadium": return <Rect x={10 + d} y={12 + d} width={W - 20 - 2 * d} height={H - 24 - 2 * d} rx={76 - d} ry={76 - d} {...p} />;
-      case "rect": return <Rect x={10 + d} y={10 + d} width={W - 20 - 2 * d} height={H - 20 - 2 * d} rx={Math.max(30 - d, 6)} ry={Math.max(30 - d, 6)} {...p} />;
-      default: {
-        const sx = (CX - d) / CX;
-        const sy = (CY - d) / CY;
-        return <G transform={`translate(${CX} ${CY}) scale(${sx} ${sy}) translate(${-CX} ${-CY})`}><Path d={PATH[shape]} strokeLinejoin="round" {...p} /></G>;
-      }
-    }
-  };
-  const look = frame ?? styleFor(`${destination}|${date}|${kind}`, shape);   // `frame` forces a style (previews and tests)
-  const outline = () => {
-    switch (look) {
-      case "dashed": return <>{ring(0, { strokeWidth: 4, strokeDasharray: "18 9" })}{ring(13, { strokeWidth: 1.5 })}</>;
-      case "bold": return <>{ring(0, { strokeWidth: 9 })}{ring(15, { strokeWidth: 1.5 })}</>;
-      case "triple": return <>{ring(0, { strokeWidth: 3 })}{ring(8, { strokeWidth: 2 })}{ring(16, { strokeWidth: 1.5 })}</>;
-      case "dotted": return <>{ring(0, { strokeWidth: 5 })}{ring(13, { strokeWidth: 3, strokeDasharray: "0.1 8", strokeLinecap: "round" })}</>;
-      case "beaded": return <>{ring(0, { strokeWidth: 7, strokeDasharray: "0.1 11", strokeLinecap: "round" })}{ring(12, { strokeWidth: 2 })}</>;
-      case "dashdot": return <>{ring(0, { strokeWidth: 4, strokeDasharray: "22 6 3 6" })}{ring(12, { strokeWidth: 1.5 })}</>;
-      case "stencil": return <>{ring(0, { strokeWidth: 6, strokeDasharray: "46 14" })}{ring(13, { strokeWidth: 2, strokeDasharray: "46 14" })}</>;
-      // A second, fainter strike a few units off, as if the stamp had slipped: the real thing most often happens at a busy border desk.
-      case "offset": return <>{ring(0, { strokeWidth: 5 })}<G x={5} y={4} opacity={0.35}>{ring(0, { strokeWidth: 4 })}</G>{ring(12, { strokeWidth: 2 })}</>;
-      default: return <>{ring(0, { strokeWidth: 5 })}{ring(12, { strokeWidth: 2 })}</>;   // solid and banner
-    }
-  };
-
-  // Where the words sit. A triangle is narrow at the top, so everything moves down and the name is set smaller to fit its width.
-  const tri = shape === "triangle";
-  const markY = shape === "circle" ? 74 : tri ? 54 : 40;
-  const labelY = tri ? 86 : 64;
-  const nameY = tri ? 116 : 104;
-  const nameSize = tri ? (name.length > 9 ? 17 : 22) : name.length > 14 ? 24 : 30;
-  const dateY = tri ? 143 : 138;
-  const dateSize = tri ? 13 : 16;
-  const mark = kind === "arrival"
-    ? <Circle cx={CX} cy={markY} r={5} fill={ink} stroke={ink} strokeWidth={1.5} />
-    : <Circle cx={CX} cy={markY} r={5} fill="none" stroke={ink} strokeWidth={2} />;
-
-  // A circle sets its words on the curve: the label and destination over the top, the date under it. Every other shape reads straight.
-  const words = (dx = 0) => (
-    <G x={dx}>
-      {outline()}
-      {shape === "circle" ? (
+  const content = (
+    <G>
+      <Frame shape={shape} ink={ink} />
+      <SvgText x={75} y={top} fontSize={9.5} letterSpacing={1.6} {...text}>{LABEL[kind]}</SvgText>
+      {kind === "arrival" ? (
         <>
-          <Defs>
-            <Path id="arcTop" d={`M ${CX - 56} ${CY + 6} A 56 56 0 0 1 ${CX + 56} ${CY + 6}`} />
-            <Path id="arcBottom" d={`M ${CX - 60} ${CY + 10} A 60 60 0 0 0 ${CX + 60} ${CY + 10}`} />
-          </Defs>
-          <SvgText fontSize={13} fontFamily={font.medium} letterSpacing={2.5} fill={ink} textAnchor="middle"><TextPath href="#arcTop" startOffset="50%">{name.length > 12 ? name.slice(0, 12) : name}</TextPath></SvgText>
-          <SvgText fontSize={11} fontFamily={font.medium} letterSpacing={3} fill={ink} textAnchor="middle"><TextPath href="#arcBottom" startOffset="50%">{label}</TextPath></SvgText>
-          {mark}
-          <SvgText x={CX} y={CY + 22} fontSize={13} fontFamily={font.medium} fill={ink} textAnchor="middle">{when}</SvgText>
+          <Circle cx={75} cy={top + 22} r={4.2} fill={ink} />
+          <SvgText x={75} y={98 - Math.round(up * 0.8)} fontSize={Math.min(22, Math.max(12, Math.floor(100 / (cityName.length * 0.72))))} letterSpacing={1.2} {...text}>{cityName}</SvgText>
+          {countryName ? <SvgText x={75} y={115 - Math.round(up * 0.8)} fontSize={10.5} letterSpacing={3.4} {...text}>{countryName}</SvgText> : null}
+          <Rect x={34} y={124 - up} width={82} height={1.6} fill={ink} />
+          <SvgText x={75} y={144 - up} fontSize={12} letterSpacing={0.6} {...text}>{when}</SvgText>
         </>
       ) : (
         <>
-          {mark}
-          {look === "banner" && <Rect x={CX - (tri ? 64 : 78)} y={labelY - 15} width={tri ? 128 : 156} height={22} rx={11} ry={11} fill={ink} />}
-          <SvgText x={CX} y={labelY} fontSize={tri ? 11 : 12} fontFamily={font.medium} letterSpacing={tri ? 3 : 4} fill={look === "banner" ? color.paper : ink} textAnchor="middle">{label}</SvgText>
-          <SvgText x={CX} y={nameY} fontSize={nameSize} fontFamily={font.medium} letterSpacing={tri ? 1.5 : 2.5} fill={ink} textAnchor="middle">{name}</SvgText>
-          <SvgText x={CX} y={dateY} fontSize={dateSize} fontFamily={font.medium} letterSpacing={1} fill={ink} textAnchor="middle">{when}</SvgText>
+          <Illustration id={scene} x={26} y={top + 8} w={98} h={110 - up - (top + 8)} ink={ink} mask={`m${uid}`} />
+          <SvgText x={75} y={130 - up} fontSize={Math.min(13, Math.max(9, Math.floor(104 / ((cityName.length + (countryName ? countryName.length + 3 : 0)) * 0.66))))} letterSpacing={0.7} {...text}>{countryName ? `${cityName} · ${countryName}` : cityName}</SvgText>
+          <Rect x={28 + up} y={136 - up} width={94 - 2 * up} height={1.6} fill={ink} />
+          <SvgText x={75} y={152 - up} fontSize={11.5} letterSpacing={0.5} {...text}>{when}</SvgText>
         </>
       )}
     </G>
   );
 
+  // The picture of the clean stamp that the ink shader prints from, taken once and kept for the next time this stamp is drawn.
+  const cacheKey = `v3|${words$}|${shape}|${ink}`;
+  const artRef = useRef<View>(null);
+  const [size, setSize] = useState<{ w: number; h: number } | null>(null);
+  const [image, setImage] = useState<SkImage | null>(() => INK_CACHE.get(cacheKey) ?? null);
+  useEffect(() => {
+    const hit = INK_CACHE.get(cacheKey);
+    if (hit) return setImage(hit);
+    setImage(null);
+    if (light || !size) return;
+    let live = true;
+    const id = setTimeout(async () => {
+      const img = artRef.current ? await makeImageFromView(artRef).catch(() => null) : null;
+      if (img) INK_CACHE.set(cacheKey, img);
+      if (live && img) setImage(img);
+    }, 60);
+    return () => { live = false; clearTimeout(id); };
+  }, [cacheKey, light, size]);
+  const inked = !light && !!image && !!size;
+  const onLayout = (e: LayoutChangeEvent) => setSize({ w: Math.round(e.nativeEvent.layout.width), h: Math.round(e.nativeEvent.layout.height) });
+
   return (
     <Pressable accessibilityRole="button" accessibilityLabel={`${destination}, ${kind} ${when}`} onPress={onPress} style={[s.wrap, compact && s.compact]}>
-      <Svg viewBox={`0 0 ${W} ${H}`} style={[s.svg, { transform: [{ rotate: `${tilt ?? wear.tilt}deg` }] }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
-        {!light && <Defs>
-          <RadialGradient id="smudge">
-            <Stop offset="0" stopColor="#000" stopOpacity={1} />
-            <Stop offset="1" stopColor="#000" stopOpacity={0} />
-          </RadialGradient>
-          {/* White shows the ink; black hides it. Grain is small black dots, smudges are soft black patches. */}
-          <Mask id="wear" x={0} y={0} width={W} height={H}>
-            <Rect x={0} y={0} width={W} height={H} fill="#fff" />
-            {wear.grain.map((g, i) => <Circle key={`g${i}`} cx={g.x} cy={g.y} r={g.r} fill="#000" />)}
-            {wear.smudges.map((m, i) => (
-              <Ellipse key={`s${i}`} cx={m.x} cy={m.y} rx={m.rx} ry={m.ry} fill="url(#smudge)" opacity={m.strength} rotation={m.angle} origin={`${m.x}, ${m.y}`} />
-            ))}
-          </Mask>
-        </Defs>}
-        <G opacity={0.1}>{words(1.8)}</G>
-        <G mask={light ? undefined : "url(#wear)"} opacity={0.92}>{words()}</G>
-      </Svg>
+      <View onLayout={onLayout} style={[s.svg, { transform: [{ rotate: `${tilt ?? wear.tilt}deg` }] }]}>
+        <View ref={artRef} collapsable={false} style={[StyleSheet.absoluteFill, { opacity: inked ? 0 : 1 }]} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <Svg viewBox={`0 0 ${STAMP_W} ${STAMP_H}`} width="100%" height="100%">{content}</Svg>
+        </View>
+        {inked && size && <StampInk image={image} w={size.w} h={size.h} ink={ink} seed={words$} />}
+      </View>
     </Pressable>
   );
 }
@@ -131,5 +136,5 @@ export function Stamp({ destination, date, kind, shape, onPress, ink = color.for
 const s = StyleSheet.create({
   wrap: { minHeight: 48, alignItems: "center", paddingVertical: 12 },
   compact: { minHeight: 0, paddingVertical: 0 },
-  svg: { width: "100%", aspectRatio: W / H },
+  svg: { width: "100%", aspectRatio: STAMP_W / STAMP_H },
 });

@@ -1,41 +1,36 @@
 import { hashSeed } from "./stampWear";
 
-// Real passports mix stamp shapes and printing styles: arrival and departure are seldom the same, and each border post has its own. Ours are
-// drawn in ten shapes and ten frame styles; a trip's arrival takes a shape (from its id) and its departure the next, so the two always differ,
-// and every stamp takes its own frame style from what it says (see styleFor), so a stamp always looks the same.
-export const SHAPES = ["rect", "oval", "circle", "hexagon", "chamfer", "octagon", "stadium", "arch", "ticket", "triangle"] as const;
+// A trip's two stamps (arrival and departure) are a matching pair: the same frame and the same ink, so they read as belonging together in the passport. The frame is one of six
+// double-line shapes (rounded rectangle, cut-corner shield, arch, hexagon, oval, circle) and the ink is one of seven, both taken from the trip's id so a trip always looks the same.
+export const SHAPES = ["rect", "chamfer", "arch", "hexagon", "oval", "circle"] as const;
 export type StampShape = (typeof SHAPES)[number];
 export type StampKind = "arrival" | "departure";
 
-// How the frame is printed: a thick and a thin line, a dashed ring, a heavy line with a hairline, three fine lines, a filled label band, a dotted
-// inner ring, a ring of beads, a dash-and-dot ring, a stencil of long dashes, or a slightly misregistered double strike.
-export const STYLES = ["solid", "dashed", "bold", "triple", "banner", "dotted", "beaded", "dashdot", "stencil", "offset"] as const;
-export type StampStyle = (typeof STYLES)[number];
+export const STAMP_INKS = ["#1c3f8f", "#1f7a5a", "#a3402a", "#6b2a7a", "#8c1f2a", "#b8581c", "#2a4a8a"] as const;   // blue, green, brick, purple, crimson, orange, navy
 
-// The frame style comes from the stamp's own words, so the same stamp is always printed the same way. A circle has its label on the curve, so
-// it has no flat band to fill and falls back to the plain double line.
-export function styleFor(seed: string, shape: StampShape): StampStyle {
-  const style = STYLES[(hashSeed(seed) >>> 3) % STYLES.length];
-  return style === "banner" && shape === "circle" ? "solid" : style;
-}
-
-export function shapeFor(seed: string, kind: StampKind): StampShape {
-  const i = hashSeed(seed) % SHAPES.length;
-  return SHAPES[(i + (kind === "departure" ? 1 : 0)) % SHAPES.length];
-}
+// Every stamp has its own shape (a trip's arrival and departure never match) and its own size, as when stamps are pressed by different officers with different stamps.
+export const shapeFor = (seed: string, kind: StampKind): StampShape => {
+  const h = hashSeed(seed);
+  const arrival = SHAPES[h % SHAPES.length];
+  return kind === "arrival" ? arrival : SHAPES[(h % SHAPES.length + 1 + ((h >>> 7) % (SHAPES.length - 1))) % SHAPES.length];
+};
+// How big a stamp is pressed, as a share of the page's stamp size (about 0.85 to 1.2).
+export const sizeFor = (seed: string, kind: StampKind): number => 0.85 + ((hashSeed(`${seed}|${kind}|size`) >>> 3) % 36) / 100;
+// The arrival and the departure of one trip are pressed with different inks (a few steps apart on the list, so they never look alike).
+export const inkFor = (seed: string, kind: StampKind): string => STAMP_INKS[((hashSeed(seed) >>> 4) + (kind === "departure" ? 3 : 0)) % STAMP_INKS.length];
 
 // "10 JUN 2026", the way a border stamp prints a date.
 const MON = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
 export const stampDate = (iso: string) => (iso ? `${iso.slice(8, 10)} ${MON[Number(iso.slice(5, 7)) - 1]} ${iso.slice(0, 4)}` : "");
 
 export type TripStamp = { id: string; trip_id: string; destination_name: string; start_date: string; end_date: string };
-export type Impression = { key: string; tripId: string; destination: string; kind: StampKind; date: string; shape: StampShape };
+export type Impression = { key: string; tripId: string; destination: string; kind: StampKind; date: string; shape: StampShape; ink: string; scale: number };
 
 // Each completed trip leaves two impressions in the passport: arrival on its first day and departure on its last, newest trip first
 // with its departure above its arrival.
 export function impressions(stamps: TripStamp[]): Impression[] {
   return stamps.flatMap((s) => [
-    { key: `${s.id}-out`, tripId: s.trip_id, destination: s.destination_name, kind: "departure" as const, date: s.end_date, shape: shapeFor(s.id, "departure") },
-    { key: `${s.id}-in`, tripId: s.trip_id, destination: s.destination_name, kind: "arrival" as const, date: s.start_date, shape: shapeFor(s.id, "arrival") },
+    { key: `${s.id}-out`, tripId: s.trip_id, destination: s.destination_name, kind: "departure" as const, date: s.end_date, shape: shapeFor(s.id, "departure"), ink: inkFor(s.id, "departure"), scale: sizeFor(s.id, "departure") },
+    { key: `${s.id}-in`, tripId: s.trip_id, destination: s.destination_name, kind: "arrival" as const, date: s.start_date, shape: shapeFor(s.id, "arrival"), ink: inkFor(s.id, "arrival"), scale: sizeFor(s.id, "arrival") },
   ]);
 }

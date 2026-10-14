@@ -15,8 +15,7 @@ import { Badge } from "../../../src/components/Badge";
 import { TextButton } from "../../../src/components/Buttons";
 import { ListItem } from "../../../src/components/ListItem";
 import { Stamp } from "../../../src/components/Stamp";
-import { placement } from "../../../src/domain/passportPage";
-import { shapeFor } from "../../../src/domain/stampShape";
+import { inkFor, shapeFor } from "../../../src/domain/stampShape";
 import { TripCover } from "../../../src/components/TripCover";
 import { TripNameTag } from "../../../src/components/TripNameTag";
 import { listMembers, Member } from "../../../src/api/members";
@@ -89,7 +88,7 @@ export default function Summary() {
             <View key={kind} pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants"
               style={[s.stamp, { width: STAMP_W }, k === 0 ? { top: navH + space.s4, right: -STAMP_W / 2 } : { bottom: space.s8, left: -STAMP_W / 2 }]}>
               <Stamp compact destination={sm.destination_name.split(",")[0].trim()} date={kind === "arrival" ? sm.start_date : sm.end_date} kind={kind}
-                shape={shapeFor(sm.trip_id, kind)} ink={placement(sm.trip_id, k).ink} tilt={k === 0 ? -8 : 6} />
+                shape={shapeFor(sm.trip_id, kind)} ink={inkFor(sm.trip_id, kind)} tilt={k === 0 ? -8 : 6} />
             </View>
           ))}
           {state === null || (state.ok && !(extras.look && extras.people)) ? (
