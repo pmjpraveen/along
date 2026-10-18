@@ -28,6 +28,7 @@ export { default as ImageIcon } from "lucide-react-native/icons/image";
 export { default as ImagePlus } from "lucide-react-native/icons/image-plus";
 export { default as ExternalLink } from "lucide-react-native/icons/external-link";
 export { default as Images } from "lucide-react-native/icons/images";
+export { default as ArrowRight } from "lucide-react-native/icons/arrow-right";
 export { default as Info } from "lucide-react-native/icons/info";
 export { default as LogOut } from "lucide-react-native/icons/log-out";
 export { default as MapPin } from "lucide-react-native/icons/map-pin";

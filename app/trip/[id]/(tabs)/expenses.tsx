@@ -163,7 +163,7 @@ export default function Expenses() {
             </View>);
           items.push(
             <View key={`rows-${g.key}`} style={s.dayRows}>
-              {g.expenses.map((e) => {
+              {g.expenses.map((e, i) => {
                     const line = expenseLine({ meId: ok.meId ?? null, paidById: e.paidById ?? "", addedById: e.addedById ?? "", paidBy: e.paidBy, addedBy: e.addedBy, myShareMinor: e.myShareMinor ?? 0 });
                     const amount = formatMinor(e.amount_minor, ok.currency.exponent, ok.currency.code);
                     const row = (
@@ -183,7 +183,7 @@ export default function Expenses() {
                     // Only the person who added an expense, or the trip owner, can swipe a row to delete it (the server enforces the same rule).
                     return (<View key={e.id}>{e.canEdit ? (
                       <SwipeToDelete label={`Delete ${e.title}`} onDelete={() => { setDeleteError(null); setDeleting({ id: e.id, title: e.title }); }}>{row}</SwipeToDelete>
-                    ) : row}<View style={s.divider} /></View>);
+                    ) : row}{i < g.expenses.length - 1 && <View style={s.divider} />}</View>);
                   })}
             </View>);
         }

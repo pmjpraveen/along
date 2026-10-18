@@ -7,13 +7,13 @@ const isOffline = (m: string) => /network|fetch/i.test(m);
 
 export type BalanceRow = { memberId: string; name: string; guest: boolean; isMe: boolean; isOwner: boolean; net: number; costMinor: number; paidMinor: number; avatarUrl?: string | null };
 // `transfers` is who owes whom as it was added (per pair, after payments); `rows` is each person's total.
-export type BalancesResult = { ok: true; currency: { code: string; exponent: number }; rows: BalanceRow[]; transfers: Transfer[] } | { ok: false; message: string };
+export type BalancesResult = { ok: true; tripName?: string; currency: { code: string; exponent: number }; rows: BalanceRow[]; transfers: Transfer[] } | { ok: false; message: string };
 
 // Balances come only from the ledger view; members with no entries yet are shown as settled (0).
 export async function loadBalances(tripId: string): Promise<BalancesResult> {
   try {
     const [trip, members, nets, session, expenses, shares, payments] = await Promise.all([
-      supabase.from("trips").select("primary_currency, currencies(minor_unit_exponent)").eq("id", tripId).single(),
+      supabase.from("trips").select("name, primary_currency, currencies(minor_unit_exponent)").eq("id", tripId).single(),
       supabase.from("trip_members").select("id, user_id, display_name, membership_type, role, avatar_url").eq("trip_id", tripId).eq("status", "active").order("created_at"),
       supabase.from("trip_member_balances").select("member_id, net_minor").eq("trip_id", tripId),
       supabase.auth.getSession(),
@@ -33,6 +33,7 @@ export async function loadBalances(tripId: string): Promise<BalancesResult> {
     const paid: PaymentEntry[] = (payments.data ?? []).map((p) => ({ fromId: p.from_member_id as string, toId: p.to_member_id as string, amountMinor: Number(p.amount_minor), reversal: p.kind === "reversal" }));
     return {
       ok: true,
+      tripName: trip.data.name as string,
       currency: { code: trip.data.primary_currency as string, exponent: cur.minor_unit_exponent },
       transfers: pairwiseDebts([...byExpense.values()], paid),
       rows: (members.data ?? []).map((m) => ({

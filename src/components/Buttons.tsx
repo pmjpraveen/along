@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { ReactNode, useState } from "react";
 import { ActivityIndicator, Platform, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "./Pressable";
 import { PassportShine } from "./PassportShine";
@@ -11,6 +11,7 @@ export type ButtonSize = "large" | "medium" | "small";
 type Props = {
   label: string; onPress: () => void; type?: ButtonType; size?: ButtonSize; disabled?: boolean; busy?: boolean;
   accessibilityHint?: string; align?: "start" | "center";
+  icon?: ReactNode;   // shown before the label; the caller gives it its size and the label's colour
   shine?: number;   // a glint sweeps across the button this many times when it appears (0 or unset: none)
 };
 
@@ -20,7 +21,7 @@ type Props = {
 // Disabled: fills fall back to the same #f2f2f2 grey with a Pebble label; tertiary goes to the faint border colour.
 // Pressed and hovered (mouse, trackpad) each darken the fill a step (buttonState); the label dips slightly on press too.
 // Sizes: large 56 (fills the width), medium 44, small 30. Small and medium keep a 44/48 touch area through hit slop.
-export function Button({ label, onPress, type: kind = "primary", size = "large", disabled = false, busy = false, accessibilityHint, align = "start", shine = 0 }: Props) {
+export function Button({ label, onPress, type: kind = "primary", size = "large", disabled = false, busy = false, accessibilityHint, align = "start", shine = 0, icon }: Props) {
   const [focused, setFocused] = useState(false);
   const inactive = disabled || busy;
   const box = [
@@ -42,7 +43,7 @@ export function Button({ label, onPress, type: kind = "primary", size = "large",
         accessibilityState={{ disabled, busy }} disabled={inactive} onPress={onPress} hitSlop={slop}
         onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}
         style={({ pressed, hovered }) => [...box, shine > 0 && s.clip, !inactive && (pressed || hovered) && { backgroundColor: buttonState[stateKey(kind)][pressed ? "pressed" : "hover"] }]}>
-        {busy ? <ActivityIndicator color={kind === "primary" ? color.paper : color.brandBlack} /> : <Text maxFontSizeMultiplier={1.3} style={labelStyle}>{label}</Text>}
+        {busy ? <ActivityIndicator color={kind === "primary" ? color.paper : color.brandBlack} /> : icon ? <View style={s.withIcon}>{icon}<Text maxFontSizeMultiplier={1.3} style={labelStyle}>{label}</Text></View> : <Text maxFontSizeMultiplier={1.3} style={labelStyle}>{label}</Text>}
         {shine > 0 && !inactive && <PassportShine sweeps={shine} restMs={motion.shine.buttonRestMs} sweepMs={motion.shine.buttonSweepMs} still={false} />}
       </Pressable>
     </View>
@@ -64,6 +65,7 @@ const s = StyleSheet.create({
   // Focus: a 2px ring 2px outside the button.
   ring: { position: "absolute", top: -4, left: -4, right: -4, bottom: -4, borderRadius: radius.card + 4, borderCurve: "continuous", borderWidth: 2, borderColor: color.brandBlack },
   clip: { overflow: "hidden" },
+  withIcon: { flexDirection: "row", alignItems: "center", gap: space.s8 },
   underline: { textDecorationLine: "underline" },
 });
 

@@ -3,6 +3,8 @@ import Settle from "../../app/trip/[id]/settle";
 
 const mockSettle = jest.fn();
 const mockBack = jest.fn();
+const mockChime = jest.fn();
+jest.mock("../sound", () => ({ playChime: () => mockChime() }));
 jest.mock("../api/settlements", () => ({ createSettlement: (...a: unknown[]) => mockSettle(...a) }));
 jest.mock("../api/balances", () => ({
   loadBalances: async () => ({ ok: true, currency: { code: "INR", exponent: 2 }, rows: [
@@ -12,16 +14,17 @@ jest.mock("expo-router", () => ({ useLocalSearchParams: () => ({ id: "t1", from:
 jest.mock("react-native-safe-area-context", () => ({ useSafeAreaInsets: () => ({ top: 0, bottom: 0 }) }));
 beforeEach(() => jest.clearAllMocks());
 
-const confirm = async () => fireEvent.press(screen.getByRole("button", { name: "Confirm payment" }));
+const confirm = async () => fireEvent.press(screen.getByRole("button", { name: "Record payment" }));
 
 test("5.5 the amount is pre-filled from the suggested payment and confirming records it", async () => {
   mockSettle.mockResolvedValue({ ok: true });
   await render(<Settle />);
-  expect(await screen.findByText("You pay Asha")).toBeTruthy();
+  expect(await screen.findByText("You paid Asha")).toBeTruthy();
   await waitFor(() => expect(screen.getByLabelText("Amount").props.value).toBe("500.00"));
   await confirm();
   await waitFor(() => expect(mockBack).toHaveBeenCalled());
   expect(mockSettle).toHaveBeenCalledWith(expect.objectContaining({ tripId: "t1", fromMemberId: "b", toMemberId: "a", amountMinor: 50000 }));
+  expect(mockChime).toHaveBeenCalledTimes(1);                                      // the chime plays once the payment is recorded
 });
 
 test("5.5 a smaller amount can be paid in part", async () => {
@@ -52,4 +55,13 @@ test("5.5 a zero amount is rejected before anything is sent", async () => {
   await confirm();
   expect(await screen.findByText(/greater than zero/)).toBeTruthy();
   expect(mockSettle).not.toHaveBeenCalled();
+});
+
+test("5.5 a rejected payment plays no chime", async () => {
+  mockSettle.mockResolvedValue({ ok: false, message: "No." });
+  await render(<Settle />);
+  await waitFor(() => expect(screen.getByLabelText("Amount").props.value).toBe("500.00"));
+  await confirm();
+  expect(await screen.findByText("No.")).toBeTruthy();
+  expect(mockChime).not.toHaveBeenCalled();
 });
