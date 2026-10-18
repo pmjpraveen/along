@@ -51,7 +51,14 @@
           "microphonePermission": "along listens only while you tap the mic, to turn what you say into text.",
           "speechRecognitionPermission": "along uses speech recognition to turn what you say into text."
         }
-      ]
+      ],
+      [
+        "expo-audio",
+        {
+          "microphonePermission": false
+        }
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,
@@ -63,6 +70,12 @@
         "projectId": "c6946cac-267d-4148-a50c-55e82368c484"
       }
     },
-    "owner": "pmjpraveen"
+    "owner": "pmjpraveen",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/c6946cac-267d-4148-a50c-55e82368c484"
+    }
   }
 }

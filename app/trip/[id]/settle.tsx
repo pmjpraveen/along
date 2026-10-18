@@ -1,10 +1,14 @@
 import { Alert } from "../../../src/components/Alert";
 import { toast } from "../../../src/stores/toast";
 import { haptic } from "../../../src/haptics";
+import { playChime } from "../../../src/sound";
+import { useReducedMotion } from "../../../src/hooks/useReducedMotion";
+import { motion } from "../../../src/theme/motion";
+import { Confetti } from "../../../src/components/Confetti";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useRef, useState } from "react";
 import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
-import { X } from "../../../src/icons";
+import { ArrowRight, Info, X } from "../../../src/icons";
 import { Pressable } from "../../../src/components/Pressable";
 import { Avatar } from "../../../src/components/Avatar";
 import { Skeleton } from "../../../src/components/Skeleton";
@@ -26,6 +30,10 @@ export default function Settle() {
   const [text, setText] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [celebrate, setCelebrate] = useState(false);
+  const reduced = useReducedMotion();
+  const leave = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(() => () => { if (leave.current) clearTimeout(leave.current); }, []);
 
   const load = async () => {
     const r = await loadBalances(id);
@@ -44,9 +52,15 @@ export default function Settle() {
     setBusy(true);
     setError(null);
     const r = await createSettlement({ tripId: id, fromMemberId: from, toMemberId: to, amountMinor: minor, key });
-    setBusy(false);
-    if (r.ok) { haptic.success(); toast("Payment recorded"); router.back(); }
-    else setError(r.message);
+    if (!r.ok) { setBusy(false); return setError(r.message); }
+    // Recorded: a chime and a short confetti fall, then back to the balances. Reduce Motion skips the fall and leaves at once; the button stays
+    // busy meanwhile so a second tap cannot record it twice.
+    haptic.success();
+    playChime();
+    toast("Payment recorded");
+    if (reduced) return router.back();
+    setCelebrate(true);
+    leave.current = setTimeout(() => router.back(), motion.confetti.ms);
   };
 
   const symbol = bal?.ok ? formatMinor(0, bal.currency.exponent, bal.currency.code).replace(/[\d.,]/g, "") : "";
@@ -56,7 +70,7 @@ export default function Settle() {
         <Pressable accessibilityRole="button" accessibilityLabel="Close" onPress={() => router.back()} hitSlop={space.s4} style={s.close}>
           <X size={22} color={color.iconInk} strokeWidth={2} />
         </Pressable>
-        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Settle up</Text>
+        <Text accessibilityRole="header" maxFontSizeMultiplier={1.15} style={s.heading}>Record a payment</Text>
         {!bal ? (
           <Skeleton label="Loading" variant="settle" />
         ) : !bal.ok ? (
@@ -66,27 +80,33 @@ export default function Settle() {
           </View>
         ) : (
           <>
-            <View accessible style={s.card}>
+            <View accessible style={s.hero}>
               <View style={s.pair}>
-                <View style={s.ring}><Avatar name={nameOf(from)?.name ?? ""} uri={nameOf(from)?.avatarUrl} guest={nameOf(from)?.guest} size={48} /></View>
-                <View style={s.ring}><Avatar name={nameOf(to)?.name ?? ""} uri={nameOf(to)?.avatarUrl} guest={nameOf(to)?.guest} size={48} /></View>
+                <View style={s.ring}><Avatar name={nameOf(from)?.name ?? ""} uri={nameOf(from)?.avatarUrl} guest={nameOf(from)?.guest} size={72} /></View>
+                <ArrowRight size={24} color={color.slate} strokeWidth={2} />
+                <View style={s.ring}><Avatar name={nameOf(to)?.name ?? ""} uri={nameOf(to)?.avatarUrl} guest={nameOf(to)?.guest} size={72} /></View>
               </View>
-              <Text maxFontSizeMultiplier={1.4} style={s.who}>{label(from)} {label(from) === "You" ? "pay" : "pays"} {label(to)}</Text>
+              <Text maxFontSizeMultiplier={1.4} style={s.who}>{label(from)} paid {label(to) === "You" ? "you" : label(to)}</Text>
             </View>
             <View style={s.gap}>
-              <Text maxFontSizeMultiplier={1.4} style={s.label}>Amount</Text>
+              <Text maxFontSizeMultiplier={1.4} style={s.label}>Amount paid</Text>
               <AmountInput label="Amount" value={text} onChange={setText} exponent={bal.currency.exponent} symbol={symbol} invalid={!!error} />
+              <Text maxFontSizeMultiplier={1.4} style={s.hint}>Paid less? Change the amount.</Text>
             </View>
-            <Text maxFontSizeMultiplier={1.4} style={s.body}>This records money that's already been paid. Once saved, it can't be changed.</Text>
+            <View accessible style={s.note}>
+              <Info size={20} color={color.slate} strokeWidth={2} />
+              <Text maxFontSizeMultiplier={1.4} style={s.noteText}>This only records a payment that already happened. It can't be changed once saved.</Text>
+            </View>
             {error && <Alert variant="negative">{error}</Alert>}
           </>
         )}
       </ScrollView>
       {bal?.ok && (
         <View style={[s.footer, { paddingBottom: bottom + space.s12 }]}>
-          <PrimaryButton label={busy ? "Recording…" : "Confirm payment"} onPress={save} />
+          <PrimaryButton label={busy ? "Recording…" : "Record payment"} onPress={save} />
         </View>
       )}
+      {celebrate && <Confetti />}
     </KeyboardAvoidingView>
   );
 }
@@ -97,12 +117,13 @@ const s = StyleSheet.create({
   close: { width: 44, height: 44, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
   heading: { ...type.sheetTitle, color: color.obsidian },
   footer: { paddingHorizontal: space.s20, paddingTop: space.s12, borderTopWidth: 1, borderTopColor: color.borderNeutral, backgroundColor: color.paper },
-  pair: { flexDirection: "row", gap: space.s8 },
-  ring: { borderWidth: 3, borderColor: color.paper, borderRadius: radius.pill, borderCurve: "continuous" },   // a white ring so each face stands out on the grey card
+  hero: { alignItems: "center", gap: space.s16, paddingTop: space.s64 },
+  pair: { flexDirection: "row", alignItems: "center", gap: space.s16 },
+  ring: { borderWidth: 3, borderColor: color.paper, borderRadius: radius.pill, borderCurve: "continuous" },
   gap: { gap: space.s8 },
-  card: { gap: space.s12, padding: space.s20, borderRadius: radius.sheet, borderCurve: "continuous", backgroundColor: color.softGrey },
-  who: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: track(30), color: color.brandBlack },
+  who: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: track(30), color: color.brandBlack, textAlign: "center" },
   label: { ...type.label, color: color.charcoal },
-  body: { ...type.body, color: color.slate },
-  error: { ...type.label, color: color.alarmRed },
+  hint: { ...type.fieldMessage, color: color.slate },
+  note: { flexDirection: "row", alignItems: "center", gap: space.s12, paddingVertical: space.s12, paddingHorizontal: space.s16, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.softGrey },
+  noteText: { ...type.fieldMessage, flex: 1, color: color.charcoal },
 });

@@ -76,9 +76,10 @@ test("5.4 the balances screen shows my net, then who owes whom in plain words", 
   ] });
   await render(<Balances />);
   expect(await screen.findByText("You owe ₹800.00")).toBeTruthy();
-  expect(screen.getByText("You owe Ben ₹500.00")).toBeTruthy();
-  expect(screen.getByText("You owe Rahul ₹300.00")).toBeTruthy();
-  expect(screen.getByLabelText(/^Ben\. Owed ₹500\.00\./)).toBeTruthy();
+  expect(screen.getByText("You need to pay")).toBeTruthy();   // my card is open: who I owe, with amounts
+  expect(screen.getAllByText("₹500.00").length).toBeGreaterThan(0);
+  expect(screen.getAllByText("₹300.00").length).toBeGreaterThan(0);
+  expect(screen.getByLabelText(/^Ben\. Gets back ₹500\.00\./)).toBeTruthy();
 });
 
 test("5.4 when everyone is at zero it says so, and shows no To settle up section", async () => {
@@ -95,48 +96,51 @@ test("4.5 a balances load failure shows retry", async () => {
   expect(await screen.findByRole("button", { name: "Retry" })).toBeTruthy();
 });
 
-test("5.5 a payment I am part of has a Settle up button that opens the confirm screen with the amount", async () => {
+test("5.5 a payment I am part of has one Record a payment button that goes straight to the confirm screen when it is the only one", async () => {
   mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
     { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: false, net: -50000 },
     { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: false, net: 50000 },
   ] });
   await render(<Balances />);
-  await fireEvent.press(await screen.findByRole("button", { name: "Settle up" }));
+  await fireEvent.press(await screen.findByRole("button", { name: "Record a payment" }));
   expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/settle", params: { id: "t1", from: "m1", to: "m2", amount: "50000" } });
 });
 
-test("5.5 a payment between two other people has no Settle up button here", async () => {
+test("5.5 a payment between two other people has no Record a payment button here", async () => {
   mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
     { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: false, net: 0 },
     { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: false, net: 50000 },
     { memberId: "m3", name: "Rahul", guest: true, isMe: false, isOwner: false, net: -50000 },
   ] });
   await render(<Balances />);
-  expect(await screen.findByText("Rahul owes Ben ₹500.00")).toBeTruthy();
-  expect(screen.queryByRole("button", { name: "Settle up" })).toBeNull();
+  await fireEvent.press(await screen.findByLabelText(/^Ben\./));   // payments between two other people show when that person is opened
+  expect(await screen.findByText("Ben gets back from")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Record a payment" })).toBeNull();
 });
 
-test("5.6 the organiser gets Settle up on a payment involving a guest, so a guest's payment can be recorded for them", async () => {
+test("5.6 the organiser can record a payment involving a guest, so a guest's payment can be recorded for them", async () => {
   mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
     { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: true, net: 0 },
     { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: false, net: -30000 },
     { memberId: "m3", name: "Rahul", guest: true, isMe: false, isOwner: false, net: 30000 },
   ] });
   await render(<Balances />);
-  expect(await screen.findByText("Ben owes Rahul ₹300.00")).toBeTruthy();
-  await fireEvent.press(screen.getByRole("button", { name: "Settle up" }));
+  await fireEvent.press(await screen.findByLabelText(/^Ben\./));   // payments between two other people show when that person is opened
+  expect(await screen.findByText("Ben needs to pay")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Record a payment" }));
   expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/settle", params: { id: "t1", from: "m2", to: "m3", amount: "30000" } });
 });
 
-test("5.6 a non-owner gets no Settle up on someone else's payment even if a guest is involved", async () => {
+test("5.6 a non-owner cannot record a payment for someone else's payment even if a guest is involved", async () => {
   mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
     { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: false, net: 0 },
     { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: true, net: -30000 },
     { memberId: "m3", name: "Rahul", guest: true, isMe: false, isOwner: false, net: 30000 },
   ] });
   await render(<Balances />);
-  expect(await screen.findByText("Ben owes Rahul ₹300.00")).toBeTruthy();
-  expect(screen.queryByRole("button", { name: "Settle up" })).toBeNull();
+  await fireEvent.press(await screen.findByLabelText(/^Ben\./));   // payments between two other people show when that person is opened
+  expect(await screen.findByText("Ben needs to pay")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Record a payment" })).toBeNull();
 });
 
 test("each row says what the expense means for me: paid by me, owed to the payer, or just added by someone", async () => {
@@ -226,27 +230,29 @@ test("on a completed trip a member sees the expenses but no way to add one; the 
   expect(screen.queryByRole("button", { name: "Add an expense" })).toBeNull();
 });
 
-test("US-15 the organiser gets Settle up on every payment, including between two members who both have accounts", async () => {
+test("US-15 the organiser can record every payment, including between two members who both have accounts", async () => {
   mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
     { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: true, net: 0 },
     { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: false, net: -30000 },
     { memberId: "m3", name: "Cy", guest: false, isMe: false, isOwner: false, net: 30000 },
   ] });
   await render(<Balances />);
-  expect(await screen.findByText("Ben owes Cy ₹300.00")).toBeTruthy();
-  await fireEvent.press(screen.getByRole("button", { name: "Settle up" }));
+  await fireEvent.press(await screen.findByLabelText(/^Ben\./));   // payments between two other people show when that person is opened
+  expect(await screen.findByText("Ben needs to pay")).toBeTruthy();
+  await fireEvent.press(screen.getByRole("button", { name: "Record a payment" }));
   expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/settle", params: { id: "t1", from: "m2", to: "m3", amount: "30000" } });
 });
 
-test("US-15 a member who is not the organiser gets Settle up only on payments they are part of", async () => {
+test("US-15 a member who is not the organiser can record only payments they are part of", async () => {
   mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
     { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: false, net: 0 },
     { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: true, net: -30000 },
     { memberId: "m3", name: "Cy", guest: false, isMe: false, isOwner: false, net: 30000 },
   ] });
   await render(<Balances />);
-  expect(await screen.findByText("Ben owes Cy ₹300.00")).toBeTruthy();
-  expect(screen.queryByRole("button", { name: "Settle up" })).toBeNull();
+  await fireEvent.press(await screen.findByLabelText(/^Ben\./));   // payments between two other people show when that person is opened
+  expect(await screen.findByText("Ben needs to pay")).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Record a payment" })).toBeNull();
 });
 
 test("US-14 Transactions and Balances are a switch at the top of the page, so balances never sink below a long list", async () => {
@@ -254,9 +260,9 @@ test("US-14 Transactions and Balances are a switch at the top of the page, so ba
   expect(await screen.findByRole("tab", { name: "Transactions" })).toBeTruthy();
   expect(screen.getByRole("tab", { name: "Balances" })).toBeTruthy();
   expect(screen.getByText("Lunch")).toBeTruthy();
-  expect(screen.queryByText("Ben owes you ₹500.00")).toBeNull();
+  expect(screen.queryByText("You'll get back from")).toBeNull();
   await fireEvent.press(screen.getByRole("tab", { name: "Balances" }));
-  expect(await screen.findByText("Ben owes you ₹500.00")).toBeTruthy();
+  expect(await screen.findByText("You'll get back from")).toBeTruthy();
   expect(screen.queryByText("Lunch")).toBeNull();
   expect(screen.queryByText("See everyone's balances")).toBeNull();   // the old link at the bottom of the list is gone
 });
@@ -270,7 +276,7 @@ test("US-14 the switch is there even when I am settled up", async () => {
 test("US-14 the Balances view can still start a payment", async () => {
   await render(<Expenses />);
   await fireEvent.press(await screen.findByRole("tab", { name: "Balances" }));
-  await fireEvent.press(await screen.findByRole("button", { name: "Settle up" }));
+  await fireEvent.press(await screen.findByRole("button", { name: "Record a payment" }));
   expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/settle", params: { id: "t1", from: "m2", to: "m1", amount: "50000" } });
 });
 
@@ -353,4 +359,60 @@ test("US-07 each day's band is a sticky header: the sticky indices point exactly
   const scroll = screen.getByTestId("expenses-scroll");
   // children: 0 page title, 1 summary, 2 switch, 3 day band, 4 its rows, 5 day band, 6 its rows
   expect(scroll.props.stickyHeaderIndices).toEqual([3, 5]);
+});
+
+test("US-14 with several payments to record, one button opens a list and picking one opens its confirm screen", async () => {
+  mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
+    { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: false, net: 0 },
+    { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: false, net: 50000 },
+    { memberId: "m3", name: "Cy", guest: false, isMe: false, isOwner: false, net: -50000 },
+  ], transfers: [{ from: "m1", to: "m2", amountMinor: 30000 }, { from: "m3", to: "m1", amountMinor: 20000 }] });
+  await render(<Balances />);
+  expect(screen.queryByRole("button", { name: "Settle up" })).toBeNull();          // no button on every row
+  await fireEvent.press(await screen.findByRole("button", { name: "Record a payment" }));
+  expect(mockPush).not.toHaveBeenCalled();
+  await fireEvent.press(await screen.findByRole("button", { name: "Cy owes you, ₹200.00" }));
+  await waitFor(() => expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/settle", params: { id: "t1", from: "m3", to: "m1", amount: "20000" } }));
+});
+
+test("US-14 Record a payment sits in each person's card and lists only that person's payments", async () => {
+  mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
+    { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: true, net: 0 },
+    { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: false, net: -50000 },
+    { memberId: "m3", name: "Cy", guest: false, isMe: false, isOwner: false, net: 30000 },
+    { memberId: "m4", name: "Di", guest: false, isMe: false, isOwner: false, net: 20000 },
+  ], transfers: [{ from: "m2", to: "m3", amountMinor: 30000 }, { from: "m2", to: "m4", amountMinor: 20000 }] });
+  await render(<Balances />);
+  expect(await screen.findByLabelText(/^Ben\./)).toBeTruthy();
+  expect(screen.queryByRole("button", { name: "Record a payment" })).toBeNull();     // my card has nothing to record
+  await fireEvent.press(screen.getByLabelText(/^Cy\./));
+  await fireEvent.press(screen.getByRole("button", { name: "Record a payment" }));  // Cy has one payment, so it goes straight to confirm
+  expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/settle", params: { id: "t1", from: "m2", to: "m3", amount: "30000" } });
+  mockPush.mockClear();
+  await fireEvent.press(screen.getByLabelText(/^Ben\./));
+  await fireEvent.press(screen.getByRole("button", { name: "Record a payment" }));  // Ben has two: the sheet lists his, not everyone's
+  expect(await screen.findByRole("button", { name: "Ben owes Cy, ₹300.00" })).toBeTruthy();
+  expect(screen.getByRole("button", { name: "Ben owes Di, ₹200.00" })).toBeTruthy();
+});
+
+test("US-14 tapping a person in a payment list opens the confirm screen for that payment, like the button", async () => {
+  mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
+    { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: false, net: 50000 },
+    { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: false, net: -30000 },
+    { memberId: "m3", name: "Cy", guest: false, isMe: false, isOwner: false, net: -20000 },
+  ], transfers: [{ from: "m2", to: "m1", amountMinor: 30000 }, { from: "m3", to: "m1", amountMinor: 20000 }] });
+  await render(<Balances />);
+  await fireEvent.press(await screen.findByRole("button", { name: /^Record a payment: .*Ben, ₹300\.00$/ }));
+  expect(mockPush).toHaveBeenCalledWith({ pathname: "/trip/[id]/settle", params: { id: "t1", from: "m2", to: "m1", amount: "30000" } });
+});
+
+test("US-14 a person in a payment I cannot record is not tappable", async () => {
+  mockBal.mockResolvedValue({ ok: true, currency: cur, rows: [
+    { memberId: "m1", name: "Asha", guest: false, isMe: true, isOwner: false, net: 0 },
+    { memberId: "m2", name: "Ben", guest: false, isMe: false, isOwner: false, net: -30000 },
+    { memberId: "m3", name: "Cy", guest: false, isMe: false, isOwner: false, net: 30000 },
+  ], transfers: [{ from: "m2", to: "m3", amountMinor: 30000 }] });
+  await render(<Balances />);
+  await fireEvent.press(await screen.findByLabelText(/^Ben\./));
+  expect(screen.queryByRole("button", { name: /^Record a payment:/ })).toBeNull();
 });

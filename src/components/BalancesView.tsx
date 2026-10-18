@@ -1,22 +1,22 @@
 import { useEffect, useRef, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
 import { BalancesResult } from "../api/balances";
-import { describeBalance, describeTransfer } from "../domain/balance";
+import { describeBalance } from "../domain/balance";
 import { formatMinor } from "../domain/money";
 import { haptic } from "../haptics";
 import { useReducedMotion } from "../hooks/useReducedMotion";
-import { Check } from "../icons";
+import { Check, ChevronDown, ChevronRight, FileText } from "../icons";
 import { motion } from "../theme/motion";
 import { color, font, radius, space, type, track } from "../theme/tokens";
+import { exportBalancesPdf } from "../exportBalances";
+import { toast } from "../stores/toast";
 import { Alert } from "./Alert";
 import { Avatar } from "./Avatar";
+import { BottomSheet } from "./BottomSheet";
 import { Button, TextButton } from "./Buttons";
 import { Skeleton } from "./Skeleton";
-
-// The page shows the first few payments, with a button for the rest, so the list stays light however big the group is.
-const PAYMENTS_SHOWN = 4;
 
 // Shown once the last payment is recorded: a check settles in with a gentle spring and a fade (just a fade with Reduce Motion).
 function AllSettled() {
@@ -45,19 +45,24 @@ export function BalancesView({ state, tripId, onRetry, showMine = true }: { stat
   // I can record a payment I am part of; the trip owner (the organiser) can record any payment, so they can settle up for anyone and guests who have no
   // account. The server allows exactly the same people, and a recorded payment shows who recorded it.
   const canSettle = (t: { from: string; to: string }) => !!state?.ok && (!!mine?.isOwner || t.from === mine?.memberId || t.to === mine?.memberId);
-  // Payments that involve me come first.
-  const ordered = [...transfers].sort((a, b) => Number(b.from === mine?.memberId || b.to === mine?.memberId) - Number(a.from === mine?.memberId || a.to === mine?.memberId));
 
   // Only a trip that had payments to make and now has none earns the moment; a trip that never owed anything does not.
   const hadDebts = useRef(false);
   const [settled, setSettled] = useState(false);
-  const [allPayments, setAllPayments] = useState(false);   // the settle-up list shows the first few until asked for more
+  const [sheetFor, setSheetFor] = useState<string | null>(null);   // whose payments the Record a payment sheet lists
+  const [sheet, setSheet] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const goTo = useRef<{ from: string; to: string; amountMinor: number } | null>(null);   // the payment picked in the sheet, opened once the sheet has left
+  const [open, setOpen] = useState<string | null | undefined>(undefined);   // whose payments are showing: undefined = me, null = none
   useEffect(() => {
     if (!state?.ok) return;
-    if (ordered.length > 0) { hadDebts.current = true; setSettled(false); }
+    if (transfers.length > 0) { hadDebts.current = true; setSettled(false); }
     else if (hadDebts.current) setSettled(true);
-  }, [state, ordered.length]);
+  }, [state, transfers.length]);
 
+  // The payments I can record for one person's card: theirs only, so the list never turns into everyone's. One of them goes straight to confirm.
+  const recordable = (id: string) => transfers.filter((x) => (x.from === id || x.to === id) && canSettle(x));
+  const open_ = (x: { from: string; to: string; amountMinor: number }) => router.push({ pathname: "/trip/[id]/settle", params: { id: tripId, from: x.from, to: x.to, amount: String(x.amountMinor) } });
   const whoIs = (m: string) => (state?.ok ? state.rows.find((r) => r.memberId === m) : undefined);
   const nameOf = (m: string) => whoIs(m)?.name ?? "Someone";
 
@@ -78,40 +83,113 @@ export function BalancesView({ state, tripId, onRetry, showMine = true }: { stat
       )}
 
       <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={[s.section, !showMine && s.sectionFirst]}>Everyone's totals</Text>
-      <View>
-        {[...state.rows].sort((x, y) => y.net - x.net || x.name.localeCompare(y.name)).map((r) => {
+      <View style={s.cards}>
+        {[...state.rows].sort((x, y) => Number(y.isMe) - Number(x.isMe) || y.net - x.net || x.name.localeCompare(y.name)).map((r) => {
           const money = (n: number) => formatMinor(n, state.currency.exponent, state.currency.code);
-          const status = r.net > 0 ? `Owed ${money(r.net)}` : r.net < 0 ? `Owes ${money(-r.net)}` : "Settled up";
-          return (
-            <View key={r.memberId} accessible accessibilityLabel={`${r.isMe ? "You" : r.name}. ${status}. Total cost ${money(r.costMinor)}, paid ${money(r.paidMinor)}`} style={s.person}>
-              <Avatar name={r.name} uri={r.avatarUrl} guest={r.guest} size={40} />
-              <View style={s.personText}>
-                <Text maxFontSizeMultiplier={1.4} style={s.personName}>{r.isMe ? "You" : r.name}</Text>
-                <Text maxFontSizeMultiplier={1.4} style={s.personSub}>Cost {money(r.costMinor)} · Paid {money(r.paidMinor)}</Text>
+          const status = r.net > 0 ? `Gets back ${money(r.net)}` : r.net < 0 ? `Owes ${money(-r.net)}` : "Settled up";
+          const isOpen = r.memberId === (open === undefined ? mine?.memberId : open);
+          const owes = transfers.filter((x) => x.from === r.memberId);       // payments they make
+          const owed = transfers.filter((x) => x.to === r.memberId);         // payments they receive
+          const signed = (n: number) => `${n < 0 ? "−" : "+"}${money(Math.abs(n))}`;
+          const recorded = r.net - (r.paidMinor - r.costMinor);   // payments already recorded: the ledger moves a balance, the expenses alone do not
+          const sum = (list: typeof transfers) => list.reduce((n, x) => n + x.amountMinor, 0);
+          const person = (m: string) => whoIs(m);
+          const you = r.isMe ? "You" : r.name;
+          const mineToRecord = recordable(r.memberId);
+          const lines = (list: typeof transfers, head: string, other: "from" | "to", showTotal: boolean) => list.length > 0 && (
+            <View style={s.group}>
+              <View style={s.fact}>
+                <Text accessibilityRole="header" maxFontSizeMultiplier={1.4} style={s.groupHead}>{head}</Text>
+                {showTotal && <Text maxFontSizeMultiplier={1.4} style={s.groupTotal}>{money(sum(list))}</Text>}
               </View>
-              <Text maxFontSizeMultiplier={1.4} style={s.personStatus}>{status}</Text>
+              {list.map((x) => {
+                const name = x[other] === mine?.memberId ? "You" : nameOf(x[other]);
+                const content = (
+                  <>
+                    <View style={s.ring}><Avatar name={nameOf(x[other])} uri={person(x[other])?.avatarUrl} guest={person(x[other])?.guest} size={32} /></View>
+                    <Text maxFontSizeMultiplier={1.4} style={s.rowName}>{name}</Text>
+                    <Text maxFontSizeMultiplier={1.4} style={s.rowAmount}>{money(x.amountMinor)}</Text>
+                    {canSettle(x) && <ChevronRight size={18} color={color.slate} strokeWidth={2} />}
+                  </>
+                );
+                // Where I can record the payment, tapping the person does it too (the same as the button).
+                return canSettle(x) ? (
+                  <Pressable key={`${x.from}-${x.to}`} accessibilityRole="button" accessibilityLabel={`Record a payment: ${head.toLowerCase()} ${name}, ${money(x.amountMinor)}`}
+                    onPress={() => open_(x)} style={({ pressed }) => [s.row, pressed && s.pressed]}>{content}</Pressable>
+                ) : (
+                  <View key={`${x.from}-${x.to}`} style={s.row}>{content}</View>
+                );
+              })}
+            </View>
+          );
+          return (
+            <View key={r.memberId} style={s.card}>
+              <Pressable accessibilityRole="button" accessibilityState={{ expanded: isOpen }}
+                accessibilityLabel={`${you}. ${status}. Share ${money(r.costMinor)}, paid ${money(r.paidMinor)}`}
+                onPress={() => setOpen(isOpen ? null : r.memberId)} style={({ pressed }) => pressed && s.pressed}>
+                <View style={s.head}>
+                  <View style={s.ring}><Avatar name={r.name} uri={r.avatarUrl} guest={r.guest} size={48} /></View>
+                  <Text maxFontSizeMultiplier={1.4} style={s.personName}>{you}</Text>
+                  <View style={s.statusCol}>
+                    <Text maxFontSizeMultiplier={1.4} style={s.statusLabel}>{r.net > 0 ? "Gets back" : r.net < 0 ? "Owes" : "Settled up"}</Text>
+                    {r.net !== 0 && <Text maxFontSizeMultiplier={1.4} style={s.statusAmount}>{money(Math.abs(r.net))}</Text>}
+                  </View>
+                  <View style={isOpen && s.flip}><ChevronDown size={20} color={color.slate} strokeWidth={2} /></View>
+                </View>
+                {!isOpen && (   // an open card gives the same two numbers in its breakdown below
+                <View style={s.stats}>
+                  <View style={s.stat}><Text maxFontSizeMultiplier={1.4} style={s.statName}>Paid</Text><Text maxFontSizeMultiplier={1.4} style={s.statValue}>{money(r.paidMinor)}</Text></View>
+                  <View style={s.stat}><Text maxFontSizeMultiplier={1.4} style={s.statName}>{r.isMe ? "Your share" : "Share"}</Text><Text maxFontSizeMultiplier={1.4} style={s.statValue}>{money(r.costMinor)}</Text></View>
+                </View>
+                )}
+              </Pressable>
+              {isOpen && (
+                <View style={s.body}>
+                  <View style={s.panel}>
+                    <View style={s.fact}><Text maxFontSizeMultiplier={1.4} style={s.factLabel}>{r.isMe ? "You paid" : `${r.name} paid`}</Text><Text maxFontSizeMultiplier={1.4} style={s.factValue}>{money(r.paidMinor)}</Text></View>
+                    <View style={s.fact}><Text maxFontSizeMultiplier={1.4} style={s.factLabel}>{r.isMe ? "Your share" : `${r.name}'s share`}</Text><Text maxFontSizeMultiplier={1.4} style={s.factValue}>{signed(-r.costMinor)}</Text></View>
+                    {recorded !== 0 && <View style={s.fact}><Text maxFontSizeMultiplier={1.4} style={s.factLabel}>Payments already recorded</Text><Text maxFontSizeMultiplier={1.4} style={s.factValue}>{signed(recorded)}</Text></View>}
+                    <View style={[s.fact, s.total]}>
+                      <Text maxFontSizeMultiplier={1.4} style={s.groupHead}>{r.net > 0 ? (r.isMe ? "You get back" : `${r.name} gets back`) : r.net < 0 ? (r.isMe ? "You owe" : `${r.name} owes`) : "All settled up"}</Text>
+                      {r.net !== 0 && <Text maxFontSizeMultiplier={1.4} style={s.groupTotal}>{money(Math.abs(r.net))}</Text>}
+                    </View>
+                  </View>
+                  {lines(owes, r.isMe ? "You need to pay" : `${r.name} needs to pay`, "to", owed.length > 0)}
+                  {lines(owed, r.isMe ? "You'll get back from" : `${r.name} gets back from`, "from", owes.length > 0)}
+                  {mineToRecord.length > 0 && <Button label="Record a payment" onPress={() => (mineToRecord.length === 1 ? open_(mineToRecord[0]) : (setSheetFor(r.memberId), setSheet(true)))} />}
+                </View>
+              )}
             </View>
           );
         })}
       </View>
 
-      {ordered.length > 0 && (
-        <>
-          <Text accessibilityRole="header" maxFontSizeMultiplier={1.3} style={s.section}>To settle up</Text>
-          <View>
-            {(allPayments ? ordered : ordered.slice(0, PAYMENTS_SHOWN)).map((t) => (
-              <View key={`${t.from}-${t.to}`} style={s.row}>
-                <Avatar name={nameOf(t.from)} uri={whoIs(t.from)?.avatarUrl} guest={whoIs(t.from)?.guest} size={40} />
-                <Text maxFontSizeMultiplier={1.4} style={s.line}>{describeTransfer(t, nameOf, mine?.memberId ?? null, state.currency.exponent, state.currency.code)}</Text>
-                {canSettle(t) && (
-                  <Button label="Settle up" type="secondaryNeutral" size="small" onPress={() => router.push({ pathname: "/trip/[id]/settle", params: { id: tripId, from: t.from, to: t.to, amount: String(t.amountMinor) } })} />
-                )}
-              </View>
-            ))}
-          </View>
-          {ordered.length > PAYMENTS_SHOWN && <TextButton label={allPayments ? "Show fewer" : `Show ${ordered.length - PAYMENTS_SHOWN} more`} onPress={() => setAllPayments((v) => !v)} />}
-        </>
-      )}
+      <BottomSheet visible={sheet} onClose={() => setSheet(false)} onClosed={() => { const x = goTo.current; goTo.current = null; if (x) open_(x); }}
+        title="Record a payment" body={sheetFor === mine?.memberId ? "Which of your payments was made?" : `Which payment was made for ${nameOf(sheetFor ?? "")}?`}>
+        {recordable(sheetFor ?? "").map((x) => {
+          const text = x.from === mine?.memberId ? `You owe ${nameOf(x.to)}` : x.to === mine?.memberId ? `${nameOf(x.from)} owes you` : `${nameOf(x.from)} owes ${nameOf(x.to)}`;
+          const amount = formatMinor(x.amountMinor, state.currency.exponent, state.currency.code);
+          const payer = whoIs(x.from);
+          return (
+            <Pressable key={`${x.from}-${x.to}`} accessibilityRole="button" accessibilityLabel={`${text}, ${amount}`}
+              onPress={() => { goTo.current = x; setSheet(false); }} style={({ pressed }) => [s.pick, pressed && s.pressed]}>
+              <Avatar name={payer?.name ?? ""} uri={payer?.avatarUrl} guest={payer?.guest} size={40} />
+              <Text maxFontSizeMultiplier={1.4} style={s.rowName}>{text}</Text>
+              <Text maxFontSizeMultiplier={1.4} style={s.rowAmount}>{amount}</Text>
+            </Pressable>
+          );
+        })}
+      </BottomSheet>
+
+      <View style={s.export}>
+        <Button label={exporting ? "Making PDF…" : "Export as PDF"} type="secondaryNeutral" size="large" disabled={exporting} icon={<FileText size={20} color={color.brandBlack} strokeWidth={2} />}
+          onPress={async () => {
+            setExporting(true);
+            const r = await exportBalancesPdf({ tripName: state.tripName ?? "Trip", currency: state.currency, rows: state.rows, transfers: state.transfers }, new Date());
+            setExporting(false);
+            if (!r.ok) toast(r.message);
+          }} />
+      </View>
 
       {settled && <AllSettled />}
     </>
@@ -124,14 +202,36 @@ const s = StyleSheet.create({
   mineLabel: { ...type.fieldValue, color: color.charcoal },
   mineText: { ...type.display, fontSize: 30, lineHeight: 36, letterSpacing: track(30), color: color.brandBlack, fontVariant: ["tabular-nums"] },
   section: { ...type.fieldValue, fontFamily: font.medium, color: color.obsidian, marginTop: space.s16 },
-  row: { flexDirection: "row", alignItems: "center", gap: space.s16, minHeight: 64, paddingVertical: space.s8, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
+  cards: { gap: space.s12 },
+  card: { padding: space.s16, borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.softGrey },
+  head: { flexDirection: "row", alignItems: "center", gap: space.s12, minHeight: 48 },
+  personName: { ...type.label, flex: 1, color: color.obsidian },
+  statusCol: { alignItems: "flex-end" },
+  statusLabel: { ...type.fieldMessage, color: color.slate },
+  statusAmount: { ...type.label, fontFamily: font.medium, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  flip: { transform: [{ rotate: "180deg" }] },
+  stats: { flexDirection: "row", gap: space.s8, marginTop: space.s12 },
+  stat: { flex: 1, gap: 2, padding: space.s12, borderRadius: radius.small, borderCurve: "continuous", backgroundColor: color.paper },
+  statName: { ...type.fieldMessage, color: color.slate },
+  statValue: { ...type.label, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  body: { marginTop: space.s12, gap: space.s16 },
+  panel: { gap: space.s4, padding: space.s12, borderRadius: radius.small, borderCurve: "continuous", backgroundColor: color.paper },
+  fact: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", gap: space.s12, minHeight: 28 },
+  factLabel: { ...type.fieldMessage, color: color.slate, flexShrink: 1 },
+  factValue: { ...type.label, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  total: { borderTopWidth: 1, borderTopColor: color.borderNeutral, marginTop: space.s4, paddingTop: space.s8 },
+  group: { gap: space.s4, padding: space.s12, borderRadius: radius.small, borderCurve: "continuous", backgroundColor: color.paper },
+  groupHead: { ...type.fieldValue, fontFamily: font.medium, color: color.obsidian, flexShrink: 1 },
+  groupTotal: { ...type.label, fontFamily: font.medium, color: color.obsidian, fontVariant: ["tabular-nums"] },
+  row: { flexDirection: "row", alignItems: "center", gap: space.s12, minHeight: 48, paddingVertical: space.s4 },
+  rowName: { ...type.fieldValue, flex: 1, color: color.obsidian },
+  rowAmount: { ...type.label, color: color.obsidian, fontVariant: ["tabular-nums"], textAlign: "right" },
+  pressed: { opacity: 0.7 },
+  export: { marginTop: space.s16 },
+  ring: { padding: 2, borderRadius: radius.pill, backgroundColor: color.paper },   // white ring so a photo-less avatar does not blend into the grey card
+  pick: { flexDirection: "row", alignItems: "center", gap: space.s12, minHeight: 56, paddingVertical: space.s8 },
+  line: { ...type.fieldValue, flex: 1, color: color.obsidian },
   settled: { flexDirection: "row", alignItems: "center", gap: space.s16, paddingVertical: space.s8 },
   badge: { width: 40, height: 40, borderRadius: radius.pill, borderCurve: "continuous", backgroundColor: color.softGrey, alignItems: "center", justifyContent: "center" },
   sectionFirst: { marginTop: 0 },
-  person: { flexDirection: "row", alignItems: "center", gap: space.s12, minHeight: 64, paddingVertical: space.s8, borderBottomWidth: 1, borderBottomColor: color.borderNeutral },
-  personText: { flex: 1, gap: 2 },
-  personName: { ...type.label, color: color.obsidian },
-  personSub: { ...type.fieldMessage, color: color.slate, fontVariant: ["tabular-nums"] },
-  personStatus: { ...type.label, color: color.obsidian, fontVariant: ["tabular-nums"] },
-  line: { ...type.fieldValue, flex: 1, color: color.obsidian, fontVariant: ["tabular-nums"] },
 });
