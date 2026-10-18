@@ -55,7 +55,8 @@
       [
         "expo-audio",
         {
-          "microphonePermission": false
+          "microphonePermission": "along listens only while you tap the mic, to turn what you say into text.",
+          "enableBackgroundPlayback": false
         }
       ],
       "expo-sharing"
