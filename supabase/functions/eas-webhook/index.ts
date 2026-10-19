@@ -1,6 +1,6 @@
 // Receives EAS build and submit webhooks and keeps app_releases up to date, so the app's "new update" bar starts by itself when a build reaches a store.
 // Not a user endpoint: EAS cannot send a login token, so verify_jwt is off and the request is authenticated by the shared-secret signature instead.
-import { interpret, validSignature } from "./logic.ts";
+import { interpret, releasesOnBuild, validSignature } from "./logic.ts";
 
 const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 
@@ -19,8 +19,9 @@ Deno.serve(async (req) => {
   const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
   const call = (fn: string, args: Record<string, unknown>) =>
     fetch(`${base}/${fn}`, { method: "POST", headers: { apikey: key, Authorization: `Bearer ${key}`, "Content-Type": "application/json" }, body: JSON.stringify(args) });
-  const res = action.kind === "built"
+  let res = action.kind === "built"
     ? await call("record_built_build", { p_platform: action.platform, p_build: action.build })
     : await call("promote_released_build", { p_platform: action.platform });
+  if (res.ok && action.kind === "built" && releasesOnBuild(action.platform)) res = await call("promote_released_build", { p_platform: action.platform });
   return res.ok ? json({ ok: true, applied: action }) : json({ error: "database_error" }, 502);
 });

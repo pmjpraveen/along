@@ -39,3 +39,7 @@ export function interpret(event: unknown): Action {
   if ("archiveUrl" in e || "submissionInfo" in e) return { kind: "released", platform };   // a submission event
   return { kind: "ignore", reason: "unknown event" };
 }
+
+// Android builds are uploaded to Google Play by hand (no store submission runs through EAS, so no "submission finished" event ever arrives), so a finished Android production build
+// counts as released and the update band starts at once. iOS waits for its store submission to finish.
+export const releasesOnBuild = (platform: "ios" | "android"): boolean => platform === "android";
