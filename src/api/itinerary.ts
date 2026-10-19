@@ -69,17 +69,6 @@ export async function createItem(i: CreateItemInput): Promise<CreateItemResult> 
   }
 }
 
-export async function setParticipants(itemId: string, memberIds: string[]): Promise<CreateItemResult> {
-  try {
-    const { error } = await supabase.rpc("set_itinerary_participants", { p_item: itemId, p_member_ids: memberIds });
-    if (!error) return { ok: true };
-    if (isOffline(error.message)) return { ok: false, message: OFFLINE };
-    return { ok: false, message: error.code === "42501" ? "Only the creator or the trip owner can change who's joining." : "Couldn't update who's joining. Try again." };
-  } catch {
-    return { ok: false, message: OFFLINE };
-  }
-}
-
 export type MoveResult = { ok: true } | { ok: false; message: string; stale?: true };
 
 // Sends the version the user saw; the server rejects the move if someone edited the item since.

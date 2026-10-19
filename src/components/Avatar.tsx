@@ -1,6 +1,8 @@
 import { ReactNode } from "react";
 import { Check } from "../icons";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image } from "expo-image";
+import { StyleSheet, Text, View } from "react-native";
+import { cachedSource } from "../imageSource";
 import { Pressable } from "./Pressable";
 import { initialsOf } from "../domain/initials";
 import { color, font, radius } from "../theme/tokens";
@@ -29,7 +31,7 @@ export function Avatar({ name = "", uri, size = 40, icon, guest = false, selecte
     <View accessible={!!name} accessibilityRole={name ? "image" : undefined} accessibilityLabel={label || undefined} style={{ width: size, height: size }}>
       <View style={[s.circle, { width: size, height: size },
         icon ? s.iconCircle : null, guest && s.guest, selected && s.selected]}>
-        {uri ? <Image testID="avatar-photo" accessibilityIgnoresInvertColors source={{ uri }} style={{ width: size, height: size }} />
+        {uri ? <Image testID="avatar-photo" accessibilityIgnoresInvertColors source={cachedSource(uri)} cachePolicy="disk" style={{ width: size, height: size }} />
           : icon ? icon
           : size >= 24 ? <Text maxFontSizeMultiplier={1.2} style={[s.initials, { fontSize: Math.round(size * 0.4), lineHeight: Math.round(size * 0.5) }]}>{initialsOf(name)}</Text> : null}
       </View>

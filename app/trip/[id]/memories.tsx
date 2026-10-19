@@ -13,7 +13,9 @@ import { ListItem } from "../../../src/components/ListItem";
 import { haptic } from "../../../src/haptics";
 import { toast } from "../../../src/stores/toast";
 import { useCallback, useRef, useState } from "react";
-import { Image, KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image } from "expo-image";
+import { cachedSource } from "../../../src/imageSource";
+import { KeyboardAvoidingView, Linking, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { Pressable } from "../../../src/components/Pressable";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { addLink, addNote, addPhoto, deleteMemory, listMemories, Memory, MemoriesResult, previewLink, updateNote } from "../../../src/api/memories";
@@ -123,7 +125,7 @@ export default function Memories() {
 
   const pickPhoto = async () => {
     if (busy) return;
-    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.7 });
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1 });
     if (res.canceled || !res.assets[0]) return;
     const a = res.assets[0];
     const p = { uri: a.uri, mime: a.mimeType ?? "image/jpeg", key: mint() };
@@ -190,7 +192,7 @@ export default function Memories() {
                   </View>
                 </Pressable>
               )}
-              {m.photoUrl && <Image accessibilityIgnoresInvertColors source={{ uri: m.photoUrl }} style={s.photo} />}
+              {m.photoUrl && <Image accessibilityIgnoresInvertColors source={cachedSource(m.photoUrl)} cachePolicy="disk" style={s.photo} />}
               {(m.body || m.caption) && (
                 <View style={[s.text, m.canManage && s.textClear]}>
                   {m.body && <Text maxFontSizeMultiplier={1.4} style={s.line}>{m.body}</Text>}

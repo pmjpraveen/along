@@ -29,7 +29,16 @@ test("all seven sizes render at exactly that size, and the initials scale with t
 test("a photo fills the circle instead of initials", async () => {
   await render(<Avatar name="Jane Wilson" uri="https://example.com/j.jpg" size={48} />);
   expect(screen.queryByText("JW")).toBeNull();
-  expect(screen.getByTestId("avatar-photo").props.source).toEqual({ uri: "https://example.com/j.jpg" });
+  expect(screen.getByTestId("avatar-photo").props.source).toEqual([{ uri: "https://example.com/j.jpg", cacheKey: "https://example.com/j.jpg" }]);
+});
+
+test("a photo's cache key ignores the signed link's changing token, so a re-signed link is not downloaded again", async () => {
+  const { rerender } = await render(<Avatar name="Jane Wilson" uri="https://x.supabase.co/storage/v1/object/sign/avatars/u/1.jpg?token=aaa" size={48} />);
+  const first = screen.getByTestId("avatar-photo").props.source[0];
+  await rerender(<Avatar name="Jane Wilson" uri="https://x.supabase.co/storage/v1/object/sign/avatars/u/1.jpg?token=bbb" size={48} />);
+  const second = screen.getByTestId("avatar-photo").props.source[0];
+  expect(second.uri).not.toBe(first.uri);
+  expect(second.cacheKey).toBe(first.cacheKey);
 });
 
 test("an icon avatar is an outlined circle around the icon", async () => {

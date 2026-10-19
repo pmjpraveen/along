@@ -73,6 +73,7 @@ test("cover: a photo is uploaded into the trip's folder, then made the cover", a
   expect(await uploadCover("t1", "file:///goa.jpg", "image/jpeg")).toEqual({ ok: true });
   const path = mockUpload.mock.calls[0][0] as string;
   expect(path).toMatch(/^t1\/\d+\.jpg$/);
+  expect(mockUpload.mock.calls[0][2]).toEqual(expect.objectContaining({ cacheControl: "31536000" }));   // a new name each time, so a year in caches is safe
   expect(mockRpc).toHaveBeenCalledWith("set_trip_cover", { p_trip: "t1", p_path: path });
 });
 

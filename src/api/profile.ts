@@ -1,21 +1,10 @@
 import { supabase } from "./supabase";
-
-// My display name, for the greeting and the profile. Null when it can't be read; screens fall back to a plain greeting.
-export async function loadMyName(): Promise<string | null> {
-  try {
-    const { data: auth } = await supabase.auth.getUser();
-    if (!auth.user) return null;
-    const { data } = await supabase.from("users").select("display_name").eq("id", auth.user.id).maybeSingle();
-    return data?.display_name ?? null;
-  } catch {
-    return null;
-  }
-}
+import { LONG_CACHE, MAX_EDGE, shrink } from "../imageSource";
 
 export type MyProfile = { name: string; email: string; since: string; country: string | null; avatarUrl: string | null; currency: string | null };
 
 // avatar_url is a storage path in the private 'avatars' bucket; sign it for display.
-export async function signAvatar(path: string | null | undefined): Promise<string | null> {
+async function signAvatar(path: string | null | undefined): Promise<string | null> {
   if (!path) return null;
   return (await signAvatars([path])).get(path) ?? null;
 }
@@ -40,18 +29,6 @@ export async function signAvatars(paths: (string | null | undefined)[]): Promise
     }
   }
   return out;
-}
-
-// My picture for the Home corner. Null when I have none or it can't be read.
-export async function loadMyAvatar(): Promise<string | null> {
-  try {
-    const { data: auth } = await supabase.auth.getUser();
-    if (!auth.user) return null;
-    const { data } = await supabase.from("users").select("avatar_url").eq("id", auth.user.id).maybeSingle();
-    return await signAvatar(data?.avatar_url);
-  } catch {
-    return null;
-  }
 }
 
 // Everything the Profile screen shows about me. Null when it can't be read.
@@ -123,9 +100,10 @@ export async function uploadAvatar(uri: string, mimeType: string): Promise<Resul
     if (!EXT[mimeType]) return { ok: false, message: "Choose a JPEG, PNG, WebP or HEIC photo." };
     const { data: auth } = await supabase.auth.getUser();
     if (!auth.user) return { ok: false, message: "Couldn't update your picture. Try again." };
-    const path = `${auth.user.id}/${Date.now()}.${EXT[mimeType]}`;
-    const bytes = await (await fetch(uri)).arrayBuffer();
-    const up = await supabase.storage.from("avatars").upload(path, bytes, { contentType: mimeType, upsert: true });
+    const img = await shrink(uri, mimeType, MAX_EDGE.avatar);
+    const path = `${auth.user.id}/${Date.now()}.${EXT[img.mimeType]}`;
+    const bytes = await (await fetch(img.uri)).arrayBuffer();
+    const up = await supabase.storage.from("avatars").upload(path, bytes, { contentType: img.mimeType, upsert: true, cacheControl: LONG_CACHE });
     if (up.error) return { ok: false, message: isOffline(up.error.message) ? OFFLINE : "Couldn't upload the photo. Try again." };
     const { error } = await supabase.rpc("set_my_avatar", { p_path: path });
     return error ? { ok: false, message: isOffline(error.message) ? OFFLINE : "Couldn't update your picture. Try again." } : { ok: true };

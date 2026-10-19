@@ -85,7 +85,7 @@ export default function Profile() {
     if (!currencies.length) listCurrencies().then(setCurrencies);
   };
   const changePhoto = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [1, 1], quality: 1 });
     if (res.canceled || !res.assets[0]) return;
     setError(null);
     const a = res.assets[0];

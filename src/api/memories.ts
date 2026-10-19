@@ -1,6 +1,7 @@
 import { LinkPreview, parseLinkPreview } from "../domain/googlePhotos";
 import { signAvatars } from "./profile";
 import { supabase } from "./supabase";
+import { LONG_CACHE, MAX_EDGE, shrink } from "../imageSource";
 
 const OFFLINE = "You're offline. Check your connection and try again.";
 const isOffline = (m: string) => /network|fetch/i.test(m);
@@ -68,9 +69,10 @@ const EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "
 export async function addPhoto(tripId: string, uri: string, mimeType: string, key: string, caption?: string): Promise<SaveResult> {
   try {
     if (!EXT[mimeType]) return fail("Choose a JPEG, PNG, WebP or HEIC photo.");
-    const path = `${tripId}/${key}.${EXT[mimeType]}`;
-    const bytes = await (await fetch(uri)).arrayBuffer();
-    const up = await supabase.storage.from("memories").upload(path, bytes, { contentType: mimeType, upsert: true });
+    const img = await shrink(uri, mimeType, MAX_EDGE.photo);
+    const path = `${tripId}/${key}.${EXT[img.mimeType]}`;
+    const bytes = await (await fetch(img.uri)).arrayBuffer();
+    const up = await supabase.storage.from("memories").upload(path, bytes, { contentType: img.mimeType, upsert: true, cacheControl: LONG_CACHE });
     if (up.error) return fail(isOffline(up.error.message) ? OFFLINE : "Couldn't upload the photo. Try again.");
     const { error } = await supabase.rpc("add_memory", { p_trip: tripId, p_type: "photo", p_idempotency_key: key, p_media_path: path, p_caption: caption ?? null });
     if (!error) return { ok: true };

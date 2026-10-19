@@ -18,6 +18,7 @@ test("US-02 the picture goes into my own folder and is then set as mine", async 
   expect(await uploadAvatar("file:///me.jpg", "image/jpeg")).toEqual({ ok: true });
   const path = mockUpload.mock.calls[0][0] as string;
   expect(path).toMatch(/^u1\/\d+\.jpg$/);
+  expect(mockUpload.mock.calls[0][2]).toEqual(expect.objectContaining({ cacheControl: "31536000" }));   // a new name each time, so a year in caches is safe
   expect(mockRpc).toHaveBeenCalledWith("set_my_avatar", { p_path: path });
 });
 

@@ -30,7 +30,7 @@ test("7.3 a photo goes into the trip's folder under a path built from its key, t
   mockUpload.mockResolvedValue({ error: null });
   mockRpc.mockResolvedValue({ error: null });
   expect(await addPhoto("t1", "file:///beach.jpg", "image/jpeg", "k2", "Beach")).toEqual({ ok: true });
-  expect(mockUpload).toHaveBeenCalledWith("t1/k2.jpg", expect.any(ArrayBuffer), { contentType: "image/jpeg", upsert: true });
+  expect(mockUpload).toHaveBeenCalledWith("t1/k2.jpg", expect.any(ArrayBuffer), { contentType: "image/jpeg", upsert: true, cacheControl: "31536000" });
   expect(mockRpc).toHaveBeenCalledWith("add_memory", { p_trip: "t1", p_type: "photo", p_idempotency_key: "k2", p_media_path: "t1/k2.jpg", p_caption: "Beach" });
 });
 
@@ -104,4 +104,14 @@ test("US-27 editing a note calls update_memory_note and explains an empty or ref
   expect((await updateNote("m1", " ")).ok).toBe(false);
   mockRpc.mockResolvedValueOnce({ error: { message: "x", code: "42501" } });
   expect(await updateNote("m1", "x")).toEqual({ ok: false, message: "Only the person who added this or the trip owner can edit it." });
+});
+
+test("a shrunk photo is uploaded as WebP, under a .webp name, with the long cache header", async () => {
+  const shrunk = jest.spyOn(require("../imageSource"), "shrink").mockResolvedValue({ uri: "file:///small.webp", mimeType: "image/webp" });
+  mockUpload.mockResolvedValue({ error: null });
+  mockRpc.mockResolvedValue({ error: null });
+  expect(await addPhoto("t1", "file:///beach.heic", "image/heic", "k9")).toEqual({ ok: true });
+  expect(mockUpload).toHaveBeenCalledWith("t1/k9.webp", expect.any(ArrayBuffer), { contentType: "image/webp", upsert: true, cacheControl: "31536000" });
+  expect(mockRpc).toHaveBeenCalledWith("add_memory", expect.objectContaining({ p_media_path: "t1/k9.webp" }));
+  shrunk.mockRestore();
 });

@@ -30,7 +30,7 @@ export default function CreateTrip() {
   const [busy, setBusy] = useState(false);
   const [cover, setCover] = useState<{ uri: string; mime: string } | null>(null);
   const pickCover = async () => {
-    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 0.8, allowsEditing: true, aspect: [16, 9] });
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], quality: 1, allowsEditing: true, aspect: [16, 9] });
     if (!res.canceled && res.assets[0]) setCover({ uri: res.assets[0].uri, mime: res.assets[0].mimeType ?? "image/jpeg" });
   };
 

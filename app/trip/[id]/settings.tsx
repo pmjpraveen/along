@@ -88,7 +88,7 @@ export default function TripSettings() {
   // The trip photo changes at once, like dates and currency: pick a square crop, upload it, and the trip shows it everywhere.
   const changePhoto = async () => {
     if (photoBusy) return;
-    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [1, 1], quality: 0.7 });
+    const res = await ImagePicker.launchImageLibraryAsync({ mediaTypes: ["images"], allowsEditing: true, aspect: [1, 1], quality: 1 });
     if (res.canceled || !res.assets[0]) return;
     setError(null);
     setPhotoBusy(true);

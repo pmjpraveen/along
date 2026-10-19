@@ -1,4 +1,4 @@
-import { interpret, sign, validSignature } from "../../supabase/functions/eas-webhook/logic";
+import { interpret, releasesOnBuild, sign, validSignature } from "../../supabase/functions/eas-webhook/logic";
 
 const SECRET = "a-shared-secret-of-16+";
 
@@ -42,4 +42,9 @@ test("US-30 failed, cancelled, preview or malformed events change nothing", () =
   ignored({ platform: "ios", status: "finished" });
   ignored(null);
   ignored("nope");
+});
+
+test("US-30 a finished Android build counts as released at once (it is uploaded to Play by hand); iOS waits for its store submission", () => {
+  expect(releasesOnBuild("android")).toBe(true);
+  expect(releasesOnBuild("ios")).toBe(false);
 });
