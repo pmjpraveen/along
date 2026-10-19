@@ -1,4 +1,6 @@
+import { Image as CachedImage } from "expo-image";
 import { Image, StyleSheet, View } from "react-native";
+import { cachedSource } from "../imageSource";
 import { color, radius } from "../theme/tokens";
 
 type Props = { uri: string | null; destination: string; ratio?: number; ring?: boolean };
@@ -9,7 +11,7 @@ const DEFAULT_COVER = require("../../assets/illustrations/default-cover.jpg");
 export function TripCover({ uri, destination, ratio = 16 / 9, ring }: Props) {
   const box = [s.box, ring && s.ring, { aspectRatio: ratio }];
   return uri ? (
-    <Image accessible accessibilityRole="image" accessibilityLabel={`Cover photo of ${destination}`} accessibilityIgnoresInvertColors source={{ uri }} style={box} />
+    <CachedImage accessible accessibilityRole="image" accessibilityLabel={`Cover photo of ${destination}`} accessibilityIgnoresInvertColors source={cachedSource(uri)} cachePolicy="disk" style={box} />
   ) : (
     // A bundled image reports its own size, so it is put in a sized box and made to fill it.
     <View accessible accessibilityRole="image" accessibilityLabel={`${destination}, default cover`} style={box}>

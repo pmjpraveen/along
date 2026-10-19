@@ -1,5 +1,6 @@
 import type { TripDraft } from "../domain/trip";
 import { supabase } from "./supabase";
+import { LONG_CACHE, MAX_EDGE, shrink } from "../imageSource";
 
 export type CreateTripResult = { ok: true; tripId: string } | { ok: false; message: string };
 
@@ -94,9 +95,10 @@ const EXT: Record<string, string> = { "image/jpeg": "jpg", "image/png": "png", "
 export async function uploadCover(tripId: string, uri: string, mimeType: string): Promise<CompleteResult> {
   try {
     if (!EXT[mimeType]) return { ok: false, message: "Choose a JPEG, PNG, WebP or HEIC photo." };
-    const path = `${tripId}/${Date.now()}.${EXT[mimeType]}`;
-    const bytes = await (await fetch(uri)).arrayBuffer();
-    const up = await supabase.storage.from("covers").upload(path, bytes, { contentType: mimeType, upsert: true });
+    const img = await shrink(uri, mimeType, MAX_EDGE.cover);
+    const path = `${tripId}/${Date.now()}.${EXT[img.mimeType]}`;
+    const bytes = await (await fetch(img.uri)).arrayBuffer();
+    const up = await supabase.storage.from("covers").upload(path, bytes, { contentType: img.mimeType, upsert: true, cacheControl: LONG_CACHE });
     if (up.error) return { ok: false, message: isOffline(up.error.message) ? OFFLINE : up.error.message.includes("row-level security") ? "Only the trip owner can change the cover." : "Couldn't upload the photo. Try again." };
     const { error } = await supabase.rpc("set_trip_cover", { p_trip: tripId, p_path: path });
     if (!error) return { ok: true };

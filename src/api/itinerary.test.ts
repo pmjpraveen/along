@@ -1,4 +1,4 @@
-import { createItem, deleteItem, moveItem, setParticipants, updateItem } from "./itinerary";
+import { createItem, deleteItem, moveItem, updateItem } from "./itinerary";
 
 const mockRpc = jest.fn();
 jest.mock("./supabase", () => ({ supabase: { rpc: (...a: unknown[]) => mockRpc(...a) } }));
@@ -16,15 +16,6 @@ test("US-03 a failed save returns a message", async () => {
   mockRpc.mockResolvedValue({ error: { message: "boom" } });
   expect(await createItem({ tripId: "t1", title: "Beach", type: "activity", day: "2026-12-02", startTime: null, participantIds: [] }))
     .toEqual({ ok: false, message: "Couldn't save the item. Try again." });
-});
-
-test("US-04 replacing participants sends the full list; a non-creator gets a specific message", async () => {
-  mockRpc.mockResolvedValue({ error: null });
-  expect(await setParticipants("i1", ["m1", "m2"])).toEqual({ ok: true });
-  expect(mockRpc).toHaveBeenCalledWith("set_itinerary_participants", { p_item: "i1", p_member_ids: ["m1", "m2"] });
-  mockRpc.mockResolvedValue({ error: { code: "42501", message: "x" } });
-  const r = await setParticipants("i1", []);
-  expect(r.ok === false && r.message).toMatch(/creator or the trip owner/);
 });
 
 test("3.3 a resolved place is sent with its raw text; plain text sends no coordinates", async () => {

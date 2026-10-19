@@ -48,3 +48,6 @@ example
 .DS_Store
 supabase/.temp/
 supabase/.branches/
+
+# originals saved by scripts/shrink-stored-photos.cjs: users' photos, never commit
+photo-backup/

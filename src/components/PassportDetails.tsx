@@ -1,5 +1,7 @@
 import { useEffect } from "react";
-import { Image, StyleSheet, Text, View } from "react-native";
+import { Image } from "expo-image";
+import { StyleSheet, Text, View } from "react-native";
+import { cachedSource } from "../imageSource";
 import Svg, { Circle } from "react-native-svg";
 import { countryName, flagOf, PASSPORTS } from "../domain/countries";
 import { initialsOf } from "../domain/initials";
@@ -50,7 +52,7 @@ export function PassportDetails({ holder, trips, w, h, spineBelow = false, onPho
       </View>
       <View style={s.body}>
         <View style={s.photo}>
-          {holder?.avatarUrl ? <Image accessibilityIgnoresInvertColors source={{ uri: holder.avatarUrl }} style={s.photoImg} onLoadEnd={onPhotoReady} />
+          {holder?.avatarUrl ? <Image accessibilityIgnoresInvertColors source={cachedSource(holder.avatarUrl)} cachePolicy="disk" style={s.photoImg} onLoadEnd={onPhotoReady} />
             : <Text maxFontSizeMultiplier={1.2} style={s.initials}>{initialsOf(name)}</Text>}
         </View>
         <View style={s.col}>
