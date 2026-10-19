@@ -66,7 +66,7 @@ export function BalancesView({ state, tripId, onRetry, showMine = true }: { stat
   const whoIs = (m: string) => (state?.ok ? state.rows.find((r) => r.memberId === m) : undefined);
   const nameOf = (m: string) => whoIs(m)?.name ?? "Someone";
 
-  if (state === null) return <Skeleton label="Loading balances" variant="balances" />;
+  if (state === null) return <Skeleton label="Loading balances" variant={showMine ? "balances" : "balanceCards"} />;
   if (!state.ok) return (
     <View style={s.gap}>
       <Alert variant="negative" persist>{state.message}</Alert>
