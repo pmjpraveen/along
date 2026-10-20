@@ -12,6 +12,7 @@ export default function TripLayout() {
       <Stack.Screen name="expense-list" />
       <Stack.Screen name="complete" />
       <Stack.Screen name="summary" />
+      <Stack.Screen name="recap" />
       <Stack.Screen name="add-guest" options={{ presentation: "modal" }} />
       <Stack.Screen name="add-item" options={{ presentation: "modal" }} />
       <Stack.Screen name="import" options={{ presentation: "modal" }} />

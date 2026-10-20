@@ -1,7 +1,7 @@
 import { useFocusEffect, useLocalSearchParams, useRouter } from "expo-router";
 import { usePullToRefresh } from "../../../src/hooks/usePullToRefresh";
 import { Skeleton } from "../../../src/components/Skeleton";
-import { ChevronLeft, ImageIcon, MapPin, Receipt, Scale, Trash2 } from "../../../src/icons";
+import { ChevronLeft, ImageIcon, MapPin, Receipt, Scale, Share2, Trash2 } from "../../../src/icons";
 import { useCallback, useState } from "react";
 import Animated, { Extrapolation, interpolate, useAnimatedStyle } from "react-native-reanimated";
 import { useScrollY } from "../../../src/components/PinnedBack";
@@ -53,7 +53,7 @@ export default function Summary() {
   const pull = usePullToRefresh(load);
   const back = () => (router.canGoBack() ? router.back() : router.replace("/"));
 
-  const go = (screen: "memories" | "balances" | "expense-list") =>
+  const go = (screen: "memories" | "balances" | "expense-list" | "recap") =>
     router.push({ pathname: `/trip/[id]/${screen}` as "/trip/[id]/memories", params: { id } });
   const remove = async () => {
     if (deleting) return;
@@ -129,6 +129,8 @@ export default function Summary() {
               <Text maxFontSizeMultiplier={1.4} style={s.body}>{sm.activities} {sm.activities === 1 ? "activity" : "activities"} planned</Text>
             </View>
             <View style={s.list}>
+              <ListItem title="Recap" subtitle="A card to share: total spent, shares and stamps" leading={icon(Share2)} trailing="chevron" onPress={() => go("recap")} />
+              <View style={s.hair} />
               <ListItem title="Memories" subtitle="Photos and notes from the trip" leading={icon(ImageIcon)} trailing="chevron" onPress={() => go("memories")} />
               <View style={s.hair} />
               <ListItem title="Balances" subtitle="Who owes whom" leading={icon(Scale)} trailing="chevron" onPress={() => go("balances")} />

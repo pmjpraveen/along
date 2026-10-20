@@ -1,3 +1,4 @@
+import { exportRows } from "../domain/csv";
 import type { Share } from "../domain/split";
 import { signAvatars } from "./profile";
 import { supabase } from "./supabase";
@@ -214,5 +215,26 @@ export async function deleteExpense(expenseId: string): Promise<DeleteExpenseRes
     return { ok: false, message: error.code === "42501" ? "Only the person who added this expense or the trip owner can delete it." : "Couldn't delete the expense. Try again." };
   } catch {
     return { ok: false, message: OFFLINE };
+  }
+}
+
+// Everything the spreadsheet and PDF exports need, in one read (RLS limits it to trips I am in). Deleted expenses are left out.
+export async function loadExpenseExport(tripId: string, withPayments: boolean) {
+  try {
+    const [cur, expenses, shares, members, payments] = await Promise.all([
+      tripCurrency(tripId),
+      supabase.from("expenses").select("id, title, amount_minor, expense_date, category, split_method, paid_by_member_id, created_by_member_id").eq("trip_id", tripId).is("deleted_at", null),
+      supabase.from("expense_participants").select("expense_id, trip_member_id, owed_amount_minor").eq("trip_id", tripId),
+      supabase.from("trip_members").select("id, display_name").eq("trip_id", tripId),
+      withPayments ? supabase.from("settlements").select("kind, from_member_id, to_member_id, amount_minor, settlement_date").eq("trip_id", tripId) : Promise.resolve({ data: [], error: null }),
+    ]);
+    const err = cur.error ?? expenses.error ?? shares.error ?? members.error ?? payments.error;
+    if (err || !cur.currency) return { ok: false as const, message: isOffline(err?.message ?? "") ? OFFLINE : "Couldn't load the expenses. Try again." };
+    const live = new Set((expenses.data ?? []).map((e) => e.id as string));
+    const names = new Map((members.data ?? []).map((m) => [m.id as string, m.display_name as string]));
+    const rows = exportRows(expenses.data ?? [], (shares.data ?? []).filter((x) => live.has(x.expense_id as string)), payments.data ?? [], names);
+    return { ok: true as const, tripName: cur.trip.name, currency: cur.currency, ...rows };
+  } catch {
+    return { ok: false as const, message: OFFLINE };
   }
 }
