@@ -1,22 +1,7 @@
-import { STAMP_SIZE, stampPlacement, clampTilt, MAX_PEOPLE, rankFor, recapCard, recapSummary, RecapInput, suitFor, SUITS } from "./recap";
+import { clampTilt, MAX_PEOPLE, recapCard, recapSummary, RecapInput } from "./recap";
 
 const people = (n: number) => Array.from({ length: n }, (_, k) => ({ id: `m${String(k).padStart(2, "0")}`, name: `P${k}`, guest: k % 3 === 0, shareMinor: 1000 * (k % 4) }));
 const base: RecapInput = { tripId: "t1", name: "Goa", destination: "Goa, India", start: "2026-03-01", end: "2026-03-05", completed: true, currency: { code: "INR", exponent: 2 }, totalMinor: 500000, people: people(3), showAmounts: true };
-
-describe("RC-08 rank and suit", () => {
-  it("rank is the trip length in days, a star past 30", () => {
-    expect(rankFor("2026-03-01", "2026-03-01")).toBe("1");
-    expect(rankFor("2026-03-01", "2026-03-05")).toBe("5");
-    expect(rankFor("2026-03-01", "2026-03-30")).toBe("30");
-    expect(rankFor("2026-03-01", "2026-03-31")).toBe("★");
-    expect(rankFor("2026-02-27", "2026-03-02")).toBe("4");
-  });
-  it("suit is stable per trip and spread across the four", () => {
-    expect(suitFor("abc")).toBe(suitFor("abc"));
-    const seen = new Set(Array.from({ length: 200 }, (_, k) => suitFor(`trip-${k}`)));
-    expect(seen.size).toBe(SUITS.length);
-  });
-});
 
 describe("RC-01 recapCard", () => {
   it("lists people biggest share first, ties by id", () => {
@@ -42,7 +27,6 @@ describe("RC-01 recapCard", () => {
   it("an active trip is 'so far' with no stamps", () => {
     const c = recapCard({ ...base, completed: false });
     expect(c.soFar).toBe(true);
-    expect(c.stamps).toBe(false);
     expect(recapSummary(c, base.currency)).toContain("Spent so far ₹5,000.00");
   });
   it("the spoken summary names each person's share", () => {
@@ -59,29 +43,45 @@ describe("RC-08 clampTilt", () => {
   });
 });
 
-describe("RC-08 stampPlacement", () => {
-  it("is stable per trip and puts arrival at the top right and departure at the bottom left, partly off the card", () => {
-    expect(stampPlacement("t1")).toEqual(stampPlacement("t1"));
-    expect(new Set(Array.from({ length: 50 }, (_, k) => stampPlacement(`t${k}`)[0].tilt)).size).toBeGreaterThan(30);
-    const [a, d] = stampPlacement("t1");
-    expect(a.x + STAMP_SIZE).toBeGreaterThan(360);
-    expect(d.x).toBeLessThan(0);
-    expect(a.y).toBeLessThan(d.y);
+import { tripDays, tripFacts } from "./recap";
+describe("RC-09 tripFacts", () => {
+  const e = (date: string, category: string) => ({ date, category });
+  const base = { start: "2026-03-01", end: "2026-03-05", people: 3, activities: 4, photos: 2, memories: 5, places: ["Cafe Dune", "Old Fort"] };
+  const list = [e("2026-03-03", "food"), e("2026-03-03", "food"), e("2026-03-01", "transport"), e("2026-03-02", "stay")];
+  it("names the trip after what the group logged most and picks out the facts", () => {
+    const f = tripFacts({ ...base, expenses: list });
+    expect(f.tagline).toBe("The foodie trip");
+    expect(f.facts).toEqual([
+      { label: "Favourite thing", value: "Food", note: "2 times together" },
+      { label: "Busiest day", value: "Day 3", note: "2 things shared" },
+      { label: "Memories saved", value: "5", note: "2 photos" },
+    ]);
+    expect([f.days, f.people, f.activities]).toEqual([5, 3, 4]);
   });
+  it("US-RC carries no money and no names", () => {
+    const f = tripFacts({ ...base, expenses: list });
+    expect(JSON.stringify(f)).not.toMatch(/₹|\$|€|%|Asha|Ravi/);
+  });
+  it("breaks ties the same way every time and copes with no expenses or memories", () => {
+    expect(tripFacts({ ...base, expenses: [e("2026-03-01", "stay"), e("2026-03-02", "food")] }).facts[0].value).toBe("Food");
+    const none = tripFacts({ ...base, expenses: [], memories: 0, photos: 0, places: [] });
+    expect(none.facts).toEqual([]);
+    expect(none.tagline).toBe("A trip to remember");
+  });
+  it("counts trip days inclusively", () => { expect(tripDays("2026-03-01", "2026-03-01")).toBe(1); expect(tripDays("2026-03-01", "2026-03-07")).toBe(7); });
 });
 
-import { RECAP_INKS, recapInks } from "./recap";
-describe("RC-08 recapInks", () => {
-  it("uses only black, blue and red, never the same for both stamps, and is stable per trip", () => {
-    const seen = new Set<string>();
-    for (let k = 0; k < 300; k++) {
-      const i = recapInks(`trip-${k}`);
-      expect(RECAP_INKS).toContain(i.arrival);
-      expect(RECAP_INKS).toContain(i.departure);
-      expect(i.arrival).not.toBe(i.departure);
-      expect(recapInks(`trip-${k}`)).toEqual(i);
-      seen.add(i.arrival);
-    }
-    expect(seen.size).toBe(3);
+import { POSTAGE_COLORS, postageSpec } from "./recap";
+describe("RC-10 postageSpec", () => {
+  const base = { tripId: "t1", destination: "Kullu, India", start: "2026-10-01", end: "2026-10-07" };
+  it("prints the country, the length of the trip and a postmark date, with no money on it", () => {
+    expect(postageSpec(base)).toMatchObject({ country: "INDIA", city: "KULLU", value: "7 DAYS", year: "2026", postmark: "07 OCT 26" });
+    expect(postageSpec({ ...base, end: "2026-10-01" }).value).toBe("1 DAY");
+    expect(postageSpec({ ...base, destination: "Goa" }).country).toBe("GOA");
+    expect(postageSpec({ ...base, destination: "Ubud, Bali, Indonesia" }).country).toBe("INDONESIA");
+  });
+  it("colour is stable per trip and varies between trips", () => {
+    expect(postageSpec(base).color).toBe(postageSpec(base).color);
+    expect(new Set(Array.from({ length: 100 }, (_, k) => postageSpec({ ...base, tripId: `t${k}` }).color)).size).toBe(POSTAGE_COLORS.length);
   });
 });

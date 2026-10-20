@@ -73,6 +73,7 @@ export const shadow = {
 
 // Only Light 300, Regular 400 and Medium 500 are used; the display moments use Medium.
 export const font = { light: "GeistSans-Light", regular: "GeistSans-Regular", medium: "GeistSans-Medium" } as const;
+export const handwritingFont = "Caveat_700Bold";   // marker-style handwriting, used only for the recap postcard
 export const signatureFont = "MrsSaintDelafield";   // handwriting, used only for the signature on the passport data page
 
 // Every size is set 2% tighter than its natural width (letterSpacing is in points, so 2% of the font size). Stamps and all-caps hero text track wider on purpose.
@@ -99,4 +100,6 @@ export const pillOn = (card: string) => mix(card, "#000000", 0.105);
 // The passport cover's embossing and its colour before a country is chosen, and the opening animation's stripes: brand art, so named here
 // rather than scattered through screens.
 export const passportArt = { gold: "#e8cf8a", defaultCover: "#1f6f78", goldFrame: "rgba(232,207,138,0.35)" } as const;
+// The recap postcard: its airmail border, its headings and its paper.
+export const postcardArt = { red: "#d8433a", blue: "#2f55a4", cream: "#fffaf0" } as const;
 export const splashStripes = ["#ffcc3d", "#ffad00", "#ff4b00", "#de005a", "#6f00b1", "#002385"] as const;

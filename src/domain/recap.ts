@@ -2,11 +2,9 @@ import { formatMinor } from "./money";
 import { hashSeed } from "./stampWear";
 import { formatRange } from "./trip";
 
-// The trip recap card: a playing card with the trip's length as its rank, a suit mark that is the trip's own, the total spent, who paid how much of it
-// (each person's share of the expenses) and the passport stamps. Pure: the screen gives the numbers, this decides what the card says.
+// The trip recap card, a travel postcard: the front has the trip's highlights, a postage stamp and the passport stamp; the back has the total spent and
+// each person's share of the expenses. Pure: the screen gives the numbers, this decides what the card says.
 
-export const SUITS = ["compass", "sun", "wave", "peak"] as const;
-export type Suit = (typeof SUITS)[number];
 export const MAX_PEOPLE = 6;   // more than this shows the top five and "+N others"
 
 export type RecapPerson = { id: string; name: string; guest: boolean; shareMinor: number; uri?: string | null };
@@ -15,20 +13,12 @@ export type RecapInput = {
   currency: { code: string; exponent: number }; totalMinor: number; people: RecapPerson[]; showAmounts: boolean;
 };
 export type RecapCard = {
-  title: string; destination: string; range: string; rank: string; suit: Suit; soFar: boolean; stamps: boolean;
+  title: string; destination: string; range: string; soFar: boolean;
   totalMinor: number; headcount: number; people: RecapPerson[]; overflow: number;
 };
 
 const DAY = 86400000;
 const utc = (iso: string) => Date.UTC(Number(iso.slice(0, 4)), Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)));
-
-// 1 to 30 days is the number itself, longer is a star, like a face card.
-export function rankFor(start: string, end: string): string {
-  const days = Math.round((utc(end) - utc(start)) / DAY) + 1;
-  return days > 30 ? "★" : String(Math.max(1, days || 1));
-}
-
-export const suitFor = (tripId: string): Suit => SUITS[hashSeed(`${tripId}|suit`) % SUITS.length];
 
 export function recapCard(i: RecapInput): RecapCard {
   // Biggest share first; ties by member id so the order never changes between renders.
@@ -36,8 +26,8 @@ export function recapCard(i: RecapInput): RecapCard {
   const over = sorted.length > MAX_PEOPLE;
   const shown = i.showAmounts ? (over ? sorted.slice(0, MAX_PEOPLE - 1) : sorted) : [];
   return {
-    title: i.name, destination: i.destination, range: formatRange(i.start, i.end), rank: rankFor(i.start, i.end), suit: suitFor(i.tripId),
-    soFar: !i.completed, stamps: i.completed, totalMinor: i.totalMinor, headcount: i.people.length,
+    title: i.name, destination: i.destination, range: formatRange(i.start, i.end),
+    soFar: !i.completed, totalMinor: i.totalMinor, headcount: i.people.length,
     people: shown, overflow: i.showAmounts && over ? sorted.length - shown.length : 0,
   };
 }
@@ -56,21 +46,65 @@ export function clampTilt(angle: number, base: number, max = 12): number {
   return Math.max(-max, Math.min(max, deg));
 }
 
-// Where the two stamps are pressed onto the card, in the card's 360-wide units and 150 wide: arrival off the top right corner, departure off the bottom left,
-// each partly cut by the edge and leaning its own way (a little different for every trip, but the same each time it is drawn).
-export const STAMP_SIZE = 150;
-export function stampPlacement(tripId: string): { kind: "arrival" | "departure"; x: number; y: number; tilt: number }[] {
-  const r = (k: string, lo: number, hi: number) => lo + ((hashSeed(`${tripId}|${k}`) % 1000) / 1000) * (hi - lo);
-  return [
-    { kind: "arrival", x: 235, y: 36, tilt: r("at", -16, -6) },
-    { kind: "departure", x: -30, y: 330, tilt: r("dt", 6, 16) },
-  ];
+// ---- The front of the card: a name for the trip and a few facts worth posting. It is the side that goes on social media, so it carries no money and no
+// names: only what the group did together. ----
+
+export type FactExpense = { date: string; category: string };
+export type Fact = { label: string; value: string; note?: string };
+export type TripFacts = { tagline: string; days: number; people: number; activities: number; facts: Fact[] };
+
+const TAGLINE: Record<string, string> = {
+  food: "The foodie trip", groceries: "The cook-it-yourself trip", stay: "The comfort trip", transport: "The long way round", fuel: "The road trip",
+  activities: "The adventure trip", tickets: "The big-day trip", shopping: "The shopping spree",
+};
+const CATEGORY: Record<string, string> = { food: "Food", groceries: "Groceries", stay: "Stay", transport: "Getting around", fuel: "Fuel", activities: "Activities", tickets: "Tickets", shopping: "Shopping", other: "Other" };
+
+export const tripDays = (start: string, end: string) => Math.max(1, Math.round((utc(end) - utc(start)) / DAY) + 1 || 1);
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+
+// The biggest entry of a tally, ties broken by name so it never changes between renders.
+function top(tally: Map<string, number>): [string, number] | null {
+  let best: [string, number] | null = null;
+  for (const [k, v] of tally) if (!best || v > best[1] || (v === best[1] && k < best[0])) best = [k, v];
+  return best;
 }
 
-// The recap's stamps are inked in black, blue or red only, like an office rubber stamp. Each trip has its own pair, and the two stamps never share a colour.
-export const RECAP_INKS = ["#222222", "#1c3f8f", "#b3261e"] as const;
-export function recapInks(tripId: string): { arrival: string; departure: string } {
-  const a = hashSeed(`${tripId}|ink`) % RECAP_INKS.length;
-  const d = (a + 1 + (hashSeed(`${tripId}|ink2`) % (RECAP_INKS.length - 1))) % RECAP_INKS.length;
-  return { arrival: RECAP_INKS[a], departure: RECAP_INKS[d] };
+// What the group did most (counting what was logged, not what it cost), the busiest day, and the memories saved. Pure: nothing reads a clock or the network.
+export function tripFacts(i: { expenses: FactExpense[]; start: string; end: string; people: number; activities: number; photos: number; memories: number; places: string[] }): TripFacts {
+  const days = tripDays(i.start, i.end);
+  const facts: Fact[] = [];
+  let tagline = "A trip to remember";
+  if (i.expenses.length > 0) {
+    const byCategory = new Map<string, number>();
+    const byDay = new Map<string, number>();
+    for (const e of i.expenses) {
+      byCategory.set(e.category, (byCategory.get(e.category) ?? 0) + 1);
+      byDay.set(e.date, (byDay.get(e.date) ?? 0) + 1);
+    }
+    const [cat, catN] = top(byCategory)!;
+    const [day, dayN] = top(byDay)!;
+    const dayNo = Math.round((utc(day) - utc(i.start)) / DAY) + 1;
+    tagline = TAGLINE[cat] ?? tagline;
+    if (cat !== "other") facts.push({ label: "Favourite thing", value: CATEGORY[cat] ?? "Other", note: `${plural(catN, "time", "times")} together` });
+    if (dayNo >= 1 && dayNo <= days) facts.push({ label: "Busiest day", value: `Day ${dayNo}`, note: plural(dayN, "thing shared", "things shared") });
+  }
+  if (i.memories > 0) facts.push({ label: "Memories saved", value: String(i.memories), note: i.photos > 0 ? plural(i.photos, "photo", "photos") : undefined });
+  if (i.places.length > 0) facts.push({ label: "Favourite places", value: String(i.places.length), note: i.places[0] });
+  return { tagline, days, people: i.people, activities: i.activities, facts: facts.slice(0, 3) };
+}
+
+// ---- The postage stamp on the front: what is printed on it for this trip. ----
+
+export const POSTAGE_COLORS = ["#2f7d4f", "#b5452f", "#2a4a8a", "#c27a22", "#7b3f73", "#6f7a1f"] as const;   // green, brick, blue, amber, plum, olive
+export function postageSpec(i: { tripId: string; destination: string; start: string; end: string }) {
+  const [city, ...rest] = i.destination.split(",").map((x) => x.trim());
+  const days = tripDays(i.start, i.end);
+  return {
+    country: (rest.length ? rest[rest.length - 1] : city).toUpperCase(),
+    city: city.toUpperCase(),
+    color: POSTAGE_COLORS[hashSeed(`${i.tripId}|postage`) % POSTAGE_COLORS.length],
+    value: `${days} ${days === 1 ? "DAY" : "DAYS"}`,
+    year: i.end.slice(0, 4),
+    postmark: `${i.end.slice(8, 10)} ${["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"][Number(i.end.slice(5, 7)) - 1]} ${i.end.slice(2, 4)}`,
+  };
 }

@@ -129,7 +129,7 @@ export default function Summary() {
               <Text maxFontSizeMultiplier={1.4} style={s.body}>{sm.activities} {sm.activities === 1 ? "activity" : "activities"} planned</Text>
             </View>
             <View style={s.list}>
-              <ListItem title="Recap" subtitle="A card to share: total spent, shares and stamps" leading={icon(Share2)} trailing="chevron" onPress={() => go("recap")} />
+              <ListItem title="Recap" subtitle="A card to share, with the trip's highlights" leading={icon(Share2)} trailing="chevron" onPress={() => go("recap")} />
               <View style={s.hair} />
               <ListItem title="Memories" subtitle="Photos and notes from the trip" leading={icon(ImageIcon)} trailing="chevron" onPress={() => go("memories")} />
               <View style={s.hair} />

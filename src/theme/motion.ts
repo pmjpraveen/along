@@ -23,6 +23,7 @@ export const motion = {
   skeleton: { pulseMs: 800, low: 0.45 },   // a loading placeholder breathes between full and this opacity, on the UI thread
   book: { turnMs: 520, foldMs: 650, rotateMs: 750 },   // a passport page turning; opening or closing the cover is two beats one after the other: the cover folding, and the whole book rotating
   confetti: { ms: 2400, pieces: 36 },   // the payment-recorded confetti: how long it falls, and how many pieces
+  flipMs: 400,        // the recap card turning over when it is tapped
   pressScale: 0.98,   // a touch dips the control to this size at once
 } as const;
 

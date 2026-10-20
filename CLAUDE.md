@@ -74,7 +74,7 @@ DESIGN.md is the single source for tokens, type scale, components, and states. R
 - Never convey meaning by color alone — pair every color state with text or an icon. Alarm Red is for errors and destructive actions only, never decorative and never a money-sign color.
 - Every data screen has a loading skeleton, a contextual empty state with one clear action, an error state with retry, and an offline indicator. Forms keep their data on error. Validation is inline, specific, and actionable.
 - Accessibility: touch targets at least 44pt on iOS and 48dp on Android, Dynamic Type support with no fixed-height text containers (`minHeight` only), AA contrast, an accessibility label and role on every interactive element.
-- Text is Geist Sans only. Register each weight as its own family name; never combine a custom `fontFamily` with `fontWeight`.
+- Text is Geist Sans only, except the signature on the passport's data page (`signatureFont`) and the handwriting on the recap postcard (`handwritingFont`, Caveat). Register each weight as its own family name; never combine a custom `fontFamily` with `fontWeight`.
 - Prefer native components and behavior (date picker, share sheet, safe areas, back gesture). iOS and Android have the same features and flows, each with its own platform conventions.
 - Passport stamps feel collectible and travel-themed (double-ring stamp, Black caps, small dot), not like generic achievement badges.
 - Produce mockups only when asked.
@@ -93,6 +93,7 @@ DESIGN.md is the single source for tokens, type scale, components, and states. R
 - Keep durations and easings in one shared motion constants module. No magic numbers inline.
 - Allowed delight moments, each single, short, and skippable: passport stamp award, trip completion, "everyone is settled".
 - Device tilt is allowed on the trip recap card only: user-driven, never looping, ±12°, transform and opacity on the UI thread via Reanimated's sensor (no new dependency), off with reduced motion or when the screen is not focused. The shared image is always flat.
+- The recap card turns over (rotateY, 400 ms) when tapped, a single user-initiated flip; with reduced motion the two sides crossfade.
 - Do not write tests for animation timing. In tests, run with reduced motion on.
 
 ## Essentials
