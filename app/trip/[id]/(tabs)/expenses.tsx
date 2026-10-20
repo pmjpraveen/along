@@ -30,6 +30,7 @@ import { usePullToRefresh } from "../../../../src/hooks/usePullToRefresh";
 import { discardQueued, useQueue } from "../../../../src/offline/sync";
 import { color, mix, radius, shadow, space, type, track } from "../../../../src/theme/tokens";
 import { Card } from "../../../../src/components/Card";
+import { ExportSheet } from "../../../../src/components/ExportSheet";
 
 // The trip's money: what the trip has cost in total and who is in it, then every expense as a row (category, name, what it means for
 // me, amount). Tapping a row opens the expense with its split.
@@ -47,6 +48,7 @@ export default function Expenses() {
   const [deleteBusy, setDeleteBusy] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
   const [view, setView] = useState<"transactions" | "balances">("transactions");
+  const [exporting, setExporting] = useState(false);
   const load = useCallback(async () => {
     const [e, b, access] = await Promise.all([listExpenses(id), loadBalances(id), loadExpenseAccess(id)]);
     setState(e);
@@ -187,6 +189,7 @@ export default function Expenses() {
                   })}
             </View>);
         }
+        items.push(<TextButton key="export" label="Export expenses" onPress={() => setExporting(true)} />);
       }
     }
   }
@@ -199,6 +202,7 @@ export default function Expenses() {
         {items}
       </Animated.ScrollView>
       <PinnedBack onPress={back} scrollY={scrollY} />
+      <ExportSheet visible={exporting} onClose={() => setExporting(false)} tripId={id} />
       <Dialog visible={!!deleting} onClose={closeDelete} title={`Delete ${deleting?.title ?? "expense"}?`} subheader="It's removed for everyone on the trip"
         body={deleteError ?? "Everyone's balances will update. Payments already recorded stay as they are. This can't be undone."}
         actionLabel={deleteBusy ? "Deleting…" : "Delete"} actionType="destructive" onAction={confirmDelete} actionBusy={deleteBusy}

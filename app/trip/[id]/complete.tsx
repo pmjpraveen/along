@@ -68,6 +68,7 @@ export default function Complete() {
   const footer = done ? (
     <>
       <PrimaryButton label="Done" onPress={() => router.back()} />
+      <TextButton label="Share a recap card" onPress={() => router.replace({ pathname: "/trip/[id]/recap", params: { id } })} />
       <TextButton label="Add a photo to Memories" onPress={() => router.replace({ pathname: "/trip/[id]/memories", params: { id } })} />
     </>
   ) : s0 ? (

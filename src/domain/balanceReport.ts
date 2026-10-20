@@ -4,7 +4,7 @@ export type ReportRow = { memberId: string; name: string; guest: boolean; net: n
 export type ReportTransfer = { from: string; to: string; amountMinor: number };
 export type ReportInput = { tripName: string; currency: { code: string; exponent: number }; rows: ReportRow[]; transfers: ReportTransfer[]; generatedOn: string };
 
-const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+export const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
 // The balances as a printable page: each person's paid, share, payments already recorded and what they get back or owe (the four always add up),
 // then who pays whom. Pure: the caller gives the date, so the same input always gives the same page.

@@ -89,3 +89,11 @@ test("US-07 deleting calls delete_expense, treats an already-deleted one as done
   mockRpc.mockResolvedValueOnce({ error: { message: "Failed to fetch" } });
   expect((await deleteExpense("e1")).ok).toBe(false);
 });
+
+test("RC-07 an export of a trip I cannot read fails with a message, not an empty file", async () => {
+  const { supabase } = require("./supabase");
+  const q: any = { select: () => q, eq: () => q, is: () => q, single: async () => ({ data: null, error: { message: "denied" } }), then: (r: any) => r({ data: [], error: { message: "denied" } }) };
+  supabase.from = () => q;
+  const { loadExpenseExport } = require("./expenses");
+  expect(await loadExpenseExport("t1", false)).toEqual({ ok: false, message: "Couldn't load the expenses. Try again." });
+});
