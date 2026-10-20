@@ -1,4 +1,4 @@
-import { clampTilt, MAX_PEOPLE, recapCard, recapSummary, RecapInput } from "./recap";
+import { RECAP_INKS, recapInk, clampTilt, MAX_PEOPLE, recapCard, recapSummary, RecapInput } from "./recap";
 
 const people = (n: number) => Array.from({ length: n }, (_, k) => ({ id: `m${String(k).padStart(2, "0")}`, name: `P${k}`, guest: k % 3 === 0, shareMinor: 1000 * (k % 4) }));
 const base: RecapInput = { tripId: "t1", name: "Goa", destination: "Goa, India", start: "2026-03-01", end: "2026-03-05", completed: true, currency: { code: "INR", exponent: 2 }, totalMinor: 500000, people: people(3), showAmounts: true };
@@ -83,5 +83,13 @@ describe("RC-10 postageSpec", () => {
   it("colour is stable per trip and varies between trips", () => {
     expect(postageSpec(base).color).toBe(postageSpec(base).color);
     expect(new Set(Array.from({ length: 100 }, (_, k) => postageSpec({ ...base, tripId: `t${k}` }).color)).size).toBe(POSTAGE_COLORS.length);
+  });
+});
+
+describe("RC-08 the departure stamp ink", () => {
+  it("is inked black, blue or red, the same every time for a trip", () => {
+    const seen = new Set<string>();
+    for (let k = 0; k < 100; k++) { const c = recapInk(`t${k}`); expect(RECAP_INKS).toContain(c); expect(recapInk(`t${k}`)).toBe(c); seen.add(c); }
+    expect(seen.size).toBe(3);
   });
 });

@@ -1,7 +1,7 @@
 import { ReactNode, useEffect } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Animated, { SensorType, useAnimatedSensor, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring, withTiming } from "react-native-reanimated";
-import { clampTilt, RecapCard as Card, TripFacts, postageSpec } from "../domain/recap";
+import { clampTilt, RecapCard as Card, recapInk, TripFacts, postageSpec } from "../domain/recap";
 import { formatMinor } from "../domain/money";
 import { EASE_OUT, motion } from "../theme/motion";
 import { color, font, mix, handwritingFont, postcardArt } from "../theme/tokens";
@@ -10,6 +10,8 @@ import { Avatar, AvatarGroup } from "./Avatar";
 import { CardTexture } from "./CardTexture";
 import { PostageStamp } from "./PostageStamp";
 import { Postmark } from "./Postmark";
+import { Stamp } from "./Stamp";
+import { shapeFor } from "../domain/stampShape";
 import Svg from "react-native-svg";
 
 export const CARD_RATIO = 7 / 5;
@@ -115,6 +117,12 @@ export function RecapCardFace({ card, facts, side, cur, bg, width, tripId, desti
         <Text allowFontScaling={false} style={[s.head, { fontSize: u(11), lineHeight: u(14), letterSpacing: u(1.6), color: postcardArt.blue }]}>AIR MAIL</Text>
       </View>
 
+      {/* The departure stamp, pressed lightly off the bottom right corner (cut by the edge of the card), on top of the AIR MAIL label. */}
+      {card.stamps && side === "front" && (
+        <View pointerEvents="none" accessibilityElementsHidden importantForAccessibility="no-hide-descendants" style={{ position: "absolute", top: u(352), left: u(238), width: u(150), opacity: 0.42 }}>
+          <Stamp compact destination={place} date={end} kind="departure" shape={shapeFor(tripId, "departure")} ink={recapInk(tripId)} tilt={-6} />
+        </View>
+      )}
       <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: u(16), overflow: "hidden" }]}><CardTexture width={width} height={h} /></View>
       {fx && (
         <View pointerEvents="none" style={[StyleSheet.absoluteFill, { borderRadius: u(16), overflow: "hidden" }]}>
@@ -149,8 +157,18 @@ export function TiltCard({ width, children }: { width: number; children: (fx: Fx
 export function FlipCard({ side, front, back, width, reduced }: { side: "front" | "back"; front: ReactNode; back: ReactNode; width: number; reduced: boolean }) {
   const p = useSharedValue(side === "back" ? 1 : 0);
   useEffect(() => { p.value = withTiming(side === "back" ? 1 : 0, { duration: reduced ? motion.fadeMs : motion.flipMs, easing: EASE_OUT }); }, [side, reduced, p]);
-  const f = useAnimatedStyle(() => reduced ? { opacity: 1 - p.value } : { transform: [{ perspective: 1000 }, { rotateY: `${p.value * 180}deg` }] });
-  const b = useAnimatedStyle(() => reduced ? { opacity: p.value } : { transform: [{ perspective: 1000 }, { rotateY: `${180 + p.value * 180}deg` }] });
+  // At rest a side carries no transform at all (a leftover rotateY(360deg) or perspective makes iOS draw the layer as a bitmap, which blurs the text); only
+  // while turning does it rotate. The side that is turned away is hidden by opacity as well as backfaceVisibility.
+  const f = useAnimatedStyle(() => {
+    if (reduced) return { opacity: 1 - p.value };
+    if (p.value === 0 || p.value === 1) return { opacity: 1 - p.value, transform: [] };
+    return { opacity: 1, transform: [{ perspective: 1000 }, { rotateY: `${p.value * 180}deg` }] };
+  });
+  const b = useAnimatedStyle(() => {
+    if (reduced) return { opacity: p.value };
+    if (p.value === 0 || p.value === 1) return { opacity: p.value, transform: [] };
+    return { opacity: 1, transform: [{ perspective: 1000 }, { rotateY: `${180 + p.value * 180}deg` }] };
+  });
   const hide = { position: "absolute" as const, top: 0, left: 0, width, height: width * CARD_RATIO, backfaceVisibility: "hidden" as const };
   return (
     <View style={{ width, height: width * CARD_RATIO }}>

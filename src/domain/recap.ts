@@ -13,7 +13,7 @@ export type RecapInput = {
   currency: { code: string; exponent: number }; totalMinor: number; people: RecapPerson[]; showAmounts: boolean;
 };
 export type RecapCard = {
-  title: string; destination: string; range: string; soFar: boolean;
+  title: string; destination: string; range: string; soFar: boolean; stamps: boolean;
   totalMinor: number; headcount: number; people: RecapPerson[]; overflow: number;
 };
 
@@ -27,7 +27,7 @@ export function recapCard(i: RecapInput): RecapCard {
   const shown = i.showAmounts ? (over ? sorted.slice(0, MAX_PEOPLE - 1) : sorted) : [];
   return {
     title: i.name, destination: i.destination, range: formatRange(i.start, i.end),
-    soFar: !i.completed, totalMinor: i.totalMinor, headcount: i.people.length,
+    soFar: !i.completed, stamps: i.completed, totalMinor: i.totalMinor, headcount: i.people.length,
     people: shown, overflow: i.showAmounts && over ? sorted.length - shown.length : 0,
   };
 }
@@ -45,6 +45,10 @@ export function clampTilt(angle: number, base: number, max = 12): number {
   const deg = ((angle - base) * 180) / Math.PI;
   return Math.max(-max, Math.min(max, deg));
 }
+
+// The passport stamp on the front of the card is inked in black, blue or red only, like an office rubber stamp; each trip has its own.
+export const RECAP_INKS = ["#222222", "#1c3f8f", "#b3261e"] as const;
+export const recapInk = (tripId: string) => RECAP_INKS[hashSeed(`${tripId}|ink`) % RECAP_INKS.length];
 
 // ---- The front of the card: a name for the trip and a few facts worth posting. It is the side that goes on social media, so it carries no money and no
 // names: only what the group did together. ----

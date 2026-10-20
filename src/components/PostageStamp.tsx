@@ -33,7 +33,7 @@ export function PostageStamp({ tripId, destination, start, end, width }: { tripI
       <Line x1={22} y1={29} x2={78} y2={29} stroke={PAPER} strokeWidth={0.7} />
       <Illustration id={motifFor(destination)} x={20} y={34} w={60} h={48} ink={PAPER} mask={`postage${uid}`} />
       <Line x1={22} y1={88} x2={78} y2={88} stroke={PAPER} strokeWidth={0.7} />
-      <SvgText x={24} y={103} fontSize={10} letterSpacing={0.6} textAnchor="start" fontFamily={font.medium} fill={PAPER}>{p.value}</SvgText>
+      <SvgText x={50} y={103} fontSize={10} letterSpacing={0.6} textAnchor="middle" fontFamily={font.medium} fill={PAPER}>{p.value}</SvgText>
     </Svg>
   );
 }
