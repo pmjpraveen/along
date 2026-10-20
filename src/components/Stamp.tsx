@@ -27,7 +27,7 @@ const INK_CACHE = new Map<string, SkImage>();
 let uids = 0;
 
 // A scene scaled to fit a box, painted onto a mask so its "cut" shapes (windows, snowcaps, waves) are left blank again instead of covered with paper colour.
-function Illustration({ id, x, y, w, h, ink, mask }: { id: ReturnType<typeof motifFor>; x: number; y: number; w: number; h: number; ink: string; mask: string }) {
+export function Illustration({ id, x, y, w, h, ink, mask }: { id: ReturnType<typeof motifFor>; x: number; y: number; w: number; h: number; ink: string; mask: string }) {
   const m = MOTIFS[id];
   const [bx, by, bw, bh] = m.box;
   const sc = Math.min(w / bw, h / bh);

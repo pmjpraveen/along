@@ -232,3 +232,17 @@ Per the repo rules (story id in test name; domain = exhaustive Jest; mock only `
 1. Pull-forward of Phase-2 "trip recap" approved (§0)?
 2. Add a link or QR to the card once the domain is chosen — which destination (store page vs. site)?
 3. Should the card default to showing per-person amounts, given it names real people publicly?
+
+## 17. Update: two-sided card (RC-09)
+
+- **Front** (the one to post): "THIS WAS …" tagline named after the category the trip spent most on (foodie, comfort, road trip…; "A trip to remember" with no expenses), days / people / activities, and up to four facts: top spend, biggest splurge, priciest day, and who picked up the most (or the per-person per-day average when people are hidden). Both stamps sit faintly in the corners. No total spent and no per-person shares, so it is the safer side to post.
+- **Back**: total spent and each person's share (hidden by the privacy switch).
+- **Flip**: tap the card; rotateY, 400 ms; crossfade with Reduce Motion. The Share button shares the side showing (`… - recap.png` or `… - recap (total).png`). Tilt, the holographic edge and the texture apply to both sides.
+- Facts are pure functions of the recorded expenses (`tripFacts` in `src/domain/recap.ts`), with ties broken by name. Nothing is stored.
+
+## 18. Update: travel postcard (replaces the playing-card look)
+
+- The card is a **travel postcard**, still 5:7 portrait, two sides, tap to flip, tilt, paper texture and a flat shared image. Red and blue **airmail border** on cream paper tinted with the trip colour; "POST CARD" heading; an "AIR MAIL" label.
+- **Front:** a perforated **postage stamp** (country name, a picture of the place, trip length as the "price") with a **postmark** (ring, town, date, wavy lines) across it; "Greetings from {town}!" in marker-style handwriting (`handwritingFont`, Caveat Bold); the tagline, days / people / activities, and the highlights on ruled lines; the departure passport stamp, faint, off the bottom-left corner.
+- **Back ("THE SPLIT"):** postmark, total spent and each person's share on ruled lines.
+- Removed: rank and suit corners, the holographic edge and the arrival passport stamp on the card.
