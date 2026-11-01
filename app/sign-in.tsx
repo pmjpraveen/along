@@ -1,14 +1,13 @@
-import { useState } from "react";
-import { ActivityIndicator, Image, Linking, StyleSheet, Text, useWindowDimensions, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Image, Linking, StyleSheet, Text, useWindowDimensions, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
-import { signInWithGoogle } from "../src/api/auth";
+import { appleSignInAvailable, signInWithApple, signInWithGoogle } from "../src/api/auth";
 import { useRouter } from "expo-router";
 import { Alert } from "../src/components/Alert";
 import { AlongLogo } from "../src/components/AlongLogo";
 import { DEV_PEOPLE, devLoginEnabled, signInAsDev } from "../src/api/devAuth";
-import { OutlinedButton, TextButton } from "../src/components/Buttons";
-import { Pressable } from "../src/components/Pressable";
+import { Button, OutlinedButton } from "../src/components/Buttons";
 import { color, font, radius, space, type, track } from "../src/theme/tokens";
 
 const FRIENDS = require("../assets/illustrations/friends.jpg");   // 1200 x 800
@@ -27,6 +26,15 @@ function GoogleG({ size }: { size: number }) {
 
 // Success needs no navigation here: the session store flips and the route guard moves to Home.
 // Any error keeps the user on this screen with a specific inline message and a retry.
+// Apple's logo (HIG-allowed custom button: logo + "Sign in with Apple"), so it shares the other buttons' type and colour.
+function AppleLogo({ size }: { size: number }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+      <Path fill={color.paper} d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
+    </Svg>
+  );
+}
+
 export default function SignIn() {
   const { top, bottom } = useSafeAreaInsets();
   const { width } = useWindowDimensions();
@@ -34,12 +42,23 @@ export default function SignIn() {
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const router = useRouter();
+  const [apple, setApple] = useState(false);   // only on an iPhone whose build has the native module
+  useEffect(() => { appleSignInAvailable().then(setApple); }, []);
 
   const onPress = async () => {
     if (busy) return;
     setBusy(true);
     setError(null);
     const r = await signInWithGoogle();
+    setBusy(false);
+    if (!r.ok && !r.cancelled) setError(r.message);
+  };
+
+  const onApple = async () => {
+    if (busy) return;
+    setBusy(true);
+    setError(null);
+    const r = await signInWithApple();
     setBusy(false);
     if (!r.ok && !r.cancelled) setError(r.message);
   };
@@ -59,22 +78,21 @@ export default function SignIn() {
       <View style={s.hero}>
         <View accessible accessibilityRole="image" accessibilityLabel="along" style={s.logo}><AlongLogo width={125} fill={color.brandBlack} /></View>
         <Image accessible accessibilityRole="image" accessibilityLabel="A group of friends with their luggage, ready to travel" accessibilityIgnoresInvertColors
-          source={FRIENDS} resizeMode="contain" style={{ width: photoW, height: photoW * (2 / 3) }} />
+          source={FRIENDS} resizeMode="contain" style={{ width: photoW, height: photoW * 0.6 }} />
         <View style={s.copy}>
           <Text accessibilityRole="header" maxFontSizeMultiplier={1.2} style={s.heading}>Welcome to Along</Text>
-          <Text maxFontSizeMultiplier={1.4} style={s.body}>Plan together, split costs fairly and keep the memories, all in one place.</Text>
+          <Text maxFontSizeMultiplier={1.4} style={s.body}>Plan the trips, split the costs and keep the memories, together with your group.</Text>
         </View>
         {error && <Alert variant="negative">{error}</Alert>}
       </View>
-      <Pressable accessibilityRole="button" accessibilityLabel="Login with Google" accessibilityState={{ busy }} onPress={onPress} style={s.google}>
-        {busy ? <ActivityIndicator color={color.paper} /> : (
-          <>
-            <GoogleG size={24} />
-            <Text maxFontSizeMultiplier={1.3} style={s.googleLabel}>Login with Google</Text>
-          </>
-        )}
-      </Pressable>
-      <TextButton label="Sign in with email" onPress={() => router.push("/sign-in-email")} />
+      <View style={s.actions}>
+        {apple && <Button label="Sign in with Apple" busy={busy} onPress={onApple} icon={<AppleLogo size={24} />} />}
+        <Button label="Login with Google" type={apple ? "secondary" : "primary"} busy={busy} onPress={onPress} icon={<GoogleG size={24} />} />
+        <View style={s.or} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
+          <View style={s.rule} /><Text style={s.orLabel}>or</Text><View style={s.rule} />
+        </View>
+        <Button label="Sign in with Email" type="secondary" onPress={() => router.push("/sign-in-email")} />
+      </View>
       <Text maxFontSizeMultiplier={1.4} style={s.legal}>
         By continuing you agree to the{" "}
         <Text accessibilityRole="link" onPress={() => open("terms")} style={s.link}>Terms of use</Text>
@@ -93,16 +111,15 @@ export default function SignIn() {
 
 const s = StyleSheet.create({
   screen: { flex: 1, paddingHorizontal: space.s20, backgroundColor: color.paper },
-  hero: { flex: 1, alignItems: "center", gap: space.s32 },
+  hero: { flex: 1, alignItems: "center", gap: space.s16 },
   logo: { marginTop: space.s8 },
-  copy: { alignItems: "center", gap: space.s8, paddingHorizontal: space.s12, marginTop: space.s24 },
+  copy: { alignItems: "center", gap: space.s8, paddingHorizontal: space.s12, marginTop: space.s8, marginBottom: space.s16 },
   heading: { fontFamily: font.medium, fontSize: 24, lineHeight: 30, letterSpacing: track(24), textAlign: "center", color: color.brandBlack },
   body: { ...type.body, fontSize: 17, letterSpacing: track(17), lineHeight: 24, textAlign: "center", color: color.slate },
-  google: {
-    minHeight: 56, flexDirection: "row", alignItems: "center", justifyContent: "center", gap: space.s12,
-    borderRadius: radius.card, borderCurve: "continuous", backgroundColor: color.brandBlack,
-  },
-  googleLabel: { ...type.buttonLarge, fontSize: 17, letterSpacing: track(17), color: color.paper },
+  actions: { gap: space.s12 },
+  or: { flexDirection: "row", alignItems: "center", gap: space.s16, marginVertical: space.s4 },
+  rule: { flex: 1, height: StyleSheet.hairlineWidth, backgroundColor: color.borderNeutral },
+  orLabel: { ...type.fieldMessage, color: color.pebble },
   legal: { ...type.fieldMessage, textAlign: "center", color: color.slate, marginTop: space.s12 },
   link: { color: color.brandBlack, textDecorationLine: "underline" },
   dev: { gap: space.s8, marginTop: space.s16 },

@@ -6,7 +6,7 @@ const mockPush = jest.fn();
 let mockDev = false;
 const mockDevSignIn = jest.fn();
 const mockEmail = jest.fn();
-jest.mock("../api/auth", () => ({ signInWithGoogle: () => mockSignIn(), signInWithEmail: (...a: unknown[]) => mockEmail(...a) }));
+jest.mock("../api/auth", () => ({ signInWithGoogle: () => mockSignIn(), signInWithEmail: (...a: unknown[]) => mockEmail(...a), appleSignInAvailable: async () => false, signInWithApple: jest.fn() }));
 jest.mock("../api/devAuth", () => ({
   DEV_PEOPLE: [{ name: "Asha", email: "asha@along.test" }, { name: "Ben", email: "ben@along.test" }],
   devLoginEnabled: () => mockDev, signInAsDev: (...a: unknown[]) => mockDevSignIn(...a),
@@ -60,6 +60,6 @@ test("with dev login on, a test person can be picked, and a failure shows what t
 
 test("Sign in with email opens a page of its own", async () => {
   await render(<SignIn />);
-  await fireEvent.press(screen.getByRole("button", { name: "Sign in with email" }));
+  await fireEvent.press(screen.getByRole("button", { name: "Sign in with Email" }));
   expect(mockPush).toHaveBeenCalledWith("/sign-in-email");
 });
