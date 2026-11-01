@@ -41,6 +41,7 @@ export default function SignIn() {
   const photoW = width - space.s20 * 2;
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [which, setWhich] = useState<"apple" | "google" | null>(null);   // the button that was pressed, so only it shows the spinner
   const router = useRouter();
   const [apple, setApple] = useState(false);   // only on an iPhone whose build has the native module
   useEffect(() => { appleSignInAvailable().then(setApple); }, []);
@@ -48,6 +49,7 @@ export default function SignIn() {
   const onPress = async () => {
     if (busy) return;
     setBusy(true);
+    setWhich("google");
     setError(null);
     const r = await signInWithGoogle();
     setBusy(false);
@@ -57,6 +59,7 @@ export default function SignIn() {
   const onApple = async () => {
     if (busy) return;
     setBusy(true);
+    setWhich("apple");
     setError(null);
     const r = await signInWithApple();
     setBusy(false);
@@ -86,8 +89,8 @@ export default function SignIn() {
         {error && <Alert variant="negative">{error}</Alert>}
       </View>
       <View style={s.actions}>
-        {apple && <Button label="Sign in with Apple" busy={busy} onPress={onApple} icon={<AppleLogo size={24} />} />}
-        <Button label="Login with Google" type={apple ? "secondary" : "primary"} busy={busy} onPress={onPress} icon={<GoogleG size={24} />} />
+        {apple && <Button label="Sign in with Apple" busy={busy && which === "apple"} onPress={onApple} icon={<AppleLogo size={24} />} />}
+        <Button label="Login with Google" type={apple ? "secondary" : "primary"} busy={busy && which === "google"} onPress={onPress} icon={<GoogleG size={24} />} />
         <View style={s.or} accessibilityElementsHidden importantForAccessibility="no-hide-descendants">
           <View style={s.rule} /><Text style={s.orLabel}>or</Text><View style={s.rule} />
         </View>
